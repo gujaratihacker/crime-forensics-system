@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+
+{% block title %}{{ translate('Register - Forensics System', 'पंजीकरण - फोरेंसिक प्रणाली', 'રજીસ્ટર - ફોરેન્સિક સિસ્ટમ') }}{% endblock %}
+
+{% block content %}
+<div class="container mt-5 mb-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="cyber-card p-4">
+                <div class="text-center mb-4">
+                    <i class="bi bi-person-plus-fill text-info fs-1"></i>
+                    <h2 class="mt-2">{{ translate('Create an account', 'खाता बनाएं', 'ખાતું બનાવો') }}</h2>
+                    <p class="text-secondary small">{{ translate('Register to file cyber complaints and track case statuses', 'साइबर शिकायतें दर्ज करने और मामलों की स्थिति को ट्रैक करने के लिए पंजीकरण करें', 'સાયબર ફરિયાદો નોંધાવવા અને કેસની સ્થિતિ ટ્રેક કરવા માટે રજીસ્ટર કરો') }}</p>
+                </div>
+                
+                <form method="POST" action="{{ url_for('auth.register') }}" id="registerForm" enctype="multipart/form-data">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="fullname" class="form-label">{{ translate('Full name', 'पूरा नाम', 'પૂરું નામ') }}</label>
+                            <input type="text" class="form-control cyber-input" id="fullname" name="fullname" placeholder="John Doe" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="username" class="form-label">{{ translate('Username', 'उपयोगकर्ता नाम', 'વપરાશકર્તા નામ') }}</label>
+                            <input type="text" class="form-control cyber-input" id="username" name="username" placeholder="johndoe12" required>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="email" class="form-label">{{ translate('Email address', 'ईमेल पता', 'ઈમેલ સરનામું') }}</label>
+                            <input type="email" class="form-control cyber-input" id="email" name="email" placeholder="johndoe@email.com" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="phone" class="form-label">{{ translate('Phone number', 'फ़ोन नंबर', 'ફોન નંબર') }}</label>
+                            <input type="tel" class="form-control cyber-input" id="phone" name="phone" placeholder="+919876543210" required>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="password" class="form-label">{{ translate('Password', 'पासवर्ड', 'પાસવર્ડ') }}</label>
+                            <input type="password" class="form-control cyber-input" id="password" name="password" placeholder="{{ translate('At least 8 chars, letters+digits', 'कम से कम 8 अक्षर, अक्षर + अंक', 'ઓછામાં ઓછા 8 અક્ષરો, અક્ષરો + અંકો') }}" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="confirm_password" class="form-label">{{ translate('Confirm password', 'पासवर्ड की पुष्टि करें', 'પાસવર્ડની પુષ્ટિ કરો') }}</label>
+                            <input type="password" class="form-control cyber-input" id="confirm_password" name="confirm_password" placeholder="{{ translate('Re-type password', 'पासवर्ड दोबारा टाइप करें', 'પાસવર્ડ ફરીથી ટાઇપ કરો') }}" required>
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-6 mb-3">
+                            <label for="doc_type" class="form-label">{{ translate('Verification document type', 'सत्यापन दस्तावेज़ का प्रकार', 'ચકાસણી દસ્તાવેજનો પ્રકાર') }} <span class="text-danger">*</span></label>
+                            <select class="form-select cyber-input" id="doc_type" name="doc_type" required>
+                                <option value="" disabled selected>{{ translate('Select proof...', 'प्रमाण चुनें...', 'પુરાવો પસંદ કરો...') }}</option>
+                                <option value="Aadhar Card">{{ translate('Aadhar Card', 'आधार कार्ड', 'આધાર કાર્ડ') }}</option>
+                                <option value="PAN Card">{{ translate('PAN Card', 'पैन कार्ड', 'પાન કાર્ડ') }}</option>
+                                <option value="Voter ID">{{ translate('Voter ID', 'मतदाता पहचान पत्र', 'મતદાર આઈડી') }}</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="verification_file" class="form-label">{{ translate('Upload verification document', 'सत्यापन दस्तावेज़ अपलोड करें', 'ચકાસણી દસ્તાવેજ અપલોડ કરો') }} <span class="text-danger">*</span></label>
+                            <input type="file" class="form-control cyber-input" id="verification_file" name="verification_file" required>
+                        </div>
+                    </div>
+                    
+                    <div class="safety-alert mb-4 py-2">
+                        <i class="bi bi-shield-fill-check me-2"></i>
+                        {{ translate('Your password is securely hashed before it is stored.', 'सहेजने से पहले आपके पासवर्ड को सुरक्षित रूप से हैश किया जाता है।', 'સંગ્રહ કરતા પહેલાં તમારો પાસવર્ડ સુરક્ષિત રીતે હૅશ કરવામાં આવે છે.') }}
+                    </div>
+                    
+                    <button type="submit" class="btn btn-cyber-cyan w-100 py-2 fs-5"><i class="bi bi-person-check-fill" aria-hidden="true"></i> {{ translate('Create account', 'खाता बनाएं', 'ખાતું બનાવો') }}</button>
+                </form>
+                
+                <div class="text-center mt-4 border-top border-secondary pt-3">
+                    <span class="text-secondary small">{{ translate('Already have an account? ', 'पहले से ही एक खाता है? ', 'પહેલેથી એકાઉન્ટ છે? ') }}</span>
+                    <a href="{{ url_for('auth.login') }}" class="text-info text-decoration-none small fw-bold">{{ translate('Sign in', 'साइन इन करें', 'સાઇન ઇન કરો') }}</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.getElementById('registerForm').addEventListener('submit', function(e) {
+    var password = document.getElementById('password').value;
+    var confirm = document.getElementById('confirm_password').value;
+    
+    if (password !== confirm) {
+        e.preventDefault();
+        alert("{{ translate('Passwords do not match!', 'पासवर्ड मेल नहीं खाते!', 'પાસવર્ડ્સ મેચ થતા નથી!') }}");
+    }
+});
+</script>
+{% endblock %}

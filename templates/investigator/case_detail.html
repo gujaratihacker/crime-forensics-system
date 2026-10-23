@@ -1,0 +1,487 @@
+{% extends "base.html" %}
+
+{% block title %}Case File - {{ case.id }}{% endblock %}
+
+{% block head %}
+<!-- Vis.js CDN for Suspect Intelligence network visualization -->
+<script type="text/javascript" src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
+<style>
+    #suspectNetwork {
+        width: 100%;
+        height: 250px;
+        background-color: #0b0f19;
+        border: 1px solid #2e3e5c;
+        border-radius: 8px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-4 py-4">
+    <!-- Back Header -->
+    <div class="mb-4 d-flex justify-content-between align-items-center">
+        <a href="{{ url_for('investigator.dashboard') }}" class="btn btn-outline-secondary btn-sm"><i class="bi bi-chevron-left"></i> Back to Case Ledger</a>
+        <span class="text-secondary small fw-bold font-monospace">STATUS: <span class="badge badge-pending text-uppercase">{{ case.status.replace('_', ' ') }}</span></span>
+    </div>
+
+    <!-- Main Workspace Row -->
+    <div class="row">
+        <!-- Left 8-col: Case Info, Evidence Vault, Notes -->
+        <div class="col-lg-8">
+            <!-- Case File Details -->
+            <div class="cyber-card p-4 mb-4">
+                <div class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom border-secondary">
+                    <div>
+                        <span class="text-secondary small fw-bold">INVESTIGATION CASE FILE</span>
+                        <h3 class="text-info font-monospace mb-0">{{ case.id }}</h3>
+                    </div>
+                    <div>
+                        <span class="badge bg-danger fs-6 text-uppercase">{{ case.priority }}</span>
+                    </div>
+                </div>
+
+                <div class="row g-3 mb-4">
+                    <div class="col-md-6">
+                        <small class="text-secondary d-block">CRIME CATEGORY</small>
+                        <span class="fw-bold text-light">{{ case.category }}</span>
+                    </div>
+                    <div class="col-md-3">
+                        <small class="text-secondary d-block">COMPLAINT ID</small>
+                        <span class="fw-bold text-light font-monospace">{{ case.complaint_id }}</span>
+                    </div>
+                    <div class="col-md-3">
+                        <small class="text-secondary d-block">INCIDENT DATE/TIME</small>
+                        <span class="fw-bold text-light">{{ case.incident_date }} at {{ case.incident_time }}</span>
+                    </div>
+                </div>
+
+                <div class="row g-3 mb-4">
+                    <div class="col-md-6">
+                        <small class="text-secondary d-block">INCIDENT LOCATION</small>
+                        <span class="fw-bold text-light">{{ case.location }}</span>
+                    </div>
+                    <div class="col-md-6">
+                        <small class="text-secondary d-block">REPORTER PROFILE</small>
+                        {% if case.reporting_mode == 'anonymous' %}
+                            <span class="text-purple font-monospace"><i class="bi bi-eye-slash-fill"></i> Anonymous Reporter</span>
+                        {% else %}
+                            <span class="text-light fw-bold">{{ case.citizen_name }}</span>
+                            <small class="text-secondary d-block">Email: {{ case.citizen_email }} | Phone: {{ case.citizen_phone }}</small>
+                            {% if case.citizen_doc_type %}
+                                <div class="mt-2">
+                                    <span class="badge bg-success small"><i class="bi bi-patch-check-fill"></i> {{ case.citizen_doc_type }} Verified</span>
+                                    <a href="{{ url_for('auth.serve_verification', filename=case.citizen_doc_path) }}" target="_blank" class="text-info small ms-2 d-inline-block"><i class="bi bi-file-earmark-arrow-down-fill"></i> View Proof</a>
+                                </div>
+                            {% endif %}
+                        {% endif %}
+                    </div>
+                </div>
+
+                {% if case.platform %}
+                    <div class="row g-3 mb-4 bg-dark p-3 rounded border border-secondary mx-0">
+                        <div class="col-md-4">
+                            <small class="text-secondary d-block mb-1">SOCIAL PLATFORM</small>
+                            <span class="badge bg-info text-dark text-uppercase">{{ case.platform }}</span>
+                        </div>
+                        <div class="col-md-4">
+                            <small class="text-secondary d-block mb-1">CRIME TYPE</small>
+                            <span class="fw-bold text-light">{{ case.sm_crime_type }}</span>
+                        </div>
+                        <div class="col-md-4">
+                            <small class="text-secondary d-block mb-1">SUSPECT PROFILE URL</small>
+                            <a href="{{ case.sm_profile_url }}" target="_blank" class="text-info text-break small">{{ case.sm_profile_url }}</a>
+                        </div>
+                    </div>
+                {% endif %}
+
+                <div class="mb-4 bg-dark p-3 rounded border border-secondary">
+                    <small class="text-secondary d-block mb-1">INCIDENT DESCRIPTION</small>
+                    <p class="mb-0 text-light small" style="white-space: pre-wrap;">{{ case.description }}</p>
+                </div>
+
+                <div class="row g-3">
+                    {% if case.victim_info %}
+                        <div class="col-md-6">
+                            <small class="text-secondary d-block">VICTIM STATEMENT DETAILS</small>
+                            <span class="text-light small">{{ case.victim_info }}</span>
+                        </div>
+                    {% endif %}
+                    {% if case.suspect_info %}
+                        <div class="col-md-6">
+                            <small class="text-secondary d-block">INITIAL SUSPECT INFO</small>
+                            <span class="text-light small">{{ case.suspect_info }}</span>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Digital Evidence Vault -->
+            <div class="cyber-card p-4 mb-4">
+                <div class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom border-secondary">
+                    <h4 class="mb-0 text-light"><i class="bi bi-safe2 text-info me-1" aria-hidden="true"></i> Evidence files</h4>
+                </div>
+
+                {% if not evidence %}
+                    <div class="text-center py-4 text-secondary">
+                        <i class="bi bi-folder-symlink fs-2"></i>
+                        <p class="mb-0 mt-2">No evidence uploaded for this complaint.</p>
+                    </div>
+                {% else %}
+                    <div class="list-group bg-transparent">
+                        {% for file in evidence %}
+                            <div class="list-group-item bg-dark border-secondary text-light mb-3 rounded p-3">
+                                <div class="d-flex justify-content-between align-items-start mb-2 border-bottom border-secondary pb-2">
+                                    <div>
+                                        <h6 class="mb-0 text-info fw-bold">{{ file.original_filename }}</h6>
+                                        <small class="text-secondary">Type: <span class="text-light">{{ file.file_type }}</span> | Size: <span class="text-light">{{ (file.file_size/1024)|round(2) }} KB</span> | Uploaded by: <span class="text-light">{{ file.uploader_name or 'System' }}</span></small>
+                                    </div>
+                                    <div class="d-flex gap-2">
+                                        <form method="POST" action="/evidence/verify/{{ file.id }}">
+                                            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                                            <button type="submit" class="btn btn-sm btn-outline-info py-0 px-2" style="font-size:0.8rem;"><i class="bi bi-shield-check"></i> Verify Integrity</button>
+                                        </form>
+                                        <a href="/evidence/download/{{ file.id }}" class="btn btn-sm btn-cyber-cyan py-0 px-2" style="font-size:0.8rem;"><i class="bi bi-download"></i> Get File</a>
+                                    </div>
+                                </div>
+                                <div class="row g-2">
+                                    <div class="col-md-9">
+                                        <small class="text-secondary d-block font-monospace" style="font-size: 0.75rem;">SHA-256 Checksum:</small>
+                                        <code class="text-light font-monospace small text-break">{{ file.sha256_hash }}</code>
+                                    </div>
+                                    <div class="col-md-3 text-end">
+                                        {% if file.status == 'verified' %}
+                                            <span class="badge badge-verified"><i class="bi bi-patch-check" aria-hidden="true"></i> Integrity verified</span>
+                                        {% elif file.status == 'failed_integrity' %}
+                                            <span class="badge badge-failed"><i class="bi bi-shield-x" aria-hidden="true"></i> Integrity check failed</span>
+                                        {% else %}
+                                            <span class="badge badge-pending"><i class="bi bi-hourglass-split" aria-hidden="true"></i> Not verified</span>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                
+                                <!-- Chain of Custody toggler -->
+                                <div class="mt-2 border-top border-secondary pt-2">
+                                    <a class="text-info text-decoration-none small" style="cursor:pointer;" data-bs-toggle="collapse" data-bs-target="#chain-{{ file.id }}">
+                                        <i class="bi bi-clock-history"></i> Show Chain of Custody Timeline
+                                    </a>
+                                    <div class="collapse mt-2 bg-black p-2 rounded" id="chain-{{ file.id }}">
+                                        <!-- Javascript can populate or we load from backend -->
+                                        <div id="chain-log-{{ file.id }}" class="text-secondary small font-monospace">
+                                            Loading chain logs...
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+
+            <!-- Notes Section -->
+            <div class="cyber-card p-4">
+                <h4 class="mb-3 text-light border-bottom border-secondary pb-2"><i class="bi bi-journal-text text-info me-1" aria-hidden="true"></i> Investigation notes</h4>
+                
+                <form method="POST" action="{{ url_for('investigator.add_note', case_id=case.id) }}" class="mb-4">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                    <div class="mb-2">
+                        <textarea class="form-control cyber-input" id="note_text" name="note_text" rows="3" placeholder="Enter note detail here. Notes are timestamped and logged for evidence verification." required></textarea>
+                    </div>
+                    <div class="text-end">
+                        <button type="submit" class="btn btn-sm btn-cyber-cyan"><i class="bi bi-file-earmark-plus"></i> Save Note</button>
+                    </div>
+                </form>
+
+                <div class="list-group list-group-flush bg-transparent">
+                    {% if not notes %}
+                        <div class="text-center py-3 text-secondary">
+                            <p class="mb-0 small">No notes logged yet.</p>
+                        </div>
+                    {% else %}
+                        {% for note in notes %}
+                            <div class="list-group-item bg-transparent text-light border-secondary px-0 py-3">
+                                <div class="d-flex justify-content-between align-items-center mb-1">
+                                    <span class="fw-bold text-info small">{{ note.investigator_name }}</span>
+                                    <small class="text-secondary small font-monospace">{{ note.created_at.strftime('%Y-%m-%d %H:%M:%S') }}</small>
+                                </div>
+                                <p class="mb-0 text-light small" style="white-space: pre-wrap;">{{ note.note_text }}</p>
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Converted Investigation Leads -->
+            <div class="cyber-card p-4 mb-4">
+                <h4 class="mb-3 text-light border-bottom border-secondary pb-2"><i class="bi bi-star-fill text-warning me-1" aria-hidden="true"></i> Investigation leads</h4>
+                <div class="list-group list-group-flush bg-transparent">
+                    {% if not leads %}
+                        <div class="text-center py-3 text-secondary">
+                            <p class="mb-0 small">No comments converted to investigation leads yet.</p>
+                        </div>
+                    {% else %}
+                        {% for lead in leads %}
+                            <div class="list-group-item bg-transparent text-light border-secondary px-0 py-2">
+                                <div class="d-flex justify-content-between align-items-center mb-1">
+                                    <span class="font-monospace text-info small fw-bold">{{ lead.id }}</span>
+                                    <span class="badge bg-secondary small text-uppercase">{{ lead.status }}</span>
+                                </div>
+                                <p class="mb-1 text-light small">Source comment by <strong>{{ lead.username_display }}</strong>: "{{ lead.comment_text }}"</p>
+                                <small class="text-secondary font-monospace" style="font-size:0.7rem;">Converted by {{ lead.creator_name or 'System' }} on {{ lead.created_at.strftime('%Y-%m-%d %H:%M:%S') }}</small>
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Livestream Comments Feed -->
+            <div class="cyber-card p-4 mb-4">
+                <h4 class="mb-3 text-light border-bottom border-secondary pb-2"><i class="bi bi-chat-text text-info me-1" aria-hidden="true"></i> Live incident comments</h4>
+                <div class="safety-alert py-1 text-warning mb-3" style="font-size: 0.8rem;">
+                    <i class="bi bi-exclamation-circle-fill"></i> Select critical witness logs to escalate them as formal investigation leads.
+                </div>
+                <div class="list-group list-group-flush bg-transparent">
+                    {% if not stream_comments %}
+                        <div class="text-center py-3 text-secondary">
+                            <p class="mb-0 small">No linked livestream comments found in vault logs.</p>
+                        </div>
+                    {% else %}
+                        {% for comment in stream_comments %}
+                            <div class="list-group-item bg-transparent text-light border-secondary px-0 py-2">
+                                <div class="d-flex justify-content-between align-items-center mb-1">
+                                    <strong class="text-light small">{{ comment.username_display }}</strong>
+                                    <div class="d-flex gap-2 align-items-center">
+                                        <span class="badge bg-secondary font-monospace" style="font-size: 0.65rem;">{{ comment.comment_type }}</span>
+                                        
+                                        <!-- Check if already converted -->
+                                        {% set is_converted = namespace(val=false) %}
+                                        {% for lead in leads %}
+                                            {% if lead.source_comment_id == comment.id %}
+                                                {% set is_converted.val = true %}
+                                            {% endif %}
+                                        {% endfor %}
+                                        
+                                        {% if not is_converted.val %}
+                                            <form method="POST" action="{{ url_for('investigator.convert_lead', case_id=case.id, comment_id=comment.id) }}">
+                                                <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                                                <button type="submit" class="btn btn-xs btn-outline-info py-0 px-1" style="font-size:0.7rem;"><i class="bi bi-star"></i> Escalate to Lead</button>
+                                            </form>
+                                        {% else %}
+                                            <span class="text-warning small" style="font-size:0.7rem;"><i class="bi bi-star-fill text-warning"></i> Escalated</span>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                <p class="mb-0 text-secondary small">"{{ comment.comment_text }}"</p>
+                                <small class="text-secondary font-monospace" style="font-size: 0.65rem;">Posted on stream: {{ comment.live_id }} at {{ comment.created_at.strftime('%H:%M:%S') }}</small>
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Right 4-col: Case Controls, Suspects Intel, Related Cases -->
+        <div class="col-lg-4">
+            <!-- Status Update Panel -->
+            <div class="cyber-card p-4 mb-4">
+                <h5 class="text-light mb-3 pb-2 border-bottom border-secondary"><i class="bi bi-activity text-info me-1" aria-hidden="true"></i> Update case status</h5>
+                <form method="POST" action="{{ url_for('investigator.update_status', case_id=case.id) }}">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                    
+                    <div class="mb-3">
+                        <label for="status" class="form-label text-secondary small fw-bold">WORKFLOW STAGE</label>
+                        <select class="form-select cyber-input" id="status" name="status" required>
+                            <option value="under_investigation" {% if case.status == 'under_investigation' %}selected{% endif %}>Under Investigation</option>
+                            <option value="evidence_analysis" {% if case.status == 'evidence_analysis' %}selected{% endif %}>Evidence Analysis</option>
+                            <option value="final_review" {% if case.status == 'final_review' %}selected{% endif %}>Final Review</option>
+                            <option value="resolved" {% if case.status == 'resolved' %}selected{% endif %}>Resolved</option>
+                            <option value="closed" {% if case.status == 'closed' %}selected{% endif %}>Closed</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="message" class="form-label text-secondary small fw-bold">TIMELINE LOG MESSAGE</label>
+                        <input type="text" class="form-control cyber-input" id="message" name="message" placeholder="e.g. Bank statement obtained." required>
+                    </div>
+
+                    <button type="submit" class="btn btn-sm btn-cyber-cyan w-100"><i class="bi bi-clock-history"></i> Log Workflow Update</button>
+                </form>
+            </div>
+
+            <!-- Suspect Intelligence & Network Map -->
+            <div class="cyber-card p-4 mb-4">
+                <h5 class="text-light mb-3 pb-2 border-bottom border-secondary"><i class="bi bi-diagram-3 text-info me-1" aria-hidden="true"></i> Suspect information</h5>
+                
+                <!-- Vis Network Graph Container -->
+                <div id="suspectNetwork" class="mb-3"></div>
+
+                <!-- Add Suspect Form -->
+                <a class="text-info text-decoration-none small fw-bold d-block mb-3" style="cursor:pointer;" data-bs-toggle="collapse" data-bs-target="#addSuspectForm">
+                    <i class="bi bi-plus-circle"></i> Add Suspect / Identifier Details
+                </a>
+                <div class="collapse" id="addSuspectForm">
+                    <form method="POST" action="{{ url_for('investigator.add_suspect', case_id=case.id) }}" class="border border-secondary p-3 rounded mb-3 bg-dark">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                        <div class="mb-2">
+                            <input type="text" class="form-control form-control-sm cyber-input" name="name" placeholder="Suspect Name / Alias" required>
+                        </div>
+                        <div class="mb-2">
+                            <input type="text" class="form-control form-control-sm cyber-input" name="description" placeholder="Description (e.g. sender of link)">
+                        </div>
+                        <div class="row g-1 mb-2">
+                            <div class="col-6">
+                                <select class="form-select form-select-sm cyber-input" name="identifier_type">
+                                    <option value="" disabled selected>Iden Type...</option>
+                                    <option value="phone">Phone</option>
+                                    <option value="email">Email</option>
+                                    <option value="upi">UPI ID</option>
+                                    <option value="username">Username</option>
+                                    <option value="url">URL</option>
+                                    <option value="transaction_id">Transaction ID</option>
+                                </select>
+                            </div>
+                            <div class="col-6">
+                                <input type="text" class="form-control form-control-sm cyber-input" name="identifier_value" placeholder="Value">
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-xs btn-cyber-cyan py-1 px-2 w-100">Save Suspect Details</button>
+                    </form>
+                </div>
+
+                <!-- List of Suspects -->
+                <div class="list-group list-group-flush bg-transparent">
+                    {% for item in suspects %}
+                        <div class="list-group-item bg-transparent border-secondary px-0 py-2">
+                            <strong class="text-light d-block">{{ item.suspect.name }}</strong>
+                            <small class="text-secondary d-block">{{ item.suspect.description }}</small>
+                            <div class="mt-1">
+                                {% for iden in item.identifiers %}
+                                    <span class="badge bg-secondary font-monospace text-light mr-1" style="font-size: 0.75rem;">{{ iden.identifier_type }}:{{ iden.identifier_value }}</span>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Potentially Related Cases -->
+            <div class="cyber-card p-4 border border-warning" style="background: rgba(245, 158, 11, 0.03);">
+                <h5 class="text-warning mb-2 pb-2 border-bottom border-warning"><i class="bi bi-exclamation-triangle-fill"></i> POTENTIALLY RELATED CASES</h5>
+                <small class="text-secondary d-block mb-3">Cases matched via identical phone numbers, UPIs, accounts, or email handles.</small>
+                
+                {% if not related_cases %}
+                    <div class="text-center py-2 text-secondary small">
+                        <i class="bi bi-shield-check text-success"></i> No matching serial case identifiers.
+                    </div>
+                {% else %}
+                    <div class="list-group bg-transparent">
+                        {% for rel in related_cases %}
+                            <div class="p-2 border border-secondary rounded mb-2 bg-dark text-light">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <strong class="text-info font-monospace small">{{ rel.match_case_id }}</strong>
+                                    <span class="badge bg-secondary small">{{ rel.match_status }}</span>
+                                </div>
+                                <small class="text-secondary d-block mt-1">Matched via: <span class="text-warning font-monospace small">{{ rel.common_identifier_type }} ({{ rel.common_identifier_value }})</span></small>
+                                <a href="{{ url_for('investigator.case_detail', case_id=rel.match_case_id) }}" class="btn btn-xs btn-outline-info py-0 px-2 mt-2 w-100" style="font-size: 0.75rem;">Inspect Case File</a>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // 1. Fetch Chain of Custody Timeline dynamically on accordion toggle
+    document.addEventListener('show.bs.collapse', function (e) {
+        const targetId = e.target.id;
+        if (targetId.startsWith('chain-')) {
+            const evidenceId = targetId.split('-')[1];
+            const logContainer = document.getElementById('chain-log-' + evidenceId);
+            
+            fetch('/evidence/chain/' + evidenceId)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.length === 0) {
+                        logContainer.innerHTML = 'No logs registered.';
+                        return;
+                    }
+                    let html = '<div class="ps-2" style="border-left: 1px dashed #2e3e5c;">';
+                    data.forEach(log => {
+                        html += `<div class="mb-2"><span class="text-cyan">${log.timestamp}</span> - <strong>${log.action}</strong> by <i>${log.user_name}</i><br><span class="text-light">${log.description}</span></div>`;
+                    });
+                    html += '</div>';
+                    logContainer.innerHTML = html;
+                })
+                .catch(err => {
+                    logContainer.innerHTML = 'Failed to load timeline logs.';
+                });
+        }
+    });
+
+    // 2. Suspect Network Graph (vis-network implementation)
+    const container = document.getElementById('suspectNetwork');
+    
+    // Nodes array
+    const nodes = [];
+    // Edges array
+    const edges = [];
+    
+    // Core node: Current Case
+    nodes.push({ id: 'case_root', label: '{{ case.id }}', color: '#06b6d4', shape: 'box', font: { color: '#ffffff' } });
+    
+    // Parse suspects and identifiers
+    let idx = 1;
+    {% for item in suspects %}
+        const suspId = 'suspect_{{ item.suspect.id }}';
+        nodes.push({ id: suspId, label: '{{ item.suspect.name }}', color: '#f59e0b', shape: 'ellipse', font: { color: '#ffffff' } });
+        edges.push({ from: 'case_root', to: suspId });
+        
+        {% for iden in item.identifiers %}
+            const idenId = 'iden_{{ iden.id }}';
+            nodes.push({ id: idenId, label: '{{ iden.identifier_type }}: {{ iden.identifier_value }}', color: '#8b5cf6', shape: 'dot', size: 10, font: { color: '#cbd5e1' } });
+            edges.push({ from: suspId, to: idenId });
+        {% endfor %}
+    {% endfor %}
+
+    // Parse related cases
+    {% for rel in related_cases %}
+        const relCaseId = 'case_{{ rel.match_case_id }}';
+        // Add related case node if not already present
+        nodes.push({ id: relCaseId, label: '{{ rel.match_case_id }}', color: '#ef4444', shape: 'box', font: { color: '#ffffff' } });
+        
+        // Link the matching identifier to the related case node
+        // Locate matching identifier node id
+        // Loop through current suspects to find matching iden
+        {% for item in suspects %}
+            {% for iden in item.identifiers %}
+                {% if iden.identifier_type == rel.common_identifier_type and iden.identifier_value == rel.common_identifier_value %}
+                    edges.push({ from: 'iden_{{ iden.id }}', to: relCaseId });
+                {% endif %}
+            {% endfor %}
+        {% endfor %}
+    {% endfor %}
+
+    const graphData = {
+        nodes: new vis.DataSet(nodes),
+        edges: new vis.DataSet(edges)
+    };
+    
+    const options = {
+        nodes: {
+            font: { face: 'Inter', size: 11 }
+        },
+        edges: {
+            color: '#2e3e5c',
+            width: 1.5
+        },
+        physics: {
+            barnesHut: { gravitationalConstant: -1200, centralGravity: 0.3, springLength: 60 }
+        }
+    };
+    
+    new vis.Network(container, graphData, options);
+</script>
+{% endblock %}

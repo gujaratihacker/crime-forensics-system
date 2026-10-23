@@ -1,0 +1,212 @@
+{% extends "base.html" %}
+
+{% block title %}{{ translate('Citizen Portal - Dashboard', 'नागरिक पोर्टल - डैशबोर्ड', 'નાગરિક પોર્ટલ - ડેશબોર્ડ') }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-4 py-4">
+    <!-- Dashboard Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4 pb-2 border-bottom border-secondary flex-wrap gap-3">
+        <div>
+            <h1 class="h2 mb-0" style="font-family: 'Outfit', sans-serif;">
+                <i class="bi bi-person-workspace text-cyan" aria-hidden="true"></i> {{ translate('Your reports and services', 'आपकी रिपोर्ट और सेवाएं', 'તમારા રિપોર્ટ અને સેવાઓ') }}
+            </h1>
+            <p class="text-secondary mb-0 small">
+                {{ translate('Submit a report, follow its progress, or browse public safety resources.', 'रिपोर्ट दर्ज करें, उसकी प्रगति देखें या सार्वजनिक सुरक्षा संसाधन पढ़ें।', 'રિપોર્ટ નોંધાવો, તેની પ્રગતિ જુઓ અથવા જાહેર સલામતીના સંસાધનો વાંચો.') }}
+            </p>
+        </div>
+        <div class="d-flex align-items-center gap-3">
+            <div class="bg-dark px-3 py-2 rounded border border-secondary text-end">
+                <small class="text-secondary d-block">{{ translate('Logged in as:', 'लॉगिन उपयोगकर्ता:', 'લોગિન વપરાશકર્તા:') }}</small>
+                <strong class="text-light">{{ session.get('fullname') }}</strong>
+                <span class="badge bg-secondary ms-1 small text-uppercase">{{ session.get('role') }}</span>
+            </div>
+            <a href="{{ url_for('citizen.edit_profile') }}" class="btn btn-cyber-cyan btn-sm"><i class="bi bi-person-gear"></i> {{ translate('Edit Profile', 'प्रोफ़ाइल बदलें', 'પ્રોફાઇલ બદલો') }}</a>
+        </div>
+    </div>
+
+    <!-- Quick Services Portal Gateway -->
+    <h4 class="text-light mb-3">
+        <i class="bi bi-grid-fill text-info me-2" aria-hidden="true"></i> {{ translate('Services', 'सेवाएं', 'સેવાઓ') }}
+    </h4>
+    <div class="row g-3 mb-5">
+        <!-- 1. General Crime Reporting -->
+        <div class="col-md-4">
+            <div class="cyber-card p-3 h-100 hover-glow border-info d-flex flex-column justify-content-between">
+                <div>
+                    <div class="d-flex align-items-center mb-2">
+                        <i class="bi bi-file-earmark-medical text-info fs-3 me-2"></i>
+                        <h5 class="mb-0 text-light">{{ translate('Report Cyber Crime', 'साइबर अपराध रिपोर्ट', 'સાયબર ગુનાનો અહેવાલ') }}</h5>
+                    </div>
+                    <p class="text-secondary small">{{ translate('Report financial cyber frauds, malware attacks, fake bank websites, identity theft, or defacement.', 'वित्तीय साइबर धोखाधड़ी, मालवेयर हमलों, नकली वेबसाइटों या पहचान की चोरी की रिपोर्ट करें।', 'નાણાકીય સાયબર છેતરપિંડી, માલવેર હુમલા, નકલી વેબસાઇટ્સ અથવા ઓળખની ચોરીની જાણ કરો.') }}</p>
+                </div>
+                <a href="{{ url_for('complaints.submit') }}" class="btn btn-sm btn-cyber-cyan w-100 mt-2"><i class="bi bi-plus-lg"></i> {{ translate('File General Report', 'सामान्य रिपोर्ट दर्ज करें', 'સામાન્ય રિપોર્ટ ફાઇલો') }}</a>
+            </div>
+        </div>
+
+        <!-- 2. Social Media Crime Reporting -->
+        <div class="col-md-4">
+            <div class="cyber-card p-3 h-100 hover-glow border-purple d-flex flex-column justify-content-between" style="border-color: var(--neon-purple) !important;">
+                <div>
+                    <div class="d-flex align-items-center mb-2">
+                        <i class="bi bi-instagram text-purple fs-3 me-2" style="color: var(--neon-purple);"></i>
+                        <h5 class="mb-0 text-light">{{ translate('Report a social media incident', 'सोशल मीडिया घटना की रिपोर्ट करें', 'સોશિયલ મીડિયા ઘટનાની જાણ કરો') }}</h5>
+                    </div>
+                    <p class="text-secondary small">{{ translate('Report fake profiles, online blackmail, impersonation, cyber stalking, or harassment on social apps.', 'सोशल ऐप्स पर फर्जी प्रोफाइल, ब्लैकमेल, साइबर स्टॉकिंग या उत्पीड़न की रिपोर्ट करें।', 'સોશિયલ એપ્સ પર નકલી પ્રોફાઇલ, બ્લેકમેઇલ, સાયબર સ્ટોકિંગ અથવા હેરાનગતિની જાણ કરો.') }}</p>
+                </div>
+                <a href="{{ url_for('social_media_crimes.report_crime') }}" class="btn btn-sm btn-cyber-purple w-100 mt-2"><i class="bi bi-shield-exclamation"></i> {{ translate('File Social Report', 'सोशल रिपोर्ट दर्ज करें', 'સોશિયલ રિપોર્ટ ફાઇલ કરો') }}</a>
+            </div>
+        </div>
+
+        <!-- 3. Live Broadcast Incident -->
+        <div class="col-md-4">
+            <div class="cyber-card p-3 h-100 hover-glow border-danger d-flex flex-column justify-content-between">
+                <div>
+                    <div class="d-flex align-items-center mb-2">
+                        <i class="bi bi-broadcast text-danger fs-3 me-2"></i>
+                        <h5 class="mb-0 text-light">{{ translate('Broadcast Live Incident', 'लाइव घटना प्रसारित करें', 'લાઇવ ઘટના પ્રસારિત કરો') }}</h5>
+                    </div>
+                    <p class="text-secondary small">{{ translate('Share a live view of an incident. Do not put yourself or anyone else at risk.', 'किसी घटना का लाइव दृश्य साझा करें। इसके लिए खुद को या दूसरों को जोखिम में न डालें।', 'કોઈ ઘટનાનો લાઇવ દૃશ્ય શેર કરો. તેના માટે પોતાને કે બીજાને જોખમમાં ન મૂકો.') }}</p>
+                </div>
+                <a href="{{ url_for('live_incidents.start_live_incident_get') }}" class="btn btn-sm btn-outline-danger w-100 mt-2"><i class="bi bi-record-btn"></i> {{ translate('Start Livestream', 'लाइव स्ट्रीम शुरू करें', 'લાઈવ સ્ટ્રીમ શરૂ કરો') }}</a>
+            </div>
+        </div>
+
+        <!-- 4. Safety Hub -->
+        <div class="col-md-6">
+            <div class="cyber-card p-3 hover-glow border-info d-flex align-items-center justify-content-between flex-wrap gap-2">
+                <div class="d-flex align-items-center">
+                    <i class="bi bi-shield-fill-check text-info fs-1 me-3"></i>
+                    <div>
+                        <h5 class="mb-0 text-light">{{ translate('Cyber Safety & Awareness Hub', 'साइबर सुरक्षा और जागरूकता हब', 'સાયબર સુરક્ષા અને જાગૃતિ હબ') }}</h5>
+                        <p class="text-secondary small mb-0">{{ translate('Learn safety tips, common scams, interactive protection checkup, FAQ, and tutorials.', 'सुरक्षा युक्तियाँ, सामान्य घोटाले, इंटरैक्टिव सुरक्षा जांच, अक्सर पूछे जाने वाले प्रश्न और ट्यूटोरियल सीखें।', 'સુરક્ષા ટિપ્સ, સામાન્ય કૌભાંડો, ઇન્ટરેક્ટિવ સુરક્ષા તપાસ, વારંવાર પૂછાતા પ્રશ્નો અને ટ્યુટોરિયલ્સ શીખો.') }}</p>
+                    </div>
+                </div>
+                <a href="{{ url_for('awareness.index') }}" class="btn btn-sm btn-outline-info px-3 ms-auto"><i class="bi bi-book"></i> {{ translate('Learn Safety', 'सुरक्षा सीखें', 'સુરક્ષા શીખો') }}</a>
+            </div>
+        </div>
+
+        <!-- 5. Missing Persons Directory -->
+        <div class="col-md-6">
+            <div class="cyber-card p-3 hover-glow border-warning d-flex align-items-center justify-content-between flex-wrap gap-2">
+                <div class="d-flex align-items-center">
+                    <i class="bi bi-person-search text-warning fs-1 me-3"></i>
+                    <div>
+                        <h5 class="mb-0 text-light">{{ translate('Missing Persons Registry', 'लापता व्यक्ति रजिस्ट्री', 'ગુમ થયેલ વ્યક્તિઓની રજિસ્ટ્રી') }}</h5>
+                        <p class="text-secondary small mb-0">{{ translate('Report missing family/friends, search registry status, and post active community sighting proofs.', 'लापता परिवार/दोस्तों की रिपोर्ट करें, रजिस्ट्री स्थिति खोजें और सामुदायिक देखे जाने के प्रमाण पोस्ट करें।', 'ગુમ થયેલ પરિવાર/મિત્રોની જાણ કરો, રજિસ્ટ્રી સ્થિતિ શોધો અને સામુદાયિક જોયેલા પુરાવા પોસ્ટ કરો.') }}</p>
+                    </div>
+                </div>
+                <a href="{{ url_for('missing_persons.list_missing') }}" class="btn btn-sm btn-outline-warning px-3 ms-auto"><i class="bi bi-search"></i> {{ translate('Search Directory', 'निर्देशিকা खोजें', 'ડિરેક્ટરી શોધો') }}</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stats & Case Ledger -->
+    <div class="row">
+        <div class="col-12">
+            <!-- Stats Summary Cards -->
+            <div class="row g-3 mb-4">
+                <div class="col-md-3">
+                    <div class="cyber-card p-3 text-center border-info hover-glow">
+                        <small class="text-secondary fw-bold">{{ translate('Total reports', 'कुल रिपोर्ट', 'કુલ રિપોર્ટ') }}</small>
+                        <h2 class="text-info mt-1 font-monospace mb-0">{{ total_complaints }}</h2>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="cyber-card p-3 text-center border-warning hover-glow">
+                        <small class="text-secondary fw-bold">{{ translate('In progress', 'जारी', 'ચાલુ') }}</small>
+                        <h2 class="text-warning mt-1 font-monospace mb-0">{{ active_complaints }}</h2>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="cyber-card p-3 text-center border-success hover-glow">
+                        <small class="text-secondary fw-bold">{{ translate('Closed cases', 'बंद मामले', 'બંધ કેસ') }}</small>
+                        <h2 class="text-success mt-1 font-monospace mb-0">{{ closed_complaints }}</h2>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="cyber-card p-3 text-center border-purple hover-glow" style="border-color: var(--neon-purple) !important;">
+                        <small class="text-secondary fw-bold">{{ translate('Evidence files', 'साक्ष्य फ़ाइलें', 'પુરાવાની ફાઇલો') }}</small>
+                        <h2 class="text-purple mt-1 font-monospace mb-0" style="color: var(--neon-purple);">{{ total_evidence }}</h2>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Complaint Ledger Card -->
+            <div class="cyber-card">
+                <div class="cyber-card-header d-flex justify-content-between align-items-center">
+                    <span><i class="bi bi-list-task text-cyan me-2" aria-hidden="true"></i> {{ translate('Your reports', 'आपकी रिपोर्ट', 'તમારા રિપોર્ટ') }}</span>
+                    <a href="{{ url_for('complaints.submit') }}" class="btn btn-sm btn-cyber-cyan"><i class="bi bi-plus-lg"></i> {{ translate('File Report', 'रिपोर्ट दर्ज करें', 'રિપોર્ટ ફાઇલ કરો') }}</a>
+                </div>
+                <div class="p-3">
+                    {% if not complaints %}
+                        <div class="text-center py-5 text-secondary">
+                            <i class="bi bi-folder2-open fs-1 text-muted"></i>
+                            <p class="mt-2">{{ translate('No complaints filed under this account.', 'इस खाते के तहत कोई शिकायत दर्ज नहीं की गई है।', 'આ એકાઉન્ટ હેઠળ કોઈ ફરિયાદ નોંધાયેલ નથી.') }}</p>
+                            <a href="{{ url_for('complaints.submit') }}" class="btn btn-outline-info btn-sm">{{ translate('Submit your first complaint', 'अपनी पहली शिकायत दर्ज करें', 'તમારી પ્રથમ ફરિયાદ સબમિટ કરો') }}</a>
+                        </div>
+                    {% else %}
+                        <div class="table-responsive">
+                            <table class="table table-dark table-hover align-middle border-secondary mb-0">
+                                <thead>
+                                    <tr class="text-secondary small">
+                                        <th scope="col">{{ translate('COMPLAINT ID', 'शिकायत संख्या', 'ફરિયાદ ID') }}</th>
+                                        <th scope="col">{{ translate('CATEGORY', 'श्रेणी', 'શ્રેણી') }}</th>
+                                        <th scope="col">{{ translate('SUBMITTED ON', 'तारीख', 'તારીખ') }}</th>
+                                        <th scope="col">{{ translate('PRIVACY', 'गोपनीयता', 'ગોપનીયતા') }}</th>
+                                        <th scope="col">{{ translate('PRIORITY', 'प्राथमिकता', 'પ્રાથમિકતા') }}</th>
+                                        <th scope="col">{{ translate('STATUS', 'स्थिति', 'સ્થિતિ') }}</th>
+                                        <th scope="col" class="text-end">{{ translate('ACTION', 'कार्रवाई', 'પગલાં') }}</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for comp in complaints %}
+                                        <tr>
+                                            <td class="font-monospace fw-bold text-info">{{ comp.id }}</td>
+                                            <td>{{ comp.category }}</td>
+                                            <td class="small">{{ comp.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                                            <td>
+                                                {% if comp.reporting_mode == 'anonymous' %}
+                                                    <span class="badge badge-anonymous"><i class="bi bi-eye-slash-fill"></i> {{ translate('Anonymous', 'अनाम', 'અનામી') }}</span>
+                                                {% else %}
+                                                    <span class="badge bg-secondary"><i class="bi bi-person-fill"></i> {{ translate('Identified', 'पहचान', 'ઓળખ') }}</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                {% if comp.priority == 'CRITICAL' %}
+                                                    <span class="badge bg-danger text-uppercase">{{ comp.priority }}</span>
+                                                {% elif comp.priority == 'HIGH' %}
+                                                    <span class="badge bg-warning text-dark text-uppercase">{{ comp.priority }}</span>
+                                                {% elif comp.priority == 'MEDIUM' %}
+                                                    <span class="badge bg-info text-dark text-uppercase">{{ comp.priority }}</span>
+                                                {% else %}
+                                                    <span class="badge bg-success text-uppercase">{{ comp.priority }}</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                {% if comp.case_status == 'closed' or comp.status == 'rejected' %}
+                                                    <span class="badge bg-success"><i class="bi bi-check-circle"></i> {{ translate('Resolved', 'हल किया गया', 'ઉકેલાયેલ') }}</span>
+                                                {% elif comp.status == 'submitted' %}
+                                                    <span class="badge bg-secondary">{{ translate('Submitted', 'दर्ज', 'સબમિટ કરેલ') }}</span>
+                                                {% elif comp.status == 'under_review' %}
+                                                    <span class="badge bg-info text-dark">{{ translate('Under Review', 'समीक्षा में', 'સમીક્ષા હેઠળ') }}</span>
+                                                {% else %}
+                                                    <span class="badge bg-warning text-dark">{{ translate('Investigating', 'जांच जारी', 'તપાસ હેઠળ') }}</span>
+                                                {% endif %}
+                                            </td>
+                                            <td class="text-end">
+                                                <a href="{{ url_for('complaints.detail', complaint_id=comp.id) }}" class="btn btn-outline-info btn-sm">
+                                                    <i class="bi bi-search"></i> {{ translate('Track Status', 'स्थिति ट्रैक करें', 'સ્થિતિ ટ્રૅક કરો') }}
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

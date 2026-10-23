@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+
+{% block title %}{{ translate('Crime reporting and case support', 'अपराध रिपोर्टिंग और केस सहायता', 'ગુનાની જાણ અને કેસ સહાય') }} | Civic Desk{% endblock %}
+
+{% block content %}
+<section class="home-hero">
+    <div class="container">
+        <div class="home-eyebrow"><i class="bi bi-shield-check" aria-hidden="true"></i> {{ translate('Civic Desk · Demonstration portal', 'सिविक डेस्क · प्रदर्शन पोर्टल', 'સિવિક ડેસ્ક · ડેમો પોર્ટલ') }}</div>
+        <h1>{{ translate('Crime reporting and case support', 'अपराध रिपोर्टिंग और केस सहायता', 'ગુનાની જાણ અને કેસ સહાય') }}</h1>
+        <p class="mt-3 mb-4">{{ translate('A single place to submit a report, follow its progress, and find practical online safety guidance.', 'रिपोर्ट दर्ज करने, उसकी प्रगति देखने और ऑनलाइन सुरक्षा संबंधी मार्गदर्शन पाने के लिए एक ही स्थान।', 'રિપોર્ટ નોંધાવવા, તેની પ્રગતિ જોવા અને ઑનલાઇન સલામતી અંગે માર્ગદર્શન મેળવવા માટેનું એક જ સ્થળ.') }}</p>
+        <div class="d-flex gap-2 flex-wrap">
+            <a href="{{ url_for('auth.login') }}" class="btn btn-primary btn-lg px-4"><i class="bi bi-box-arrow-in-right me-1" aria-hidden="true"></i> {{ translate('Sign in to continue', 'जारी रखने के लिए साइन इन करें', 'આગળ વધવા સાઇન ઇન કરો') }}</a>
+            <a href="{{ url_for('live_incidents.public_incidents') }}" class="btn btn-outline-light btn-lg px-4"><i class="bi bi-broadcast me-1" aria-hidden="true"></i> {{ translate('View public incidents', 'सार्वजनिक घटनाएं देखें', 'જાહેર ઘટનાઓ જુઓ') }}</a>
+        </div>
+    </div>
+</section>
+
+<div class="container py-4 py-lg-5">
+    <div class="d-flex justify-content-between align-items-end flex-wrap gap-2 mb-3">
+        <div>
+            <p class="text-secondary small fw-bold text-uppercase mb-1">{{ translate('Services', 'सेवाएं', 'સેવાઓ') }}</p>
+            <h2 class="h4 mb-0">{{ translate('What would you like to do?', 'आप क्या करना चाहते हैं?', 'તમે શું કરવા માંગો છો?') }}</h2>
+        </div>
+    </div>
+
+    <div class="row g-3 mb-4">
+        <div class="col-md-6 col-xl-3">
+            <a class="service-link h-100" href="{{ url_for('auth.login') }}">
+                <span class="service-link-icon"><i class="bi bi-file-earmark-text" aria-hidden="true"></i></span>
+                <span><h2>{{ translate('Submit a report', 'रिपोर्ट दर्ज करें', 'રિપોર્ટ નોંધાવો') }}</h2><p>{{ translate('Sign in to report an incident or review your submitted reports.', 'घटना की रिपोर्ट करने या अपनी रिपोर्ट देखने के लिए साइन इन करें।', 'ઘટનાની જાણ કરવા અથવા તમારા રિપોર્ટ જોવા સાઇન ઇન કરો.') }}</p></span>
+            </a>
+        </div>
+        <div class="col-md-6 col-xl-3">
+            <a class="service-link h-100" href="{{ url_for('missing_persons.list_missing') }}">
+                <span class="service-link-icon"><i class="bi bi-person-search" aria-hidden="true"></i></span>
+                <span><h2>{{ translate('Missing persons', 'लापता व्यक्ति', 'ગુમ થયેલ વ્યક્તિઓ') }}</h2><p>{{ translate('Browse current notices and share a sighting.', 'मौजूदा सूचनाएं देखें और किसी को देखने की जानकारी साझा करें।', 'વર્તમાન સૂચનાઓ જુઓ અને કોઈને જોયાની માહિતી આપો.') }}</p></span>
+            </a>
+        </div>
+        <div class="col-md-6 col-xl-3">
+            <a class="service-link h-100" href="{{ url_for('awareness.index') }}">
+                <span class="service-link-icon"><i class="bi bi-shield-check" aria-hidden="true"></i></span>
+                <span><h2>{{ translate('Safety guidance', 'सुरक्षा मार्गदर्शन', 'સલામતી માર્ગદર્શન') }}</h2><p>{{ translate('Read about common online scams and ways to protect your accounts.', 'आम ऑनलाइन धोखाधड़ी और खातों की सुरक्षा के तरीके जानें।', 'સામાન્ય ઑનલાઇન છેતરપિંડી અને તમારા એકાઉન્ટની સુરક્ષાની રીતો જાણો.') }}</p></span>
+            </a>
+        </div>
+        <div class="col-md-6 col-xl-3">
+            <a class="service-link h-100" href="{{ url_for('social_media_crimes.report_crime') }}">
+                <span class="service-link-icon"><i class="bi bi-chat-square-text" aria-hidden="true"></i></span>
+                <span><h2>{{ translate('Social media incident', 'सोशल मीडिया घटना', 'સોશિયલ મીડિયા ઘટના') }}</h2><p>{{ translate('Open the dedicated form for harassment, impersonation, or online fraud.', 'उत्पीड़न, प्रतिरूपण या ऑनलाइन धोखाधड़ी के लिए विशेष फ़ॉर्म खोलें।', 'હેરાનગતિ, વેશપલટો અથવા ઑનલાઇન છેતરપિંડી માટેનું ફોર્મ ખોલો.') }}</p></span>
+            </a>
+        </div>
+    </div>
+
+    <div class="demo-notice"><i class="bi bi-info-circle me-2" aria-hidden="true"></i>{{ translate('This is an educational demonstration, not an official reporting service. For emergencies or real incidents, contact the appropriate local authorities directly.', 'यह एक शैक्षणिक प्रदर्शन है, आधिकारिक रिपोर्टिंग सेवा नहीं। आपातकाल या वास्तविक घटना के लिए स्थानीय अधिकारियों से सीधे संपर्क करें।', 'આ શૈક્ષણિક ડેમો છે, સત્તાવાર રિપોર્ટિંગ સેવા નથી. કટોકટી અથવા વાસ્તવિક ઘટના માટે સ્થાનિક અધિકારીઓનો સીધો સંપર્ક કરો.') }}</div>
+</div>
+{% endblock %}

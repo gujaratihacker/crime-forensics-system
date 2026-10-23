@@ -1,0 +1,117 @@
+{% extends "base.html" %}
+
+{% block title %}{{ translate('Report Social Media Crime - Cyber Portal', 'सोशल मीडिया अपराध रिपोर्ट - साइबर पोर्टल', 'સોશિયલ મીડિયા ગુનાનો અહેવાલ - સાયબર પોર્ટલ') }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4 mb-5">
+    <div class="row justify-content-center">
+        <div class="col-md-9">
+            <div class="cyber-card p-4">
+                <div class="d-flex align-items-center mb-4 border-bottom border-secondary pb-3">
+                    <i class="bi bi-shield-exclamation text-info fs-2 me-2"></i>
+                    <div>
+                        <h2 class="mb-0" style="font-family: 'Outfit', sans-serif;">{{ translate('Report Social Media Crime', 'सोशल मीडिया अपराध की रिपोर्ट करें', 'સોશિયલ મીડિયા ગુનાની જાણ કરો') }}</h2>
+                        <p class="text-secondary mb-0 small">{{ translate('Report online fraud, harassment, impersonation, or blackmail on social platforms.', 'सोशल प्लेटफॉर्म पर ऑनलाइन धोखाधड़ी, उत्पीड़न, प्रतिरूपण या ब्लैकमेल की रिपोर्ट करें।', 'સોશિયલ પ્લેટફોર્મ પર ઓનલાઇન છેતરપિંડી, હેરાનગતિ, વેશપલટો અથવા બ્લેકમેઇલિંગની જાણ કરો.') }}</p>
+                    </div>
+                </div>
+
+                <div class="safety-alert mb-4">
+                    <i class="bi bi-exclamation-octagon-fill text-warning me-2"></i>
+                    <strong>{{ translate('Forensic Evidence Vault Warning:', 'फोरेंसिक साक्ष्य तिजोरी चेतावनी:', 'ફોરેન્સિક પુરાવા તિજોરી ચેતવણી:') }}</strong> 
+                    {{ translate('Any attachments uploaded will be securely stored with SHA-256 validation. Providing false evidence is a punishable offense.', 'अपलोड किए गए किसी भी अनुलग्नक को SHA-256 सत्यापन के साथ सुरक्षित रूप से संग्रहीत किया जाएगा। झूठा सबूत देना दंडनीय अपराध है।', 'અપલોડ કરેલ કોઈપણ જોડાણ SHA-256 વેરિફિકેશન સાથે સુરક્ષિત રીતે સંગ્રહિત થશે. ખોટા પુરાવા આપવા એ ગુનો છે.') }}
+                </div>
+
+                <form method="POST" action="{{ url_for('social_media_crimes.report_crime') }}" enctype="multipart/form-data">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+
+                    <!-- Privacy Mode Option -->
+                    <div class="mb-4 bg-dark p-3 rounded border border-secondary">
+                        <label class="form-label fw-bold text-info"><i class="bi bi-eye-slash"></i> {{ translate('Privacy Option', 'गोपनीयता विकल्प', 'ગોપનીયતા વિકલ્પ') }}</label>
+                        <div class="form-check mb-2">
+                            <input class="form-check-input" type="radio" name="reporting_mode" id="modeIdentified" value="identified" checked>
+                            <label class="form-check-label text-light" for="modeIdentified">
+                                <strong>{{ translate('Report with my identity', 'मेरी पहचान के साथ रिपोर्ट करें', 'મારી ઓળખ સાથે રિપોર્ટ કરો') }}</strong> {{ translate('(Your profile will be visible to cyber cells)', '(आपकी प्रोफ़ाइल साइबर सेल को दिखाई देगी)', '(તમારી પ્રોફાઇલ સાયબર સેલને દેખાશે)') }}
+                            </label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="reporting_mode" id="modeAnonymous" value="anonymous">
+                            <label class="form-check-label text-light" for="modeAnonymous" style="color: var(--neon-purple);">
+                                <strong>{{ translate('Report anonymously', 'अनाम रिपोर्ट करें', 'અનામી રિપોર્ટ કરો') }}</strong> {{ translate('(Masks identity parameters on the complaints workspace)', '(शिकायत कार्यक्षेत्र पर पहचान मापदंडों को छुपाता है)', '(ફરિયાદ કાર્યસ્થળ પર ઓળખના પરિમાણોને છુપાવે છે)') }}
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Platform & Crime Type Selection -->
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="platform" class="form-label text-secondary small fw-bold">{{ translate('Social Media Platform', 'सोशल मीडिया प्लेटफॉर्म', 'સોશિયલ મીડિયા પ્લેટફોર્મ') }} <span class="text-danger">*</span></label>
+                            <select class="form-select cyber-input" id="platform" name="platform" required>
+                                <option value="" disabled selected>{{ translate('Select platform...', 'प्लेटफ़ॉर्म चुनें...', 'પ્લેટફોર્મ પસંદ કરો...') }}</option>
+                                <option value="Instagram">Instagram</option>
+                                <option value="Facebook">Facebook</option>
+                                <option value="X/Twitter">X / Twitter</option>
+                                <option value="YouTube">YouTube</option>
+                                <option value="Telegram">Telegram</option>
+                                <option value="WhatsApp">WhatsApp</option>
+                            </select>
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label for="crime_type" class="form-label text-secondary small fw-bold">{{ translate('Crime Category', 'अपराध श्रेणी', 'ગુનાની શ્રેણી') }} <span class="text-danger">*</span></label>
+                            <select class="form-select cyber-input" id="crime_type" name="crime_type" required>
+                                <option value="" disabled selected>{{ translate('Select crime type...', 'अपराध प्रकार चुनें...', 'ગુનાનો પ્રકાર પસંદ કરો...') }}</option>
+                                <option value="Fake profile">{{ translate('Fake Profile', 'फर्जी प्रोफाइल', 'નકલી પ્રોફાઇલ') }}</option>
+                                <option value="Impersonation">{{ translate('Impersonation / Identity Theft', 'प्रतिरूपण / पहचान की चोरी', 'વેશપલટો / ઓળખની ચોરી') }}</option>
+                                <option value="Hacked account">{{ translate('Hacked Account', 'हैक किया गया खाता', 'હેક થયેલ એકાઉન્ટ') }}</option>
+                                <option value="Threat/harassment">{{ translate('Threat / Online Harassment', 'धमकी / ऑनलाइन उत्पीड़न', 'ધમકી / ઓનલાઇન પજવણી') }}</option>
+                                <option value="Blackmail">{{ translate('Blackmail / Sextortion', 'ब्लैकमेल / जबरन वसूली', 'બ્લેકમેઇલ / બળજબરીથી વસૂલાત') }}</option>
+                                <option value="Fake advertisement">{{ translate('Fake Advertisement', 'फर्जी विज्ञापन', 'નકલી જાહેરાત') }}</option>
+                                <option value="Fake giveaway">{{ translate('Fake Giveaway / Scam', 'फर्जी उपहार / घोटाला', 'નકલી ગિવેઅવે / કૌભાંડ') }}</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Malicious Profile URL -->
+                    <div class="mb-3">
+                        <label for="profile_url" class="form-label text-secondary small fw-bold">{{ translate('Malicious Profile URL', 'संदिग्ध प्रोफ़ाइल लिंक / URL', 'શંકાસ્પદ પ્રોફાઇલ લિંક / URL') }} <span class="text-danger">*</span></label>
+                        <input type="url" class="form-control cyber-input" id="profile_url" name="profile_url" placeholder="https://instagram.com/suspect_username or profile link" required>
+                    </div>
+
+                    <!-- Incident Date & Time -->
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="incident_date" class="form-label text-secondary small fw-bold">{{ translate('Incident Date', 'घटना की तारीख', 'ઘટનાની તારીખ') }} <span class="text-danger">*</span></label>
+                            <input type="date" class="form-control cyber-input" id="incident_date" name="incident_date" required>
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label for="incident_time" class="form-label text-secondary small fw-bold">{{ translate('Incident Time', 'घटना का समय', 'ઘટનાનો સમય') }} <span class="text-danger">*</span></label>
+                            <input type="time" class="form-control cyber-input" id="incident_time" name="incident_time" required>
+                        </div>
+                    </div>
+
+                    <!-- Detailed Description -->
+                    <div class="mb-3">
+                        <label for="description" class="form-label text-secondary small fw-bold">{{ translate('Detailed Description of Crime', 'अपराध का विस्तृत विवरण', 'ગુનાનું વિગતવાર વર્ણન') }} <span class="text-danger">*</span></label>
+                        <textarea class="form-control cyber-input" id="description" name="description" rows="5" placeholder="{{ translate('Provide details about what happened. Include handles, usernames, message texts, or demands made by the suspect.', 'क्या हुआ, इसका विवरण प्रदान करें। संदिग्ध द्वारा उपयोग किए गए हैंडल, उपयोगकर्ता नाम, संदेश पाठ या की गई मांगों को शामिल करें।', 'શું બન્યું તેની વિગતો આપો. શંકાસ્પદ વ્યક્તિ દ્વારા ઉપયોગમાં લેવાયેલ હેન્ડલ્સ, યુઝરનેમ્સ, મેસેજ ટેક્સ્ટ્સ અથવા કરાયેલી માંગણીઓ શામેલ કરો.') }}" required></textarea>
+                    </div>
+
+                    <!-- Forensic Evidence Upload -->
+                    <div class="mb-4">
+                        <label for="evidence_file" class="form-label text-secondary small fw-bold">{{ translate('Social Media Evidence Upload (Screenshots/Videos/Logs)', 'सोशल मीडिया साक्ष्य अपलोड (स्क्रीनशॉट/वीडियो/लॉग)', 'સોશિયલ મીડિયા પુરાવા અપલોડ (સ્ક્રીનશોટ/વિડીયો/લોગ)') }}</label>
+                        <input class="form-control cyber-input" type="file" id="evidence_file" name="evidence_file">
+                        <div class="form-text text-secondary" style="font-size: 0.8rem;">
+                            {{ translate('Allowed types: images (png, jpg, jpeg), video recordings (mp4, webm), pdf reports.', 'अनुमत प्रकार: चित्र (png, jpg, jpeg), वीडियो रिकॉर्डिंग (mp4, webm), पीडीएफ रिपोर्ट।', 'માન્ય પ્રકારો: ચિત્રો (png, jpg, jpeg), વિડિયો રેકોર્ડિંગ્સ (mp4, webm), pdf અહેવાલો.') }}
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-between align-items-center">
+                        <a href="{{ url_for('citizen.dashboard') }}" class="btn btn-sm btn-outline-secondary">{{ translate('Cancel', 'रद्द करें', 'રદ કરો') }}</a>
+                        <button type="submit" class="btn btn-sm btn-cyber-cyan px-4">{{ translate('Submit Report', 'शिकायत दर्ज करें', 'ફરિયાદ સબમિટ કરો') }}</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

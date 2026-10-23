@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+
+{% block title %}{{ translate('Login - Forensics System', 'लॉगिन - फोरेंसिक प्रणाली', 'લોગીન - ફોરેન્સિક સિસ્ટમ') }}{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-5">
+            <div class="cyber-card p-4">
+                <div class="text-center mb-4">
+                    <i class="bi bi-person-badge text-info fs-1"></i>
+                    <h2 class="mt-2">{{ translate('Sign in', 'साइन इन करें', 'સાઇન ઇન કરો') }}</h2>
+                    <p class="text-secondary small">{{ translate('Access Crime Reporting & Cases', 'अपराध रिपोर्टिंग और मामलों तक पहुंचें', 'ગુના રિપોર્ટિંગ અને કેસો ઍક્સેસ કરો') }}</p>
+                </div>
+                
+                <div class="safety-alert mb-4">
+                    <i class="bi bi-info-circle-fill me-2"></i>
+                    <strong>{{ translate('Demonstration only:', 'केवल प्रदर्शन के लिए:', 'માત્ર ડેમો માટે:') }}</strong> {{ translate('This educational prototype is not connected to official services. Account activity may be recorded in its local audit log.', 'यह शैक्षणिक प्रोटोटाइप आधिकारिक सेवाओं से जुड़ा नहीं है। खाते की गतिविधि इसके स्थानीय ऑडिट लॉग में दर्ज हो सकती है।', 'આ શૈક્ષણિક ડેમો સત્તાવાર સેવાઓ સાથે જોડાયેલો નથી. એકાઉન્ટની પ્રવૃત્તિ તેના સ્થાનિક ઑડિટ લૉગમાં નોંધાઈ શકે છે.') }}
+                </div>
+
+                <form method="POST" action="{{ url_for('auth.login') }}">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                    
+                    <div class="mb-3">
+                        <label for="username" class="form-label">{{ translate('Username or email', 'उपयोगकर्ता नाम या ईमेल', 'વપરાશકર્તા નામ અથવા ઇમેઇલ') }}</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-dark border-secondary text-secondary"><i class="bi bi-person"></i></span>
+                            <input type="text" class="form-control cyber-input" id="username" name="username" placeholder="{{ translate('Enter username or email', 'उपयोगकर्ता नाम या ईमेल दर्ज करें', 'વપરાશકર્તા નામ અથવા ઇમેઇલ દાખલ કરો') }}" required>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label for="password" class="form-label">{{ translate('Password', 'पासवर्ड', 'પાસવર્ડ') }}</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-dark border-secondary text-secondary"><i class="bi bi-key"></i></span>
+                            <input type="password" class="form-control cyber-input" id="password" name="password" placeholder="••••••••" required>
+                        </div>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-cyber-cyan w-100 py-2 fs-5"><i class="bi bi-box-arrow-in-right" aria-hidden="true"></i> {{ translate('Sign in', 'साइन इन करें', 'સાઇન ઇન કરો') }}</button>
+                </form>
+                
+                <div class="text-center mt-4 border-top border-secondary pt-3">
+                    <span class="text-secondary small">{{ translate('New reporter? ', 'नए रिपोर्टर? ', 'નવા રિપોર્ટર? ') }}</span>
+                    <a href="{{ url_for('auth.register') }}" class="text-info text-decoration-none small fw-bold">{{ translate('Create Account', 'खाता बनाएं', 'ખાતું બનાવો') }}</a>
+                </div>
+            </div>
+            
+        </div>
+    </div>
+</div>
+{% endblock %}

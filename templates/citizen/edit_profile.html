@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+
+{% block title %}{{ translate('Edit Profile - Cyber Portal', 'प्रोफ़ाइल संपादित करें - साइबर पोर्टल', 'પ્રોફાઇલ સંપાદિત કરો - સાયબર પોર્ટલ') }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4 mb-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="cyber-card p-4">
+                <div class="d-flex align-items-center mb-4 border-bottom border-secondary pb-3">
+                    <i class="bi bi-person-gear text-info fs-2 me-2"></i>
+                    <div>
+                        <h2 class="mb-0" style="font-family: 'Outfit', sans-serif;">{{ translate('Edit Profile', 'प्रोफ़ाइल संपादित करें', 'પ્રોફાઇલ સંપાદિત કરો') }}</h2>
+                        <p class="text-secondary mb-0 small">{{ translate('Update your personal details below.', 'नीचे अपने व्यक्तिगत विवरण अपडेट करें।', 'નીચે તમારી વ્યક્તિગત વિગતો અપડેટ કરો.') }}</p>
+                    </div>
+                </div>
+
+                <form method="POST" action="{{ url_for('citizen.edit_profile') }}">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+
+                    <!-- Full Name -->
+                    <div class="mb-3">
+                        <label for="fullname" class="form-label text-secondary small fw-bold">{{ translate('Full Name', 'पूरा नाम', 'આખું નામ') }} <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control cyber-input" id="fullname" name="fullname" value="{{ user.fullname }}" required>
+                    </div>
+
+                    <!-- Email -->
+                    <div class="mb-3">
+                        <label for="email" class="form-label text-secondary small fw-bold">{{ translate('Email Address', 'ईमेल पता', 'ઇમેઇલ સરનામું') }} <span class="text-danger">*</span></label>
+                        <input type="email" class="form-control cyber-input" id="email" name="email" value="{{ user.email }}" required>
+                    </div>
+
+                    <!-- Phone Number -->
+                    <div class="mb-4">
+                        <label for="phone" class="form-label text-secondary small fw-bold">{{ translate('Phone Number', 'फोन नंबर', 'ફોન નંબર') }} <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control cyber-input" id="phone" name="phone" value="{{ user.phone }}" required>
+                    </div>
+
+                    <div class="d-flex justify-content-between align-items-center">
+                        <a href="{{ url_for('citizen.dashboard') }}" class="btn btn-sm btn-outline-secondary">{{ translate('Cancel', 'रद्द करें', 'રદ કરો') }}</a>
+                        <button type="submit" class="btn btn-sm btn-cyber-cyan px-4">{{ translate('Save Changes', 'बदलाव सहेजें', 'ફેરફારો સાચવો') }}</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

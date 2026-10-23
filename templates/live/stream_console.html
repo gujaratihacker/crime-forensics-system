@@ -1,0 +1,281 @@
+{% extends "base.html" %}
+
+{% block title %}Broadcasting Live - {{ incident.id }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4 mb-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="cyber-card p-4">
+                <div class="d-flex justify-content-between align-items-center mb-3 border-bottom border-secondary pb-3">
+                    <div>
+                        <span class="badge bg-danger mb-1 pulse"><i class="bi bi-broadcast"></i> Transmitting Live</span>
+                        <h2 class="mb-0 font-monospace text-light" style="font-family: 'Outfit', sans-serif;">STREAM: {{ incident.id }}</h2>
+                    </div>
+                    <div class="text-end">
+                        <small class="text-secondary d-block">Approximate Location:</small>
+                        <span class="text-light fw-bold">{{ incident.location_approx }}</span>
+                    </div>
+                </div>
+
+                <!-- Safety reminder -->
+                <div class="safety-alert py-2 text-warning mb-3">
+                    <i class="bi bi-exclamation-triangle-fill"></i>
+                    <strong>Do not confront anyone.</strong> Keep a safe distance. The video is being preserved securely on college servers.
+                </div>
+
+                <!-- Video Element & Hidden Canvas -->
+                <div class="position-relative bg-black rounded border border-secondary overflow-hidden mb-4" style="height: 400px; display: flex; align-items: center; justify-content: center;">
+                    <video id="webcam" autoplay playsinline muted style="width: 100%; height: 100%; object-fit: cover;"></video>
+                    <canvas id="frameCanvas" style="display: none;"></canvas>
+                    <div class="position-absolute top-0 start-0 m-3 p-2 bg-dark bg-opacity-70 rounded text-light small d-flex align-items-center">
+                        <span class="spinner-grow spinner-grow-sm text-danger me-2" role="status"></span>
+                        <span class="font-monospace">REC: <span id="recordTimer">00:00</span></span>
+                    </div>
+                </div>
+
+                <!-- Stop Stream Trigger -->
+                <form id="endStreamForm" method="POST" action="{{ url_for('live_incidents.end_stream', live_id=incident.id) }}" enctype="multipart/form-data">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                    <div class="d-grid">
+                        <button type="button" id="stopBtn" class="btn btn-danger py-2 fs-5"><i class="bi bi-stop-circle-fill"></i> Terminate Stream & Preserve Evidence</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    const video = document.getElementById('webcam');
+    const canvas = document.getElementById('frameCanvas');
+    const ctx = canvas.getContext('2d');
+    const stopBtn = document.getElementById('stopBtn');
+    const form = document.getElementById('endStreamForm');
+    const timerLabel = document.getElementById('recordTimer');
+
+    let streamObj = null;
+    let mediaRecorder = null;
+    let recordedChunks = [];
+    let uploadInterval = null;
+    let timerInterval = null;
+    let secondsElapsed = 0;
+
+    // 1. Request camera and start streaming (fallback to video-only if audio/mic fails or is missing)
+    function initializeMedia() {
+        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+            const card = document.querySelector('.cyber-card');
+            const warning = document.createElement('div');
+            warning.className = 'alert alert-warning mt-3';
+            warning.innerHTML = '<strong>Camera API not available.</strong> This browser does not support webcam access. Try Chrome/Edge and allow camera permissions.';
+            card.appendChild(warning);
+            stopBtn.disabled = true;
+            stopBtn.innerHTML = '<i class="bi bi-camera-video-off"></i> Camera not available';
+            return;
+        }
+
+        navigator.mediaDevices.getUserMedia({ video: true, audio: true })
+            .then(startStream)
+            .catch(err => {
+                console.log("Audio/Video request failed, trying video only...", err);
+                navigator.mediaDevices.getUserMedia({ video: true })
+                    .then(startStream)
+                    .catch(err2 => {
+                        console.error("Camera access failed completely:", err2);
+                        alert("Camera access denied or unavailable. Web camera permission is required to stream live. Use a secure HTTPS URL and allow camera permissions when prompted.");
+                        window.location.href = "{{ url_for('citizen.dashboard') }}";
+                    });
+            });
+    }
+
+    function startStream(stream) {
+        streamObj = stream;
+        video.srcObject = stream;
+        
+        // Start Local MediaRecorder for preservation
+        startRecording(stream);
+
+        // Start base64 snapshot interval (1 frame per second)
+        canvas.width = 640;
+        canvas.height = 480;
+        uploadInterval = setInterval(captureAndUploadFrame, 1000);
+        
+        // Start UI clock timer
+        timerInterval = setInterval(updateTimer, 1000);
+    }
+
+    initializeMedia();
+
+    // 2. Local Media Recording (Preservation vault output)
+    function startRecording(stream) {
+        recordedChunks = [];
+        
+        let options = {};
+        const codecs = [
+            'video/webm;codecs=vp9',
+            'video/webm;codecs=vp8',
+            'video/webm',
+            'video/mp4;codecs=avc1',
+            'video/mp4'
+        ];
+        
+        for (const mimeType of codecs) {
+            if (MediaRecorder.isTypeSupported(mimeType)) {
+                options = { mimeType: mimeType };
+                break;
+            }
+        }
+        
+        try {
+            mediaRecorder = new MediaRecorder(stream, options);
+        } catch (e) {
+            console.error("Failed to construct MediaRecorder with options, using default:", e);
+            try {
+                mediaRecorder = new MediaRecorder(stream);
+            } catch (err) {
+                console.error("Failed to construct default MediaRecorder:", err);
+                mediaRecorder = null;
+            }
+        }
+        
+        if (!mediaRecorder) {
+            return;
+        }
+        
+        mediaRecorder.ondataavailable = function(e) {
+            if (e.data.size > 0) {
+                recordedChunks.push(e.data);
+            }
+        };
+        
+        mediaRecorder.onstop = function() {
+            submitFormWithBlob();
+        };
+        
+        try {
+            mediaRecorder.start();
+        } catch (err) {
+            console.error("Failed to start MediaRecorder:", err);
+            mediaRecorder = null;
+        }
+    }
+
+    function submitFormWithBlob() {
+        // Compile recording chunks into single Blob, fallback to 0-byte blob if empty
+        let videoBlob;
+        if (recordedChunks.length > 0) {
+            videoBlob = new Blob(recordedChunks, { type: (mediaRecorder && mediaRecorder.mimeType) || 'video/webm' });
+        } else {
+            videoBlob = new Blob([new Uint8Array(0)], { type: 'video/webm' });
+        }
+        
+        // Create a File object
+        const videoFile = new File([videoBlob], "livestream_recording.webm", { type: 'video/webm' });
+        
+        // Update UI to show submitting status
+        stopBtn.disabled = true;
+        stopBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Saving & Concluding Stream...';
+        
+        // Try uploading via fetch first for maximum reliability
+        const formData = new FormData();
+        formData.append('csrf_token', '{{ csrf_token }}');
+        formData.append('video_evidence', videoFile);
+        
+        fetch("{{ url_for('live_incidents.end_stream', live_id=incident.id) }}", {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => {
+            if (response.redirected) {
+                window.location.href = response.url;
+            } else {
+                window.location.href = "{{ url_for('citizen.dashboard') }}";
+            }
+        })
+        .catch(err => {
+            console.error("Fetch submission failed, retrying standard form submit...", err);
+            
+            // Fallback: standard form submit
+            const dataTransfer = new DataTransfer();
+            dataTransfer.items.add(videoFile);
+            
+            const fileInput = document.createElement('input');
+            fileInput.type = 'file';
+            fileInput.name = 'video_evidence';
+            fileInput.style.display = 'none';
+            fileInput.files = dataTransfer.files;
+            
+            form.appendChild(fileInput);
+            form.submit();
+        });
+    }
+
+    // 3. Frame snapshot upload
+    function captureAndUploadFrame() {
+        // Ensure stream is active and video element has ready data
+        if (!streamObj || video.readyState < video.HAVE_CURRENT_DATA) return;
+        
+        // Draw video frame to canvas
+        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+        
+        // Export to base64 JPEG
+        const base64Frame = canvas.toDataURL('image/jpeg', 0.6);
+        
+        // Post to backend
+        fetch("{{ url_for('live_incidents.post_frame', live_id=incident.id) }}", {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-Token': '{{ csrf_token }}'
+            },
+            body: JSON.stringify({ frame: base64Frame })
+        })
+        .then(response => response.json())
+        .catch(err => console.error("Frame transmission failed: ", err));
+    }
+
+    // 4. Timer updater
+    function updateTimer() {
+        secondsElapsed++;
+        const mins = Math.floor(secondsElapsed / 60).toString().padStart(2, '0');
+        const secs = (secondsElapsed % 60).toString().padStart(2, '0');
+        timerLabel.innerText = `${mins}:${secs}`;
+    }
+
+    function stopCurrentStream() {
+        if (stopBtn.disabled) return;
+        stopBtn.disabled = true;
+
+        if (confirm("Terminate feed? The completed recording will be preserved securely in the Evidence Vault.")) {
+            // Stop intervals
+            clearInterval(uploadInterval);
+            clearInterval(timerInterval);
+            
+            // Stop all webcam hardware tracks
+            if (streamObj) {
+                streamObj.getTracks().forEach(track => track.stop());
+            }
+
+            // Stop MediaRecorder (triggers upload submit callback)
+            if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+                try {
+                    mediaRecorder.stop();
+                } catch (e) {
+                    console.error("Error stopping MediaRecorder:", e);
+                    submitFormWithBlob();
+                }
+            } else {
+                // If mediaRecorder wasn't initialized or active, submit form directly
+                submitFormWithBlob();
+            }
+        } else {
+            stopBtn.disabled = false;
+        }
+    }
+
+    // 5. Stream termination listener
+    stopBtn.addEventListener('click', stopCurrentStream);
+</script>
+{% endblock %}

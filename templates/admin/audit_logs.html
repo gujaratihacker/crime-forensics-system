@@ -1,0 +1,104 @@
+{% extends "base.html" %}
+
+{% block title %}Forensics System - System Audit Logs{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-4 py-4">
+    <div class="mb-4">
+        <a href="{{ url_for('admin.dashboard') }}" class="btn btn-outline-secondary btn-sm"><i class="bi bi-chevron-left"></i> Back to Dashboard</a>
+    </div>
+
+    <div class="cyber-card p-4">
+        <div class="d-flex justify-content-between align-items-center mb-4 pb-2 border-bottom border-secondary">
+            <div>
+                <h3 class="mb-0"><i class="bi bi-shield-lock-fill text-info me-1" aria-hidden="true"></i> Audit log</h3>
+                <p class="text-secondary mb-0 small">A chronological record of sign-ins, case updates, evidence access, and stream preservation.</p>
+            </div>
+        </div>
+
+        <div class="safety-alert mb-4 py-2">
+            <i class="bi bi-shield-fill-check text-success me-2"></i>
+            <strong>Demonstration note:</strong> Events are recorded in the project database for review. This prototype does not provide production-grade tamper-proof logging.
+        </div>
+
+        <div class="table-responsive">
+            <table class="table table-dark table-hover align-middle border-secondary mb-0" style="font-size: 0.9rem;">
+                <thead>
+                    <tr class="text-secondary small">
+                        <th scope="col">ID</th>
+                        <th scope="col">Time</th>
+                        <th scope="col">User</th>
+                        <th scope="col">Role</th>
+                        <th scope="col">ACTION</th>
+                        <th scope="col">IP address</th>
+                        <th scope="col">Details</th>
+                        <th scope="col">Case ID</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% if not logs %}
+                        <tr>
+                            <td colspan="8" class="text-center py-5 text-secondary">
+                                <i class="bi bi-journal-x fs-1"></i>
+                                <p class="mt-2">No activity has been recorded yet.</p>
+                            </td>
+                        </tr>
+                    {% else %}
+                        {% for log in logs %}
+                            <tr>
+                                <td class="font-monospace text-secondary" style="font-size: 0.8rem;">#{{ log.id }}</td>
+                                <td class="small">{{ log.timestamp.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+                                <td>
+                                    {% if log.username %}
+                                        <span class="text-light fw-bold">{{ log.username }}</span>
+                                    {% else %}
+                                        <span class="text-secondary font-monospace">SYSTEM</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if log.role == 'admin' %}
+                                        <span class="badge bg-danger small text-uppercase">ADMIN</span>
+                                    {% elif log.role == 'investigator' %}
+                                        <span class="badge bg-info text-dark small text-uppercase">INVS</span>
+                                    {% elif log.role == 'citizen' %}
+                                        <span class="badge bg-secondary small text-uppercase">CITZ</span>
+                                    {% else %}
+                                        <span class="text-secondary small font-monospace">-</span>
+                                    {% endif %}
+                                </td>
+                                <td class="font-monospace fw-bold text-info" style="font-size: 0.85rem;">{{ log.action }}</td>
+                                <td class="font-monospace small text-cyan" style="font-size: 0.8rem;">{{ log.ip_address }}</td>
+                                <td class="text-light" style="max-width: 400px; word-wrap: break-word;">{{ log.description }}</td>
+                                <td class="font-monospace text-info small">{{ log.case_id or '-' }}</td>
+                            </tr>
+                        {% endfor %}
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Pagination Controls -->
+        {% if total_pages > 1 %}
+            <nav class="mt-4">
+                <ul class="pagination justify-content-center">
+                    <li class="page-item {% if page == 1 %}disabled{% endif %}">
+                        <a class="page-link bg-dark border-secondary text-info" href="{{ url_for('admin.audit_logs', page=page-1) }}" aria-label="Previous">
+                            <span aria-hidden="true">&laquo;</span>
+                        </a>
+                    </li>
+                    {% for p in range(1, total_pages + 1) %}
+                        <li class="page-item {% if p == page %}active{% endif %}">
+                            <a class="page-link {% if p == page %}bg-info border-info text-dark{% else %}bg-dark border-secondary text-info{% endif %}" href="{{ url_for('admin.audit_logs', page=p) }}">{{ p }}</a>
+                        </li>
+                    {% endfor %}
+                    <li class="page-item {% if page == total_pages %}disabled{% endif %}">
+                        <a class="page-link bg-dark border-secondary text-info" href="{{ url_for('admin.audit_logs', page=page+1) }}" aria-label="Next">
+                            <span aria-hidden="true">&raquo;</span>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

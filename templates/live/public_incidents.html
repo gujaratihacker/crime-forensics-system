@@ -1,0 +1,127 @@
+{% extends "base.html" %}
+
+{% block title %}Live Crime Board - Incidents{% endblock %}
+
+{% block content %}
+<div class="container mt-4 mb-5">
+    <div class="d-flex justify-content-between align-items-center mb-4 pb-2 border-bottom border-secondary">
+        <div>
+            <h1 class="h2 mb-0" style="font-family: 'Outfit', sans-serif;"><i class="bi bi-broadcast text-danger"></i> Live Incident Monitor Board</h1>
+            <p class="text-secondary mb-0 small">Active public broadcasts and recordings saved to the demonstration evidence vault.</p>
+        </div>
+        <div>
+            <a href="{{ url_for('live_incidents.start_live_incident_get') }}" class="btn btn-danger btn-sm"><i class="bi bi-broadcast-pin"></i> Broadcast Incident</a>
+        </div>
+    </div>
+
+    <!-- Active Streams Section -->
+    <h4 class="text-light mb-3"><i class="bi bi-circle-fill text-danger me-1" style="font-size:0.8rem;" aria-hidden="true"></i> Active broadcasts</h4>
+    
+    {% if not active %}
+        <div class="cyber-card p-5 text-center text-secondary mb-5">
+            <i class="bi bi-broadcast-pin fs-1"></i>
+            <p class="mt-2 mb-0">No active incidents are currently being live-streamed.</p>
+        </div>
+    {% else %}
+        <div class="row g-3 mb-5">
+            {% for stream in active %}
+                <div class="col-md-4">
+                    <div class="cyber-card p-3 border-danger">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span class="badge badge-live"><i class="bi bi-broadcast"></i> LIVE</span>
+                            <span class="text-secondary small font-monospace"><i class="bi bi-eye-fill text-danger"></i> {{ stream.viewer_count }} watching</span>
+                        </div>
+                        
+                        <h5 class="text-light mb-1">{{ stream.category }}</h5>
+                        <p class="text-secondary small mb-2"><i class="bi bi-geo-alt-fill text-cyan"></i> Area: {{ stream.location_approx }}</p>
+                        
+                        {% if stream.description %}
+                            <p class="text-light small mb-3 text-truncate">{{ stream.description }}</p>
+                        {% endif %}
+
+                        <div class="border-top border-secondary pt-2 d-flex justify-content-between align-items-center">
+                            <small class="text-secondary">
+                                By: 
+                                {% if stream.reporting_mode == 'anonymous' %}
+                                    <span class="text-purple fw-bold font-monospace">Anonymous Reporter</span>
+                                {% else %}
+                                    <span class="text-light fw-bold">{{ stream.reporter_name }}</span>
+                                {% endif %}
+                            </small>
+                            <a href="{{ url_for('live_incidents.watch', live_id=stream.id) }}" class="btn btn-xs btn-danger"><i class="bi bi-play-fill"></i> Watch Live</a>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    <!-- Historical Streams Section -->
+    <h4 class="text-light mb-3"><i class="bi bi-safe-fill text-info me-1" style="font-size:0.8rem;" aria-hidden="true"></i> Saved recordings</h4>
+    
+    {% if not completed %}
+        <div class="cyber-card p-4 text-center text-secondary">
+            <i class="bi bi-folder-x fs-2"></i>
+            <p class="mb-0 mt-2">No historical stream recordings registered.</p>
+        </div>
+    {% else %}
+        <div class="cyber-card p-3">
+            <div class="table-responsive">
+                <table class="table table-dark table-hover align-middle border-secondary mb-0">
+                    <thead>
+                        <tr class="text-secondary small">
+                            <th scope="col">STREAM ID</th>
+                            <th scope="col">CATEGORY</th>
+                            <th scope="col">AREA</th>
+                            <th scope="col">REPORTER</th>
+                            <th scope="col">STARTED</th>
+                            <th scope="col">ENDED</th>
+                            <th scope="col">STATUS</th>
+                            <th scope="col">ACTIONS</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for stream in completed %}
+                            <tr>
+                                <td class="font-monospace fw-bold text-info">{{ stream.id }}</td>
+                                <td>{{ stream.category }}</td>
+                                <td class="small">{{ stream.location_approx }}</td>
+                                <td>
+                                    {% if stream.reporting_mode == 'anonymous' %}
+                                        <span class="text-purple font-monospace">Anonymous Reporter</span>
+                                    {% else %}
+                                        <span>{{ stream.reporter_name }}</span>
+                                    {% endif %}
+                                </td>
+                                <td class="small">{{ stream.started_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                                <td class="small">{{ stream.ended_at.strftime('%H:%M') if stream.ended_at else '-' }}</td>
+                                <td>
+                                    <span class="badge badge-verified"><i class="bi bi-safe2"></i> Vault Preserved</span>
+                                    {% if session.get('user_id') and (session.get('user_id') == stream.reporter_id or session.get('role') in ['investigator', 'admin']) %}
+                                        <a href="{{ url_for('evidence.download', evidence_id=stream.saved_video_evidence_id) }}" class="btn btn-outline-info py-0 px-2 ms-2" style="font-size: 0.7rem; border-radius: 4px;">
+                                            <i class="bi bi-download"></i> Download Video
+                                        </a>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <a href="{{ url_for('live_incidents.watch', live_id=stream.id) }}" class="btn btn-outline-info btn-sm text-nowrap">
+                                        <i class="bi bi-play-circle"></i> Watch / Contribute
+                                    </a>
+                                    {% if session.get('role') == 'admin' %}
+                                        <form method="POST" action="{{ url_for('live_incidents.delete_saved_recording', live_id=stream.id) }}" class="d-inline" onsubmit="return confirm('Delete this saved recording? The incident and custody history will be kept.');">
+                                            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                                            <button type="submit" class="btn btn-outline-danger btn-sm text-nowrap ms-1">
+                                                <i class="bi bi-trash"></i> Delete
+                                            </button>
+                                        </form>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

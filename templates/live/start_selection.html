@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+
+{% block title %}Start Live Report - Forensics System{% endblock %}
+
+{% block content %}
+<div class="container mt-4 mb-5">
+    <div class="row justify-content-center">
+        <div class="col-md-7">
+            <div class="cyber-card p-4">
+                <div class="d-flex align-items-center mb-4 border-bottom border-secondary pb-3">
+                    <i class="bi bi-broadcast text-danger fs-2 me-2"></i>
+                    <div>
+                        <h2 class="mb-0" style="font-family: 'Outfit', sans-serif;">Start Live Incident Report</h2>
+                        <p class="text-secondary mb-0 small">Secure stream setup for real-time digital evidence preservation.</p>
+                    </div>
+                </div>
+
+                <!-- Requirement 34 Safety Warning -->
+                <div class="safety-alert mb-4 text-warning bg-danger bg-opacity-10 border-start border-4 border-danger">
+                    <i class="bi bi-exclamation-octagon-fill fs-5 me-2"></i>
+                    <strong>CRITICAL SAFETY WARNING:</strong> Your safety comes first. Do not confront suspects, chase vehicles, or place yourself in danger to obtain video evidence.
+                </div>
+
+                <form method="POST" action="{{ url_for('live_incidents.start_live_incident_post') }}">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+
+                    <!-- Privacy Option -->
+                    <div class="mb-3 bg-dark p-3 rounded border border-secondary">
+                        <label class="form-label fw-bold text-info"><i class="bi bi-eye-slash"></i> STREAM PRIVACY</label>
+                        <div class="form-check mb-2">
+                            <input class="form-check-input" type="radio" name="reporting_mode" id="modeIdentified" value="identified" checked>
+                            <label class="form-check-label" for="modeIdentified">
+                                <strong>Broadcast with my identity</strong> (Your name is attached to the stream)
+                            </label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="reporting_mode" id="modeAnonymous" value="anonymous">
+                            <label class="form-check-label" for="modeAnonymous" style="color: var(--neon-purple);">
+                                <strong>Broadcast anonymously</strong> (Masks your profile; public viewers will see "Anonymous Reporter")
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Category & Approx Location -->
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="category" class="form-label text-secondary small fw-bold">INCIDENT CATEGORY</label>
+                            <select class="form-select cyber-input" id="category" name="category" required>
+                                <option value="" disabled selected>Select category...</option>
+                                <option value="Assault/Public Altercation">Assault / Public Altercation</option>
+                                <option value="Property Damage/Vandalisim">Property Damage / Vandalism</option>
+                                <option value="Theft/Robbery">Theft / Robbery</option>
+                                <option value="Suspicious Activity">Suspicious Activity</option>
+                                <option value="Other Incident">Other Incident</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="location_approx" class="form-label text-secondary small fw-bold">APPROXIMATE LOCATION/AREA</label>
+                            <input type="text" class="form-control cyber-input" id="location_approx" name="location_approx" placeholder="e.g. Bandra West, Mumbai (Do not enter exact home address)" required>
+                        </div>
+                    </div>
+
+                    <!-- Description -->
+                    <div class="mb-4">
+                        <label for="description" class="form-label text-secondary small fw-bold">BRIEF STREAM DESCRIPTION</label>
+                        <textarea class="form-control cyber-input" id="description" name="description" rows="2" placeholder="Briefly describe what you are witnessing..."></textarea>
+                    </div>
+
+                    <div class="d-flex justify-content-between border-top border-secondary pt-3 mt-4">
+                        <a href="{{ url_for('citizen.dashboard') }}" class="btn btn-outline-secondary"><i class="bi bi-x-circle"></i> Cancel</a>
+                        <button type="submit" class="btn btn-danger px-4"><i class="bi bi-camera-video-fill"></i> Initialize Camera Feed</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

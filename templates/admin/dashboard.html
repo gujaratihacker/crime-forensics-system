@@ -1,0 +1,451 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Control Panel - Dashboard{% endblock %}
+
+{% block head %}
+<!-- Chart.js CDN -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid admin-dashboard px-3 px-lg-4 py-4">
+    <!-- Header -->
+    <div class="dashboard-header d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 pb-3">
+        <div>
+            <div class="dashboard-eyebrow">CIVIC DESK <span>/</span> ADMINISTRATION</div>
+            <h1 class="h2 mb-1">Operations overview</h1>
+            <p class="text-secondary mb-0">Review incoming reports, monitor casework, and track system activity.</p>
+        </div>
+        <div class="d-flex flex-wrap gap-2 mt-3 mt-md-0">
+            <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#addInvestigatorModal">
+                <i class="bi bi-person-plus me-1" aria-hidden="true"></i> Add investigator
+            </button>
+            <a href="{{ url_for('admin.awareness_scams') }}" class="btn btn-outline-info btn-sm">
+                <i class="bi bi-shield-exclamation me-1" aria-hidden="true"></i> Safety hub
+            </a>
+            <a href="{{ url_for('admin.audit_logs') }}" class="btn btn-outline-info btn-sm"><i class="bi bi-file-earmark-lock me-1" aria-hidden="true"></i> Audit trail</a>
+        </div>
+    </div>
+
+    <div class="modal fade" id="addInvestigatorModal" tabindex="-1" aria-labelledby="addInvestigatorTitle" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content">
+                <form method="POST" action="{{ url_for('admin.add_investigator') }}">
+                    <div class="modal-header">
+                        <div>
+                            <h2 class="modal-title fs-5" id="addInvestigatorTitle">Add investigator</h2>
+                            <p class="text-secondary small mb-0">Create a new investigator login and profile.</p>
+                        </div>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label" for="investigatorFullname">Full name</label>
+                                <input class="form-control cyber-input" id="investigatorFullname" name="fullname" maxlength="100" autocomplete="name" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label" for="investigatorUsername">Username</label>
+                                <input class="form-control cyber-input" id="investigatorUsername" name="username" maxlength="50" autocomplete="username" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label" for="investigatorEmail">Email</label>
+                                <input class="form-control cyber-input" type="email" id="investigatorEmail" name="email" maxlength="100" autocomplete="email" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label" for="investigatorPhone">Phone</label>
+                                <input class="form-control cyber-input" type="tel" id="investigatorPhone" name="phone" maxlength="20" autocomplete="tel" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label" for="investigatorPassword">Initial password</label>
+                                <input class="form-control cyber-input" type="password" id="investigatorPassword" name="password" minlength="8" autocomplete="new-password" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label" for="investigatorRank">Rank <span class="text-secondary fw-normal">(optional)</span></label>
+                                <input class="form-control cyber-input" id="investigatorRank" name="rank" maxlength="50" placeholder="Junior Detective">
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label" for="investigatorDepartment">Department <span class="text-secondary fw-normal">(optional)</span></label>
+                                <input class="form-control cyber-input" id="investigatorDepartment" name="department" maxlength="100" placeholder="Cyber Crime Cell">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary"><i class="bi bi-person-check me-1" aria-hidden="true"></i> Create account</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Stats -->
+    <section class="row g-3 mb-4" aria-label="System summary">
+        <div class="col-6 col-md-4 col-lg-2">
+            <div class="cyber-card metric-card metric-neutral h-100">
+                <div class="metric-label"><i class="bi bi-inbox" aria-hidden="true"></i> All reports</div>
+                <div class="metric-value">{{ total_complaints }}</div>
+            </div>
+        </div>
+        <div class="col-6 col-md-4 col-lg-2">
+            <div class="cyber-card metric-card metric-warning h-100">
+                <div class="metric-label"><i class="bi bi-hourglass-split" aria-hidden="true"></i> Needs review</div>
+                <div class="metric-value">{{ pending_complaints }}</div>
+            </div>
+        </div>
+        <div class="col-6 col-md-4 col-lg-2">
+            <div class="cyber-card metric-card metric-info h-100">
+                <div class="metric-label"><i class="bi bi-folder2-open" aria-hidden="true"></i> Active cases</div>
+                <div class="metric-value">{{ active_cases }}</div>
+            </div>
+        </div>
+        <div class="col-6 col-md-4 col-lg-2">
+            <div class="cyber-card metric-card metric-success h-100">
+                <div class="metric-label"><i class="bi bi-check2-circle" aria-hidden="true"></i> Closed cases</div>
+                <div class="metric-value">{{ closed_cases }}</div>
+            </div>
+        </div>
+        <div class="col-6 col-md-4 col-lg-2">
+            <div class="cyber-card metric-card metric-violet h-100">
+                <div class="metric-label"><i class="bi bi-file-earmark-check" aria-hidden="true"></i> Evidence items</div>
+                <div class="metric-value">{{ total_evidence }}</div>
+            </div>
+        </div>
+        <div class="col-6 col-md-4 col-lg-2">
+            <div class="cyber-card metric-card metric-danger h-100">
+                <div class="metric-label"><i class="bi bi-broadcast" aria-hidden="true"></i> Live streams</div>
+                <div class="metric-value">{{ active_streams }}</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Charts and Moderation alerts row -->
+    <section class="mb-4" aria-labelledby="analytics-heading">
+        <div class="section-heading">
+            <div>
+                <h2 id="analytics-heading">Casework analytics</h2>
+                <p>Distribution of reports, evidence, and investigation status</p>
+            </div>
+        </div>
+        <div class="row g-3">
+        <!-- Chart 1: Crime Category -->
+        <div class="col-lg-6">
+            <div class="cyber-card chart-panel h-100">
+                <div class="chart-heading"><div><h3>Reports by category</h3><p>Complaint volume grouped by crime type</p></div><i class="bi bi-pie-chart" aria-hidden="true"></i></div>
+                <div class="chart-wrap chart-wrap-doughnut">
+                    <canvas id="categoryChart"></canvas>
+                    <p class="chart-empty" hidden>No category data available.</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Chart 2: Priority Distribution -->
+        <div class="col-lg-6">
+            <div class="cyber-card chart-panel h-100">
+                <div class="chart-heading"><div><h3>Reports by priority</h3><p>Urgency assigned to submitted complaints</p></div><i class="bi bi-bar-chart-steps" aria-hidden="true"></i></div>
+                <div class="chart-wrap chart-wrap-bars">
+                    <canvas id="priorityChart"></canvas>
+                    <p class="chart-empty" hidden>No priority data available.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Chart 3: Evidence File Types -->
+        <div class="col-lg-6">
+            <div class="cyber-card chart-panel h-100">
+                <div class="chart-heading"><div><h3>Evidence by file type</h3><p>Preserved files grouped by format</p></div><i class="bi bi-files" aria-hidden="true"></i></div>
+                <div class="chart-wrap chart-wrap-doughnut">
+                    <canvas id="evidenceChart"></canvas>
+                    <p class="chart-empty" hidden>No evidence data available.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Chart 4: Case Status -->
+        <div class="col-lg-6">
+            <div class="cyber-card chart-panel h-100">
+                <div class="chart-heading"><div><h3>Cases by status</h3><p>Current stage of registered cases</p></div><i class="bi bi-kanban" aria-hidden="true"></i></div>
+                <div class="chart-wrap chart-wrap-bars">
+                    <canvas id="statusChart"></canvas>
+                    <p class="chart-empty" hidden>No case data available.</p>
+                </div>
+            </div>
+        </div>
+        </div>
+    </section>
+
+    <!-- Active Tables Section -->
+    <section class="mb-4" aria-labelledby="work-queue-heading">
+        <div class="section-heading">
+            <div>
+                <h2 id="work-queue-heading">Work queue</h2>
+                <p>Review incoming reports and follow active investigations</p>
+            </div>
+        </div>
+    <div class="row g-3">
+        <!-- Left: Pending Complaints and Case Allocations -->
+        <div class="col-xl-8">
+            <!-- Pending Complaints -->
+            <div class="cyber-card data-panel mb-4">
+                <div class="cyber-card-header text-warning d-flex align-items-center">
+                    <i class="bi bi-inbox me-2" aria-hidden="true"></i> Reports awaiting review
+                </div>
+                <div class="p-3">
+                    {% if not pending_list %}
+                        <div class="text-center py-5 text-secondary">
+                            <i class="bi bi-shield-check fs-1 text-success"></i>
+                            <p class="mt-2">No pending complaints. All records reviewed and assigned.</p>
+                        </div>
+                    {% else %}
+                        <div class="table-responsive">
+                            <table class="table table-dark table-hover align-middle border-secondary mb-0">
+                                <thead>
+                                    <tr class="text-secondary small">
+                                        <th scope="col">ID</th>
+                                        <th scope="col">REPORTER</th>
+                                        <th scope="col">CATEGORY</th>
+                                        <th scope="col">PRIORITY</th>
+                                        <th scope="col">ACTION ASSIGNMENT</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for comp in pending_list %}
+                                        <tr>
+                                            <td class="font-monospace fw-bold text-info">{{ comp.id }}</td>
+                                            <td>
+                                                {% if comp.reporting_mode == 'anonymous' %}
+                                                    <span class="badge badge-anonymous font-monospace"><i class="bi bi-eye-slash-fill"></i> Anonymous Reporter</span>
+                                                {% else %}
+                                                    <span>{{ comp.citizen_name }}</span>
+                                                {% endif %}
+                                            </td>
+                                            <td class="small">{{ comp.category }}</td>
+                                            <td>
+                                                {% if comp.priority == 'CRITICAL' %}
+                                                    <span class="badge bg-danger">{{ comp.priority }}</span>
+                                                {% elif comp.priority == 'HIGH' %}
+                                                    <span class="badge bg-warning text-dark">{{ comp.priority }}</span>
+                                                {% else %}
+                                                    <span class="badge bg-info text-dark">{{ comp.priority }}</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                <form method="POST" action="{{ url_for('admin.complaint_action', complaint_id=comp.id) }}" class="d-flex gap-2">
+                                                    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                                                    
+                                                    <select class="form-select form-select-sm cyber-input py-0" name="investigator_id" style="max-width: 180px;" required>
+                                                        <option value="" disabled selected>Assign Inspector...</option>
+                                                        {% for inv in investigators %}
+                                                            <option value="{{ inv.user_id }}">{{ inv.fullname }} ({{ inv.assigned_cases_count }} cases)</option>
+                                                        {% endfor %}
+                                                    </select>
+                                                    
+                                                    <button type="submit" name="action" value="approve" class="btn btn-sm btn-success"><i class="bi bi-check-lg"></i></button>
+                                                    <button type="submit" name="action" value="reject" class="btn btn-sm btn-outline-danger"><i class="bi bi-x-lg"></i></button>
+                                                </form>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Active Investigation Cases -->
+            <div class="cyber-card data-panel mb-4">
+                <div class="cyber-card-header text-info d-flex align-items-center">
+                    <i class="bi bi-journal-medical me-2" aria-hidden="true"></i> Active cases
+                </div>
+                <div class="p-3">
+                    {% if not active_cases_list %}
+                        <div class="text-center py-5 text-secondary">
+                            <i class="bi bi-folder-x fs-1"></i>
+                            <p class="mt-2">No active cases under investigation.</p>
+                        </div>
+                    {% else %}
+                        <div class="table-responsive">
+                            <table class="table table-dark table-hover align-middle border-secondary mb-0">
+                                <thead>
+                                    <tr class="text-secondary small">
+                                        <th scope="col">CASE ID</th>
+                                        <th scope="col">COMPLAINT</th>
+                                        <th scope="col">CRIME CATEGORY</th>
+                                        <th scope="col">PRIORITY</th>
+                                        <th scope="col">ASSIGNED INVESTIGATOR</th>
+                                        <th scope="col">STATUS</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for case in active_cases_list %}
+                                        <tr>
+                                            <td class="font-monospace fw-bold text-info">{{ case.case_id }}</td>
+                                            <td class="font-monospace small">{{ case.complaint_id }}</td>
+                                            <td class="small">{{ case.category }}</td>
+                                            <td>
+                                                {% if case.priority == 'CRITICAL' %}
+                                                    <span class="badge bg-danger">{{ case.priority }}</span>
+                                                {% elif case.priority == 'HIGH' %}
+                                                    <span class="badge bg-warning text-dark">{{ case.priority }}</span>
+                                                {% else %}
+                                                    <span class="badge bg-info text-dark">{{ case.priority }}</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                <span class="text-light"><i class="bi bi-person-fill text-secondary"></i> {{ case.investigator_name or 'Not Assigned' }}</span>
+                                            </td>
+                                            <td>
+                                                <span class="badge badge-pending text-uppercase">{{ case.case_status.replace('_', ' ') }}</span>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Right: Recent Audits & Security Logs -->
+        <div class="col-xl-4">
+            <div class="cyber-card data-panel">
+                <div class="cyber-card-header text-light d-flex justify-content-between align-items-center">
+                    <span><i class="bi bi-file-earmark-lock2 me-2" aria-hidden="true"></i> Recent activity</span>
+                    <a href="{{ url_for('admin.audit_logs') }}" class="btn btn-sm btn-outline-info py-0 px-1" style="font-size: 0.75rem;">View All</a>
+                </div>
+                <div class="p-3">
+                    <div class="list-group list-group-flush bg-transparent">
+                        {% for log in audit_logs %}
+                            <div class="list-group-item bg-transparent text-light border-secondary px-0 py-2">
+                                <div class="d-flex justify-content-between align-items-center mb-1">
+                                    <span class="font-monospace text-cyan small fw-bold" style="font-size: 0.75rem;">{{ log.action }}</span>
+                                    <small class="text-secondary" style="font-size: 0.7rem;">{{ log.timestamp.strftime('%H:%M:%S') }}</small>
+                                </div>
+                                <p class="mb-0 text-secondary" style="font-size: 0.8rem; line-height: 1.25;">
+                                    {{ log.description }}
+                                </p>
+                                <div class="d-flex justify-content-between align-items-center mt-1">
+                                    <small class="text-info font-monospace" style="font-size: 0.7rem;">IP: {{ log.ip_address }}</small>
+                                    <small class="text-secondary" style="font-size: 0.7rem;">BY: {{ log.username or 'SYSTEM' }}</small>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    </section>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    const chartPalette = ['#17634a', '#267d74', '#d08b2e', '#b64c41', '#597a9c', '#8a6c9f', '#83a85c', '#d16f45'];
+    const chartText = '#4f5e55';
+    const chartGrid = '#e5ebe6';
+
+    function renderDashboardChart(canvasId, labels, values, type, colors) {
+        const canvas = document.getElementById(canvasId);
+        const emptyMessage = canvas.parentElement.querySelector('.chart-empty');
+
+        if (!labels.length) {
+            canvas.hidden = true;
+            emptyMessage.hidden = false;
+            return;
+        }
+
+        const isDoughnut = type === 'doughnut';
+        new Chart(canvas, {
+            type: isDoughnut ? 'doughnut' : 'bar',
+            data: {
+                labels,
+                datasets: [{
+                    data: values,
+                    backgroundColor: colors || chartPalette,
+                    borderColor: isDoughnut ? '#ffffff' : (colors || chartPalette),
+                    borderWidth: isDoughnut ? 3 : 0,
+                    borderRadius: isDoughnut ? 0 : 5,
+                    hoverOffset: isDoughnut ? 5 : 0
+                }]
+            },
+            options: {
+                indexAxis: isDoughnut ? 'x' : 'y',
+                responsive: true,
+                maintainAspectRatio: false,
+                animation: { duration: 450 },
+                cutout: isDoughnut ? '66%' : undefined,
+                plugins: {
+                    legend: {
+                        display: isDoughnut,
+                        position: 'bottom',
+                        labels: {
+                            color: chartText,
+                            usePointStyle: true,
+                            pointStyle: 'circle',
+                            boxWidth: 8,
+                            boxHeight: 8,
+                            padding: 14,
+                            font: { family: 'DM Sans', size: 11 }
+                        }
+                    },
+                    tooltip: {
+                        backgroundColor: '#202a25',
+                        titleFont: { family: 'DM Sans' },
+                        bodyFont: { family: 'DM Sans' },
+                        padding: 10,
+                        callbacks: {
+                            label: context => ` ${context.label}: ${context.raw}`
+                        }
+                    }
+                },
+                scales: isDoughnut ? {} : {
+                    x: {
+                        beginAtZero: true,
+                        grid: { color: chartGrid, drawBorder: false },
+                        ticks: { color: chartText, precision: 0, font: { family: 'DM Sans', size: 11 } }
+                    },
+                    y: {
+                        grid: { display: false, drawBorder: false },
+                        ticks: { color: chartText, font: { family: 'DM Sans', size: 11 } }
+                    }
+                }
+            }
+        });
+    }
+
+    const categoryLabels = {{ category_stats | map(attribute='category') | list | tojson }};
+    const categoryValues = {{ category_stats | map(attribute='count') | list | tojson }};
+    renderDashboardChart('categoryChart', categoryLabels, categoryValues, 'doughnut');
+
+    const priorityLabels = {{ priority_stats | map(attribute='priority') | list | tojson }};
+    const priorityValues = {{ priority_stats | map(attribute='count') | list | tojson }};
+    const priorityColors = { CRITICAL: '#b64c41', HIGH: '#d08b2e', MEDIUM: '#267d74', LOW: '#597a9c' };
+    const priorityOrder = ['CRITICAL', 'HIGH', 'MEDIUM', 'LOW'];
+    const priorityRows = priorityLabels.map((label, index) => ({ label, value: priorityValues[index] }));
+    priorityRows.sort((a, b) => {
+        const aOrder = priorityOrder.indexOf(a.label.toUpperCase());
+        const bOrder = priorityOrder.indexOf(b.label.toUpperCase());
+        return (aOrder < 0 ? priorityOrder.length : aOrder) - (bOrder < 0 ? priorityOrder.length : bOrder);
+    });
+    renderDashboardChart(
+        'priorityChart',
+        priorityRows.map(row => row.label),
+        priorityRows.map(row => row.value),
+        'bar',
+        priorityRows.map(row => priorityColors[row.label.toUpperCase()] || '#597a9c')
+    );
+
+    const evidenceLabels = {{ evidence_stats | map(attribute='file_type') | list | tojson }};
+    const evidenceValues = {{ evidence_stats | map(attribute='count') | list | tojson }};
+    renderDashboardChart('evidenceChart', evidenceLabels, evidenceValues, 'doughnut');
+
+    const rawStatusLabels = {{ status_stats | map(attribute='status') | list | tojson }};
+    const statusLabels = rawStatusLabels.map(status => status.replace(/_/g, ' ').replace(/\b\w/g, letter => letter.toUpperCase()));
+    const statusValues = {{ status_stats | map(attribute='count') | list | tojson }};
+    renderDashboardChart('statusChart', statusLabels, statusValues, 'bar');
+</script>
+{% endblock %}

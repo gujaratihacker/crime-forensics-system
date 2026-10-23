@@ -1,0 +1,202 @@
+{% extends "base.html" %}
+
+{% block title %}{{ person.fullname }} - {{ translate('Missing Person Details', 'लापता व्यक्ति का विवरण', 'ગુમ થયેલ વ્યક્તિની વિગતો') }}{% endblock %}
+
+{% block content %}
+<div id="missing-person-detail-page" class="container mt-4 mb-5">
+    <style>
+        #missing-person-detail-page .cyber-card,
+        #missing-person-detail-page .table-light,
+        #missing-person-detail-page .bg-light,
+        #missing-person-detail-page .bg-dark,
+        #missing-person-detail-page .table-dark {
+            background-color: #ffffff !important;
+            color: #111827 !important;
+        }
+        #missing-person-detail-page .text-light,
+        #missing-person-detail-page .text-secondary,
+        #missing-person-detail-page .text-info,
+        #missing-person-detail-page .text-warning,
+        #missing-person-detail-page .text-danger,
+        #missing-person-detail-page h3,
+        #missing-person-detail-page h4,
+        #missing-person-detail-page h5,
+        #missing-person-detail-page p,
+        #missing-person-detail-page th,
+        #missing-person-detail-page td,
+        #missing-person-detail-page span,
+        #missing-person-detail-page small,
+        #missing-person-detail-page label {
+            color: #111827 !important;
+        }
+        #missing-person-detail-page .border-secondary {
+            border-color: #dbe3ee !important;
+        }
+        #missing-person-detail-page .table {
+            background-color: #ffffff !important;
+        }
+    </style>
+    <!-- Back Button and Header -->
+    <div class="mb-4">
+        <a href="{{ url_for('missing_persons.list_missing') }}" class="btn btn-outline-secondary btn-sm">
+            <i class="bi bi-arrow-left"></i> {{ translate('Back to Registry', 'रजिस्ट्री पर वापस जाएं', 'રजिस्ट्री પર પાછા જાઓ') }}
+        </a>
+    </div>
+
+    <div class="row g-4">
+        <!-- Profile Column -->
+        <div class="col-md-5">
+            <div class="cyber-card p-4 {% if person.status == 'found' %}border-success{% else %}border-warning{% endif %}">
+                <div class="text-center mb-4">
+                    <!-- Photo Display -->
+                    <div class="bg-light p-2 rounded border border-secondary mb-3" style="height: 300px; display: flex; align-items: center; justify-content: center; overflow: hidden;">
+                        {% if person.photo_path %}
+                            <img src="{{ url_for('missing_persons.serve_photo', filename=person.photo_path) }}" class="img-fluid rounded" style="max-height: 100%; max-width: 100%; object-fit: contain;" alt="Photo">
+                        {% else %}
+                            <div class="text-secondary d-flex flex-column align-items-center">
+                                <i class="bi bi-person-bounding-box fs-1"></i>
+                                <span>{{ translate('No Photograph Available', 'कोई तस्वीर उपलब्ध नहीं', 'કોઈ ફોટો ઉપલબ્ધ નથી') }}</span>
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <h3 class="text-dark mb-1" style="font-family: 'Outfit', sans-serif;">{{ person.fullname }}</h3>
+                    <span class="badge {% if person.status == 'found' %}bg-success{% else %}bg-warning text-dark{% endif %} fs-6 px-3">
+                        {{ person.status.upper() }}
+                    </span>
+                </div>
+
+                            <div class="border-top border-secondary pt-3 mt-3">
+                                <table class="table table-light table-borderless rounded overflow-hidden align-middle">
+                                    <tbody>
+                                        <tr>
+                                            <th class="text-dark small font-monospace" style="width: 40%;">{{ translate('CASE ID', 'केस आईडी', 'કેસ આઈડી') }}</th>
+                                            <td class="text-dark font-monospace small">{{ person.id }}</td>
+                                        </tr>
+                                        <tr>
+                                            <th class="text-dark small font-monospace">{{ translate('AGE', 'आयु', 'ઉંમર') }}</th>
+                                            <td class="text-dark">{{ person.age }} {{ translate('Years', 'वर्ष', 'વર્ષ') }}</td>
+                                        </tr>
+                                        <tr>
+                                            <th class="text-dark small font-monospace">{{ translate('GENDER', 'लिंग', 'लिंग') }}</th>
+                                            <td class="text-dark">{{ translate(person.gender, 'पुरुष' if person.gender=='Male' else 'महिला', 'પુરुष' if person.gender=='Male' else 'મહિલા') }}</td>
+                                        </tr>
+                                        <tr>
+                                            <th class="text-dark small font-monospace">{{ translate('LAST SEEN LOCATION', 'अंतिम स्थान', 'છેલ્લે જોયેલું સ્થળ') }}</th>
+                                            <td class="text-warning fw-bold">{{ person.last_seen_location }}</td>
+                                        </tr>
+                                        <tr>
+                                            <th class="text-dark small font-monospace">{{ translate('LAST SEEN DATE', 'अंतिम तारीख', 'છેલ્લે જોયેલી તારીખ') }}</th>
+                                            <td class="text-warning fw-bold">{{ person.last_seen_date }}</td>
+                                        </tr>
+                                        <tr>
+                                            <th class="text-dark small font-monospace">{{ translate('CONTACT PHONE', 'संपर्क फोन', 'સંપર્ક ફોન') }}</th>
+                                            <td class="text-primary font-monospace">{{ person.contact_phone }}</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+
+                <div class="mt-4">
+                    <h5 class="text-dark font-monospace border-bottom border-secondary pb-2"><i class="bi bi-card-text text-warning"></i> {{ translate('PHYSICAL DESCRIPTION', 'शारीरिक विवरण', 'શારીરિક વર્ણન') }}</h5>
+                    <p class="text-dark small mb-0" style="white-space: pre-wrap; line-height: 1.6;">{{ person.description }}</p>
+                </div>
+
+                <!-- Status Update Section (Only for reporter or investigator/admin) -->
+                {% if session.get('user_id') and (session.get('user_id') == person.citizen_id or session.get('role') in ['investigator', 'admin']) %}
+                    <div class="cyber-card p-3 border-info mt-4">
+                        <h5 class="text-light mb-2 font-monospace" style="font-size: 0.9rem;"><i class="bi bi-pencil-square text-cyan"></i> {{ translate('Update Status', 'स्थिति अपडेट करें', 'સ્થિતિ અપડેટ કરો') }}</h5>
+                        <form method="POST" action="{{ url_for('missing_persons.update_status', id=person.id) }}" class="d-flex gap-2 align-items-center">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                            <select class="form-select form-select-sm cyber-input py-0" name="status" style="max-width: 150px; height: 35px;" required>
+                                <option value="missing" {% if person.status == 'missing' %}selected{% endif %}>{{ translate('Missing', 'लापता', 'ગુમ') }}</option>
+                                <option value="found" {% if person.status == 'found' %}selected{% endif %}>{{ translate('Found', 'मिल गया', 'મળી ગયા') }}</option>
+                            </select>
+                            <button type="submit" class="btn btn-cyber-cyan btn-sm py-1 font-monospace" style="height: 35px;">{{ translate('Update', 'अपडेट करें', 'અપડેટ કરો') }}</button>
+                        </form>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Sighting Sighter and Sighting Comments List -->
+        <div class="col-md-7">
+            <!-- Add Sighting Form -->
+            <div class="cyber-card p-4 mb-4">
+                <h4 class="text-light mb-3 font-monospace" style="font-family: 'Outfit', sans-serif;">
+                    <i class="bi bi-broadcast text-danger"></i> {{ translate('REPORT_A_SIGHTING_OR_UPDATE', 'साइटिंग या अपडेट की रिपोर्ट करें', 'સાઇટીંગ અથવા અપડેટની જાણ કરો') }}
+                </h4>
+
+                <form method="POST" action="{{ url_for('missing_persons.comment_missing', id=person.id) }}">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+
+                    <!-- Comment text (Required) -->
+                    <div class="mb-3">
+                        <label for="comment_text" class="form-label text-secondary small fw-bold">{{ translate('SIGHTING DETAILS / RELEVANT COMMENT', 'साइटिंग विवरण / प्रासंगिक टिप्पणी', 'સાઇટીંગ વિગતો / પ્રાસંગિક ટિપ્પણી') }} <span class="text-danger">*</span></label>
+                        <textarea class="form-control cyber-input" id="comment_text" name="comment_text" rows="3" placeholder="{{ translate('Specify where you saw them, what they were wearing, or any other helpful comment...', 'निर्दिष्ट करें कि आपने उन्हें कहाँ देखा, उन्होंने क्या पहना था, या कोई अन्य सहायक टिप्पणी...', 'સ્પષ્ટ કરો કે તમે તેમને ક્યાં જોયા, તેમણે શું પહેર્યું હતું, અથવા અન્ય કોઈ મદદરૂપ ટિપ્પણી...') }}" required></textarea>
+                    </div>
+
+                    <!-- Sightings Location and Date (Optional helper inputs) -->
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="last_seen_location" class="form-label text-secondary small fw-bold">{{ translate('SIGHTING LOCATION', 'साइटिंग का स्थान', 'સાઇટીંગ સ્થળ') }} ({{ translate('If seen', 'यदि देखा गया', 'જો જોયું હોય') }})</label>
+                            <input type="text" class="form-control cyber-input" id="last_seen_location" name="last_seen_location" placeholder="e.g. Near Bus Stand, Sector 15">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="last_seen_date" class="form-label text-secondary small fw-bold">{{ translate('SIGHTING DATE', 'साइटिंग की तारीख', 'સાઇટીંગ તારીખ') }} ({{ translate('If seen', 'यदि देखा गया', 'જો જોયું હોય') }})</label>
+                            <input type="date" class="form-control cyber-input" id="last_seen_date" name="last_seen_date">
+                        </div>
+                    </div>
+
+                    <!-- Sighting Identification Details (Optional helper inputs) -->
+                    <div class="mb-3">
+                        <label for="identification_details" class="form-label text-secondary small fw-bold">{{ translate('PHYSICAL IDENTIFIERS / CLOTHING MATCHING', 'शारीरिक पहचानकर्ता / कपड़े मिलान', 'શારીરિક ઓળખકર્તાઓ / કપડાં મેચિંગ') }} ({{ translate('If matching', 'यदि मेल खाता हो', 'જો મેચ થતું હોય') }})</label>
+                        <textarea class="form-control cyber-input" id="identification_details" name="identification_details" rows="2" placeholder="e.g. Wearing a blue hoodie, walked with a slight limp, matching birthmark on hand..."></textarea>
+                    </div>
+
+                    <button type="submit" class="btn btn-cyber-cyan w-100 py-2"><i class="bi bi-send-fill"></i> {{ translate('Submit Sighting Sighting Update', 'साइटिंग अपडेट सबमिट करें', 'સાઇટીંગ અપડેટ સબમિટ કરો') }}</button>
+                </form>
+            </div>
+
+            <!-- Sightings Timeline -->
+            <h4 class="text-light mb-3 font-monospace"><i class="bi bi-clock-history text-info"></i> {{ translate('Community Sightings Timeline', 'सामुदायिक साइटिंग समयरेखा', 'સમુદાય સાઇટીંગ સમયરેખા') }}</h4>
+
+            {% if not comments %}
+                <div class="cyber-card p-4 text-center text-secondary">
+                    <i class="bi bi-chat-left-dots fs-3"></i>
+                    <p class="mt-2 mb-0">{{ translate('No sightings or comments have been reported for this case yet.', 'इस मामले के लिए अभी तक कोई साइटिंग या टिप्पणी रिपोर्ट नहीं की गई है।', 'આ કેસ માટે હજુ સુધી કોઈ સાઇટીંગ અથવા ટિપ્પણીઓ નોંધાઈ નથી.') }}</p>
+                </div>
+            {% else %}
+                <div class="d-flex flex-column gap-3">
+                    {% for comment in comments %}
+                        <div class="cyber-card p-3 border-secondary">
+                            <div class="d-flex justify-content-between align-items-center mb-2 border-bottom border-secondary pb-1">
+                                <span class="text-info fw-bold"><i class="bi bi-person-fill"></i> {{ comment.username_display }}</span>
+                                <span class="text-secondary small font-monospace">{{ comment.created_at }}</span>
+                            </div>
+
+                            <p class="text-light small mb-2" style="white-space: pre-wrap;">{{ comment.comment_text }}</p>
+
+                            <!-- Optional Sighting Blocks -->
+                            {% if comment.last_seen_location or comment.last_seen_date or comment.identification_details %}
+                                <div class="bg-dark p-2 rounded border border-secondary mt-2 small">
+                                    <div class="text-secondary fw-bold mb-1 font-monospace"><i class="bi bi-shield-exclamation text-warning"></i> {{ translate('Sighting Metadata Record', 'साइटिंग मेटाडेटा रिकॉर्ड', 'સાઇટીંગ મેટાડેટા રેકોર્ડ') }}</div>
+                                    {% if comment.last_seen_location %}
+                                        <div class="text-light"><strong class="text-warning">{{ translate('Reported Location:', 'रिपोर्ट किया गया स्थान:', 'અહેવાલ કરેલ સ્થળ:') }}</strong> {{ comment.last_seen_location }}</div>
+                                    {% endif %}
+                                    {% if comment.last_seen_date %}
+                                        <div class="text-light"><strong class="text-warning">{{ translate('Reported Date:', 'रिपोर्ट की गई तारीख:', 'અહેવાલ કરેલ તારીખ:') }}</strong> {{ comment.last_seen_date }}</div>
+                                    {% endif %}
+                                    {% if comment.identification_details %}
+                                        <div class="text-light mt-1"><strong class="text-warning">{{ translate('Physical Marks/Identities:', 'शारीरिक चिह्न/पहचान:', 'શારીરિક ગુણ/ઓળખ:') }}</strong> {{ comment.identification_details }}</div>
+                                    {% endif %}
+                                </div>
+                            {% endif %}
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,271 @@
+{% extends "base.html" %}
+
+{% block title %}Case Details - {{ complaint.id }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-4 py-4">
+    <!-- Back Header -->
+    <div class="mb-4">
+        <a href="{{ url_for('citizen.dashboard') }}" class="btn btn-outline-secondary btn-sm"><i class="bi bi-chevron-left"></i> Back to Dashboard</a>
+    </div>
+
+    <div class="row">
+        <!-- Left Side: Complaint Details and Evidence -->
+        <div class="col-lg-8">
+            <!-- Details Card -->
+            <div class="cyber-card p-4 mb-4">
+                <div class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom border-secondary">
+                    <div>
+                        <span class="text-secondary small fw-bold">COMPLAINT REFERENCE</span>
+                        <h3 class="text-info font-monospace mb-0">{{ complaint.id }}</h3>
+                    </div>
+                    <div>
+                        {% if complaint.reporting_mode == 'anonymous' %}
+                            <span class="badge badge-anonymous fs-6"><i class="bi bi-eye-slash-fill"></i> ANONYMOUS RECORD</span>
+                        {% else %}
+                            <span class="badge bg-secondary fs-6"><i class="bi bi-person-fill"></i> IDENTIFIED</span>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="row g-3 mb-4">
+                    <div class="col-md-6">
+                        <small class="text-secondary d-block">CATEGORY</small>
+                        <span class="fw-bold">{{ complaint.category }}</span>
+                    </div>
+                    <div class="col-md-3">
+                        <small class="text-secondary d-block">INCIDENT TIME</small>
+                        <span class="fw-bold">{{ complaint.incident_date }} at {{ complaint.incident_time }}</span>
+                    </div>
+                    <div class="col-md-3">
+                        <small class="text-secondary d-block">STATUS</small>
+                        <span class="badge bg-info text-dark text-uppercase">{{ complaint.status }}</span>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <small class="text-secondary d-block">LOCATION</small>
+                    <span class="fw-bold">{{ complaint.location }}</span>
+                </div>
+
+                {% if complaint.platform %}
+                    <div class="row g-3 mb-4 bg-dark p-3 rounded border border-secondary mx-0">
+                        <div class="col-md-4">
+                            <small class="text-secondary d-block mb-1">SOCIAL PLATFORM</small>
+                            <span class="badge bg-info text-dark text-uppercase">{{ complaint.platform }}</span>
+                        </div>
+                        <div class="col-md-4">
+                            <small class="text-secondary d-block mb-1">CRIME TYPE</small>
+                            <span class="fw-bold text-light">{{ complaint.sm_crime_type }}</span>
+                        </div>
+                        <div class="col-md-4">
+                            <small class="text-secondary d-block mb-1">SUSPECT PROFILE URL</small>
+                            <a href="{{ complaint.sm_profile_url }}" target="_blank" class="text-info text-break small">{{ complaint.sm_profile_url }}</a>
+                        </div>
+                    </div>
+                {% endif %}
+
+                <div class="mb-4 bg-dark p-3 rounded border border-secondary">
+                    <small class="text-secondary d-block mb-1">INCIDENT DESCRIPTION</small>
+                    <p class="mb-0 text-light" style="white-space: pre-wrap;">{{ complaint.description }}</p>
+                </div>
+
+                <div class="row g-3">
+                    {% if complaint.victim_info %}
+                        <div class="col-md-6">
+                            <small class="text-secondary d-block">VICTIM INFORMATION</small>
+                            <span class="text-light">{{ complaint.victim_info }}</span>
+                        </div>
+                    {% endif %}
+                    {% if complaint.suspect_info %}
+                        <div class="col-md-6">
+                            <small class="text-secondary d-block">SUSPECT INTEL</small>
+                            <span class="text-light">{{ complaint.suspect_info }}</span>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Evidence Section -->
+            <div class="cyber-card p-4 mb-4">
+                <div class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom border-secondary">
+                    <h4 class="mb-0 text-light"><i class="bi bi-safe2 text-info me-1" aria-hidden="true"></i> Evidence files</h4>
+                    <button class="btn btn-sm btn-cyber-cyan" data-bs-toggle="modal" data-bs-target="#uploadEvidenceModal"><i class="bi bi-upload"></i> Upload File</button>
+                </div>
+
+                <div class="safety-alert py-2">
+                    <i class="bi bi-shield-lock me-2"></i>
+                    All uploaded evidence is secured using **SHA-256 integrity verification**. Modifying a file will trigger security warnings.
+                </div>
+
+                {% if not evidence %}
+                    <div class="text-center py-4 text-secondary">
+                        <i class="bi bi-folder-symlink fs-2"></i>
+                        <p class="mb-0 mt-2">No evidence uploaded for this complaint.</p>
+                    </div>
+                {% else %}
+                    <div class="row g-3">
+                        {% for file in evidence %}
+                            <div class="col-md-6">
+                                <div class="bg-dark p-3 rounded border border-secondary d-flex flex-column justify-content-between h-100">
+                                    <div>
+                                        <div class="d-flex justify-content-between align-items-start mb-2">
+                                            <span class="fw-bold text-light text-truncate me-2" title="{{ file.original_filename }}">{{ file.original_filename }}</span>
+                                            <span class="badge bg-secondary small text-uppercase font-monospace">{{ file.file_type }}</span>
+                                        </div>
+                                        <small class="text-secondary d-block">SHA-256 Hash:</small>
+                                        <code class="text-info font-monospace small text-break d-block mb-2">{{ file.sha256_hash }}</code>
+                                    </div>
+                                    <div class="d-flex justify-content-between align-items-center border-top border-secondary pt-2 mt-2">
+                                        <small class="text-secondary">Size: {{ (file.file_size / 1024) | round(2) }} KB</small>
+                                        {% if file.status == 'verified' %}
+                                            <span class="badge badge-verified"><i class="bi bi-patch-check"></i> VERIFIED</span>
+                                        {% elif file.status == 'failed_integrity' %}
+                                            <span class="badge badge-failed"><i class="bi bi-shield-x"></i> CORRUPT</span>
+                                        {% else %}
+                                            <span class="badge badge-pending"><i class="bi bi-hourglass-split"></i> PENDING VERIFY</span>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Right Side: Status Timeline and AI Analysis -->
+        <div class="col-lg-4">
+            <!-- Tracking Timeline -->
+            <div class="cyber-card p-4 mb-4">
+                <h4 class="mb-3 text-light border-bottom border-secondary pb-2"><i class="bi bi-compass text-info me-1" aria-hidden="true"></i> Case progress</h4>
+                
+                <div class="timeline-container mt-4">
+                    <!-- Step 1: Complaint Submitted -->
+                    <div class="timeline-item completed">
+                        <h6 class="mb-0 text-light">Complaint Submitted</h6>
+                        <small class="text-secondary">Reference generated and logged.</small>
+                    </div>
+
+                    <!-- Step 2: Initial Review -->
+                    <div class="timeline-item {% if complaint.status in ['under_review', 'accepted', 'rejected'] %}completed{% else %}active{% endif %}">
+                        <h6 class="mb-0 text-light">Initial Review</h6>
+                        <small class="text-secondary">System checks & priority scoring active.</small>
+                    </div>
+
+                    <!-- Step 3: Complaint Accepted -->
+                    <div class="timeline-item {% if case %}completed{% elif complaint.status == 'rejected' %}failed{% elif complaint.status == 'accepted' %}active{% endif %}">
+                        <h6 class="mb-0 text-light">Complaint Accepted</h6>
+                        <small class="text-secondary">
+                            {% if complaint.status == 'rejected' %}
+                                Report Rejected / Suspended.
+                            {% else %}
+                                Deciding administrative status.
+                            {% endif %}
+                        </small>
+                    </div>
+
+                    <!-- Step 4: Investigator Assigned -->
+                    <div class="timeline-item {% if case %}completed{% endif %}">
+                        <h6 class="mb-0 text-light">Investigator Assigned</h6>
+                        <small class="text-secondary">
+                            {% if case %}
+                                Assigned to Inspector: <span class="text-info">{{ case.investigator_name }}</span>
+                            {% else %}
+                                Assigning investigator...
+                            {{ "" }}
+                            {% endif %}
+                        </small>
+                    </div>
+
+                    <!-- Step 5: Investigation in Progress -->
+                    <div class="timeline-item {% if case and case.case_status in ['under_investigation', 'evidence_analysis', 'final_review', 'resolved', 'closed'] %}{% if case.case_status == 'under_investigation' %}active{% else %}completed{% endif %}{% endif %}">
+                        <h6 class="mb-0 text-light">Investigation in Progress</h6>
+                        <small class="text-secondary">Evidence validation & forensics inquiry active.</small>
+                    </div>
+
+                    <!-- Step 6: Case Closed -->
+                    <div class="timeline-item {% if case and case.case_status == 'closed' %}completed{% endif %}">
+                        <h6 class="mb-0 text-light">Case Closed</h6>
+                        <small class="text-secondary">Final investigation review logged.</small>
+                    </div>
+                </div>
+            </div>
+
+            <!-- AI assisted Complaint Analysis (Advisory) -->
+            <div class="cyber-card p-4 border border-secondary">
+                <h5 class="text-light mb-3 pb-2 border-bottom border-secondary"><i class="bi bi-lightbulb text-info me-1" aria-hidden="true"></i> Automated review</h5>
+                
+                <div class="safety-alert py-2 text-warning mb-3" style="font-size: 0.85rem;">
+                    <i class="bi bi-info-circle-fill"></i>
+                    <strong>Disclaimer:</strong> AI-generated analysis is advisory and must be reviewed by an authorized human investigator. The AI does not make final legal determinations.
+                </div>
+
+                <div class="mb-3">
+                    <small class="text-secondary d-block">Suggested Category</small>
+                    <span class="fw-bold">{{ complaint.ai_category }}</span>
+                </div>
+
+                <div class="row mb-3">
+                    <div class="col-6">
+                        <small class="text-secondary d-block">AI Priority</small>
+                        <span class="badge {% if complaint.ai_priority == 'CRITICAL' %}bg-danger{% elif complaint.ai_priority == 'HIGH' %}bg-warning text-dark{% else %}bg-info text-dark{% endif %}">{{ complaint.ai_priority }}</span>
+                    </div>
+                    <div class="col-6">
+                        <small class="text-secondary d-block">Score Reason</small>
+                        <span class="text-light small">{{ complaint.priority_reason }}</span>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <small class="text-secondary d-block">Recommended Evidence</small>
+                    <span class="text-light small">{{ complaint.ai_recommended_evidence }}</span>
+                </div>
+
+                <div>
+                    <small class="text-secondary d-block">Missing Information</small>
+                    <span class="text-warning small"><i class="bi bi-exclamation-triangle"></i> {{ complaint.ai_missing_info }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Upload Evidence Modal -->
+<div class="modal fade" id="uploadEvidenceModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content bg-dark border border-secondary text-light">
+            <div class="modal-header border-secondary">
+                        <h5 class="modal-title"><i class="bi bi-upload text-info" aria-hidden="true"></i> Add evidence file</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="POST" action="/evidence/upload" enctype="multipart/form-data">
+                <div class="modal-body">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                    <input type="hidden" name="complaint_id" value="{{ complaint.id }}">
+                    {% if case %}
+                        <input type="hidden" name="case_id" value="{{ case.case_id }}">
+                    {% endif %}
+
+                    <div class="safety-alert py-2 text-warning mb-3">
+                        <i class="bi bi-exclamation-circle-fill"></i>
+                        Uploaded material must comply with data sharing laws. Uploaded items enter the forensic chain of custody.
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="evidence_file" class="form-label small text-secondary fw-bold">SELECT FILE</label>
+                        <input class="form-control cyber-input" type="file" id="evidence_file" name="evidence_file" required>
+                        <div class="form-text text-secondary" style="font-size: 0.8rem;">
+                            Allowed types: images, videos, documents, zip files (Max 50MB).
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer border-secondary">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-cyber-cyan">Preserve & Hash File</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

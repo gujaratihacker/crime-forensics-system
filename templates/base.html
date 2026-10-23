@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Civic Desk | Casework demonstration{% endblock %}</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+    <!-- Custom styling -->
+    <link href="{{ url_for('static', filename='css/style.css') }}" rel="stylesheet">
+    {% block head %}{% endblock %}
+</head>
+<body>
+    <a class="skip-link" href="#main-content">Skip to content</a>
+    <!-- Main Navigation Bar -->
+    <nav class="navbar navbar-expand-xl navbar-light bg-white shadow-sm border-bottom app-nav">
+        <div class="container-fluid px-4">
+            <a class="navbar-brand d-flex align-items-center" href="{{ url_for('index') }}">
+                <span class="brand-mark"><i class="bi bi-shield-check" aria-hidden="true"></i></span>
+                <span>Civic Desk</span>
+            </a>
+            
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('live_incidents.public_incidents') }}">
+                            <i class="bi bi-broadcast me-1" aria-hidden="true"></i> {{ translate('Live incidents', 'लाइव घटनाएं', 'લાઇવ ઘટનાઓ') }}
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('missing_persons.list_missing') }}">
+                            <i class="bi bi-person-search me-1" aria-hidden="true"></i> {{ translate('Missing persons', 'लापता व्यक्ति', 'ગુમ થયેલ વ્યક્તિઓ') }}
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('awareness.index') }}">
+                            <i class="bi bi-shield-check me-1" aria-hidden="true"></i> {{ translate('Safety guidance', 'सुरक्षा हब', 'સુરક્ષા હબ') }}
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('social_media_crimes.report_crime') }}">
+                            <i class="bi bi-chat-square-text me-1" aria-hidden="true"></i> {{ translate('Social media reports', 'सोशल मीडिया अपराध', 'સોશિયલ ગુનાઓ') }}
+                        </a>
+                    </li>
+                </ul>
+                
+                <div class="d-flex align-items-center">
+                    <!-- Language Selection Dropdown -->
+                    <div class="dropdown me-3">
+                        <button class="btn btn-outline-secondary btn-sm dropdown-toggle text-dark" type="button" id="langSelector" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Choose language">
+                            <i class="bi bi-translate me-1" aria-hidden="true"></i> 
+                            {% if current_lang == 'hi' %}
+                                हिन्दी
+                            {% elif current_lang == 'gu' %}
+                                ગુજરાતી
+                            {% else %}
+                                English
+                            {% endif %}
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end border shadow-sm" aria-labelledby="langSelector">
+                            <li><a class="dropdown-item {% if current_lang == 'en' %}active{% endif %}" href="{{ url_for('set_language', lang='en') }}">English</a></li>
+                            <li><a class="dropdown-item {% if current_lang == 'hi' %}active{% endif %}" href="{{ url_for('set_language', lang='hi') }}">हिन्दी (Hindi)</a></li>
+                            <li><a class="dropdown-item {% if current_lang == 'gu' %}active{% endif %}" href="{{ url_for('set_language', lang='gu') }}">ગુજરાતી (Gujarati)</a></li>
+                        </ul>
+                    </div>
+
+                    {% if session.get('user_id') %}
+                        <span class="text-secondary me-3 d-none d-md-inline">
+                            <strong class="text-dark">{{ session.get('fullname') }}</strong>
+                            <span class="badge bg-secondary ms-1">{{ session.get('role')|replace('_', ' ')|title }}</span>
+                        </span>
+                        
+                        <!-- Role-based Dashboard links -->
+                        {% if session.get('role') == 'admin' %}
+                            <a href="{{ url_for('admin.dashboard') }}" class="btn btn-outline-primary btn-sm me-2"><i class="bi bi-speedometer2"></i> {{ translate('Dashboard', 'डैशबोर्ड', 'ડેશબોર્ડ') }}</a>
+                        {% elif session.get('role') == 'investigator' %}
+                            <a href="{{ url_for('investigator.dashboard') }}" class="btn btn-outline-primary btn-sm me-2"><i class="bi bi-journal-text"></i> {{ translate('Cases', 'मामले', 'કેસો') }}</a>
+                        {% else %}
+                            <a href="{{ url_for('citizen.dashboard') }}" class="btn btn-outline-primary btn-sm me-2"><i class="bi bi-person-workspace"></i> {{ translate('My Portal', 'मेरा पोर्टल', 'મારું પોર્ટલ') }}</a>
+                            <a href="{{ url_for('citizen.edit_profile') }}" class="btn btn-outline-secondary btn-sm me-2"><i class="bi bi-person-gear"></i> {{ translate('Edit Profile', 'प्रोफ़ाइल बदलें', 'પ્રોફાઇલ બદલો') }}</a>
+                        {% endif %}
+                        
+                        <a href="{{ url_for('auth.logout') }}" class="btn btn-danger btn-sm"><i class="bi bi-box-arrow-right"></i> {{ translate('Logout', 'लॉगआउट', 'લોગઆઉટ') }}</a>
+                    {% else %}
+                        <a href="{{ url_for('auth.login') }}" class="btn btn-outline-secondary btn-sm me-2"><i class="bi bi-box-arrow-in-right"></i> {{ translate('Login', 'लॉगिन', 'લોગીન') }}</a>
+                        <a href="{{ url_for('auth.register') }}" class="btn btn-primary btn-sm"><i class="bi bi-person-plus"></i> {{ translate('Register', 'रजिस्टर', 'રજીસ્તર') }}</a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </nav>
+
+
+    <!-- Main Container -->
+    <div class="container-fluid px-0">
+        <!-- Flash Messages -->
+        <div class="flash-container">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ category }} alert-dismissible fade show border border-{{ category }} shadow-sm text-dark bg-white" role="alert">
+                            <i class="bi {% if category=='success' %}bi-check-circle-fill text-success{% elif category=='danger' %}bi-exclamation-triangle-fill text-danger{% else %}bi-info-circle-fill text-info{% endif %} me-2"></i>
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+        </div>
+
+        <main id="main-content" class="page-content">
+            {% block content %}{% endblock %}
+        </main>
+    </div>
+
+    <footer class="app-footer">
+        <strong>Civic Desk</strong> is an educational demonstration. It is not an official reporting service and is not monitored by emergency responders.
+    </footer>
+
+    <!-- Bootstrap 5 Bundle JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    {% block scripts %}{% endblock %}
+</body>
+</html>

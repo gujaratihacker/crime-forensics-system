@@ -1,0 +1,227 @@
+{% extends "base.html" %}
+
+{% block title %}Watching Live - {{ incident.id }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4 mb-5">
+    <!-- Back button -->
+    <div class="mb-3">
+        <a href="{{ url_for('live_incidents.public_incidents') }}" class="btn btn-outline-secondary btn-sm"><i class="bi bi-chevron-left"></i> Back to Monitor Board</a>
+    </div>
+
+    <div class="row">
+        <!-- Left: Video Player simulated slide-show & Details -->
+        <div class="col-lg-8 mb-4">
+            <div class="cyber-card p-4 h-100">
+                <div class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom border-secondary">
+                    <div>
+                        {% if incident.status == 'active' %}
+                            <span class="badge badge-live mb-1"><i class="bi bi-broadcast"></i> Transmitting Live</span>
+                        {% else %}
+                            <span class="badge bg-success mb-1"><i class="bi bi-safe2"></i> Vault Preserved</span>
+                        {% endif %}
+                        <h3 class="mb-0 font-monospace text-light" style="font-family: 'Outfit', sans-serif;">INCIDENT: {{ incident.id }}</h3>
+                    </div>
+                    <div class="text-end">
+                        <small class="text-secondary d-block font-monospace"><i class="bi bi-eye-fill text-danger"></i> <span id="viewerCount">{{ incident.viewer_count }}</span> watching</small>
+                        <small class="text-secondary d-block">Location Area: <span class="text-light fw-bold">{{ incident.location_approx }}</span></small>
+                    </div>
+                </div>
+
+                <!-- Simulated Camera Viewport -->
+                <div class="mb-4">
+                    {% if incident.status == 'active' %}
+                        <div class="position-relative bg-black rounded border border-secondary overflow-hidden" style="height: 380px; display: flex; align-items: center; justify-content: center;">
+                            <img id="slideshow" src="{{ url_for('live_incidents.get_snapshot', live_id=incident.id) }}" style="width: 100%; height: 100%; object-fit: cover;">
+                            <div class="position-absolute top-0 start-0 m-3 p-2 bg-dark bg-opacity-70 rounded text-light small d-flex align-items-center">
+                                <span class="spinner-grow spinner-grow-sm text-danger me-2" role="status"></span>
+                                <span class="font-monospace text-uppercase">Live Stream Feed</span>
+                            </div>
+                        </div>
+                    {% else %}
+                        {% if video_filename %}
+                            <div class="position-relative bg-black rounded border border-secondary overflow-hidden" style="height: 380px; display: flex; align-items: center; justify-content: center;">
+                                <video controls style="width: 100%; height: 100%; object-fit: contain;">
+                                    <source src="{{ url_for('live_incidents.serve_recording', filename=video_filename) }}" type="video/webm">
+                                    Your browser does not support HTML5 video streaming.
+                                </video>
+                                <div class="position-absolute top-0 start-0 m-3 p-2 bg-dark bg-opacity-70 rounded text-light small d-flex align-items-center">
+                                    <span class="spinner-grow spinner-grow-sm text-success me-2" role="status" style="animation-duration: 3s;"></span>
+                                    <span class="font-monospace text-uppercase">{{ translate('Vault Recorded Feed', 'तिजोरी में सुरक्षित रिकॉर्डिंग', 'તિજોરીમાં સુરક્ષિત રેકોર્ડિંગ') }}</span>
+                                </div>
+                            </div>
+                        {% else %}
+                            <div class="d-flex flex-column align-items-center justify-content-center bg-black border border-secondary rounded text-secondary text-center p-3" style="height: 380px;">
+                                <i class="bi bi-shield-fill-check fs-1 text-success mb-2"></i>
+                                {% if incident.saved_video_evidence_id %}
+                                    <h5 class="text-light">RECORDING LOCKED IN FORENSIC VAULT</h5>
+                                    <p class="small px-4">This incident has concluded. The camera stream has been compiled and saved with SHA-256 integrity verification.</p>
+                                {% else %}
+                                    <h5 class="text-light">RECORDING NO LONGER AVAILABLE</h5>
+                                    <p class="small px-4">An administrator removed the saved video. The incident details and comments remain available.</p>
+                                {% endif %}
+                                {% if incident.saved_video_evidence_id and session.get('user_id') and (session.get('user_id') == incident.reporter_id or session.get('role') in ['investigator', 'admin']) %}
+                                    <a href="{{ url_for('evidence.download', evidence_id=incident.saved_video_evidence_id) }}" class="btn btn-cyber-cyan btn-sm mt-3 px-4">
+                                        <i class="bi bi-download"></i> Access Preserved Video Recording
+                                    </a>
+                                {% endif %}
+                            </div>
+                        {% endif %}
+                    {% endif %}
+                </div>
+
+                <!-- Description & Details -->
+                <div class="bg-dark p-3 rounded border border-secondary mb-4">
+                    <small class="text-secondary d-block uppercase fw-bold" style="font-size: 0.75rem;">REPORTER SUMMARY</small>
+                    <p class="mb-2 text-light">{{ incident.description or 'No summary details logged by reporter.' }}</p>
+                    <hr class="border-secondary my-2">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <small class="text-secondary">
+                            Reporting Mode: 
+                            {% if incident.reporting_mode == 'anonymous' %}
+                                <span class="badge badge-anonymous"><i class="bi bi-eye-slash-fill"></i> Anonymous</span>
+                            {% else %}
+                                <span class="badge bg-secondary"><i class="bi bi-person-fill"></i> Identified</span>
+                            {% endif %}
+                        </small>
+                        <small class="text-secondary">
+                            Broadcast Started: <span class="text-light font-monospace">{{ incident.started_at.strftime('%Y-%m-%d %H:%M') }}</span>
+                        </small>
+                    </div>
+                </div>
+
+                <!-- Viewer Evidence Button (Requirement 21) -->
+                <div class="d-grid">
+                    <button class="btn btn-outline-info btn-cyber" data-bs-toggle="modal" data-bs-target="#viewerUploadModal"><i class="bi bi-upload"></i> I Have Additional Digital Evidence relating to this Incident</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right: Moderated Community comments chat -->
+        <div class="col-lg-4 mb-4">
+            <div class="cyber-card p-4 d-flex flex-column justify-content-between h-100">
+                <div>
+                    <h4 class="mb-3 text-light border-bottom border-secondary pb-2"><i class="bi bi-chat-text text-info me-1"></i> Community Chat Intel</h4>
+                    
+                    <!-- Requirement 34 Safety Warning -->
+                    <div class="safety-alert py-2 text-warning mb-3" style="font-size: 0.8rem;">
+                        <i class="bi-info-circle-fill"></i>
+                        <strong>Disclaimer:</strong> Community comments are unverified information and should not be treated as confirmed facts.
+                    </div>
+
+                    <!-- Chat Log -->
+                    <div id="chatLog" class="overflow-y-auto mb-3 bg-dark border border-secondary rounded p-2" style="height: 320px;">
+                        {% if not comments %}
+                            <div class="text-center py-5 text-secondary" id="noComments">
+                                <i class="bi-chat-left-dots fs-3"></i>
+                                <p class="mb-0 mt-2 small">No comments yet. Provide details or eyewitness statements below.</p>
+                            </div>
+                        {% else %}
+                            {% for c in comments %}
+                                <div class="mb-3 border-bottom border-secondary pb-2">
+                                    <div class="d-flex justify-content-between align-items-center mb-1">
+                                        <strong class="text-info small">{{ c.username_display }}</strong>
+                                        <span class="badge bg-secondary font-monospace" style="font-size: 0.65rem;">{{ c.comment_type }}</span>
+                                    </div>
+                                    <p class="mb-1 text-light small">{{ c.comment_text }}</p>
+                                    {% if c.proof_stored_filename %}
+                                        <div class="mb-1">
+                                            <i class="bi bi-paperclip text-warning"></i>
+                                            <a href="{{ url_for('comments.download_proof', filename=c.proof_stored_filename) }}" class="text-info small font-monospace text-decoration-none" target="_blank" download="{{ c.proof_original_filename }}">
+                                                {{ c.proof_original_filename }}
+                                            </a>
+                                        </div>
+                                    {% endif %}
+                                    <small class="text-secondary font-monospace" style="font-size: 0.65rem;">{{ c.created_at.strftime('%H:%M:%S') }}</small>
+                                </div>
+                            {% endfor %}
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Input form -->
+                <form method="POST" action="{{ url_for('comments.add_comment', live_id=incident.id) }}" enctype="multipart/form-data">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                    
+                    <div class="mb-2">
+                        <select class="form-select form-select-sm cyber-input" name="comment_type" required>
+                            <option value="" disabled selected>{{ translate('Select feedback type...', 'प्रतिक्रिया प्रकार चुनें...', 'પ્રતિસાદ પ્રકાર પસંદ કરો...') }}</option>
+                            <option value="witness">{{ translate('I witnessed this', 'मैंने इसे देखा', 'મેં આ જોયું') }}</option>
+                            <option value="info">{{ translate('Additional information', 'अतिरिक्त जानकारी', 'વધારાની માહિતી') }}</option>
+                            <option value="location">{{ translate('I know the location', 'मुझे स्थान पता है', 'મને સ્થાન ખબર છે') }}</option>
+                            <option value="pre-stream">{{ translate('Saw details before stream', 'स्ट्रीम से पहले विवरण देखा', 'સ્ટ્રીમ પહેલાં વિગતો જોઈ') }}</option>
+                            <option value="correction">{{ translate('Correction to description', 'विवरण में सुधार', 'વર્ણનમાં સુધારો') }}</option>
+                            <option value="other">{{ translate('Other comments', 'अन्य टिप्पणियाँ', 'અન્ય ટિપ્પણીઓ') }}</option>
+                        </select>
+                    </div>
+                    
+                    <div class="mb-2">
+                        <textarea class="form-control form-control-sm cyber-input" name="comment_text" rows="3" placeholder="{{ translate('Provide details (Phone numbers/addresses will be auto-flagged for safety check)...', 'विवरण प्रदान करें (सुरक्षा जांच के लिए फोन नंबर/पते स्वतः ध्वजांकित किए जाएंगे)...', 'વિગતો આપો (સુરક્ષા તપાસ માટે ફોન નંબર/સરનામાંઓ આપમેળે ફ્લેગ થશે)...') }}" required></textarea>
+                    </div>
+
+                    <!-- Upload Sighting Proof Attachment -->
+                    <div class="mb-2">
+                        <label class="form-label text-secondary small fw-bold" style="font-size: 0.65rem !important;">{{ translate('Attach Proof File', 'प्रमाण फ़ाइल संलग्न करें', 'પુરાવા ફાઇલ જોડો') }} ({{ translate('Optional', 'वैकल्पिक', 'વૈકલ્પિક') }})</label>
+                        <input type="file" class="form-control form-control-sm cyber-input" name="proof_file">
+                    </div>
+
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="anonymous" id="anonCheck">
+                            <label class="form-check-label text-secondary small" for="anonCheck">{{ translate('Post anonymously', 'अनाम पोस्ट करें', 'અનામી પોસ્ટ કરો') }}</label>
+                        </div>
+                        <button type="submit" class="btn btn-sm btn-cyber-cyan px-3">{{ translate('Post Intel', 'इंटेल पोस्ट करें', 'ઇન્ટેલ પોસ્ટ કરો') }}</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Viewer Evidence Upload Modal (Requirement 21) -->
+<div class="modal fade" id="viewerUploadModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content bg-dark border border-secondary text-light">
+            <div class="modal-header border-secondary">
+                <h5 class="modal-title" style="font-family: 'Outfit', sans-serif;"><i class="bi bi-upload text-info"></i> Submit Community Evidence</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="POST" action="/evidence/upload" enctype="multipart/form-data">
+                <div class="modal-body">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                    <input type="hidden" name="live_incident_id" value="{{ incident.id }}">
+
+                    <div class="safety-alert py-2 text-warning mb-3">
+                        <i class="bi bi-exclamation-circle-fill"></i>
+                        <strong>Important:</strong> Uploaded evidence will enter the forensic vault and generate a SHA-256 integrity hash. It will NOT be made public and is accessible only to authorized cyber investigators.
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="evidence_file" class="form-label small text-secondary fw-bold">SELECT EVIDENCE FILE</label>
+                        <input class="form-control cyber-input" type="file" id="evidence_file" name="evidence_file" required>
+                        <div class="form-text text-secondary" style="font-size: 0.8rem;">
+                            Allowed types: images, video clips, documents, audio records (Max 50MB).
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer border-secondary">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#viewerUploadModal">Close</button>
+                    <button type="submit" class="btn btn-cyber-cyan">Preserve in Forensic Vault</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Refresh JPEG Snapshot every 1s for active livestream
+    const slideshowImg = document.getElementById('slideshow');
+    if (slideshowImg) {
+        setInterval(() => {
+            slideshowImg.src = "{{ url_for('live_incidents.get_snapshot', live_id=incident.id) }}?t=" + new Date().getTime();
+        }, 1000);
+    }
+</script>
+{% endblock %}

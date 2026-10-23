@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+
+{% block title %}{{ translate('Missing Persons Board - Cyber Portal', 'लापता व्यक्ति बोर्ड - साइबर पोर्टल', 'ગુમ થયેલ વ્યક્તિઓ બોર્ડ - સાયબર પોર્ટલ') }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4 mb-5">
+    <div class="d-flex justify-content-between align-items-center mb-4 pb-2 border-bottom border-secondary">
+        <div>
+            <h1 class="h2 mb-0" style="font-family: 'Outfit', sans-serif;">
+                <i class="bi bi-person-search text-warning"></i> {{ translate('Missing Persons Services', 'लापता व्यक्ति सेवाएं', 'ગુમ થયેલ વ્યક્તિઓ સેવાઓ') }}
+            </h1>
+            <p class="text-secondary mb-0 small">{{ translate('Public registry to report and locate missing individuals via citizen sighting updates.', 'नागरिकों द्वारा साइटिंग अपडेट के माध्यम से लापता व्यक्तियों की रिपोर्ट करने और उनका पता लगाने के लिए सार्वजनिक रजिस्ट्री।', 'નાગરિકો દ્વારા સાઇટીંગ અપડેટ્સ દ્વારા ગુમ થયેલ વ્યક્તિઓની જાણ કરવા અને શોધવા માટે સાર્વજનિક રજિસ્ટ્રી.') }}</p>
+        </div>
+        <div>
+            <a href="{{ url_for('missing_persons.report_missing') }}" class="btn btn-warning btn-sm fw-bold">
+                <i class="bi bi-plus-circle-fill"></i> {{ translate('Report Missing Person', 'लापता व्यक्ति की रिपोर्ट करें', 'ગુમ થયેલ વ્યક્તિની જાણ કરો') }}
+            </a>
+        </div>
+    </div>
+
+    <!-- Search & Filter Controls -->
+    <div class="cyber-card p-3 mb-4">
+        <form method="GET" action="{{ url_for('missing_persons.list_missing') }}" class="row g-2">
+            <div class="col-md-7">
+                <div class="input-group">
+                    <span class="input-group-text bg-dark border-secondary text-secondary"><i class="bi bi-search"></i></span>
+                    <input type="text" class="form-control cyber-input" name="search" value="{{ search_query }}" placeholder="{{ translate('Search by name or last seen location...', 'नाम या अंतिम बार देखे गए स्थान से खोजें...', 'નામ અથવા છેલ્લે જોયેલા સ્થળ દ્વારા શોધો...') }}">
+                </div>
+            </div>
+            <div class="col-md-3">
+                <select class="form-select cyber-input" name="status">
+                    <option value="missing" {% if status_filter == 'missing' %}selected{% endif %}>{{ translate('Status: Still Missing', 'स्थिति: अभी भी लापता', 'સ્થિતિ: હજી પણ ગુમ') }}</option>
+                    <option value="found" {% if status_filter == 'found' %}selected{% endif %}>{{ translate('Status: Found / Closed', 'स्थिति: मिले / बंद', 'સ્થિતિ: મળી ગયા / બંધ') }}</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <button type="submit" class="btn btn-cyber-cyan w-100 h-100"><i class="bi bi-filter"></i> {{ translate('Filter', 'फिल्टर करें', 'ફિલ્ટર કરો') }}</button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Missing Persons Grid -->
+    {% if not missing_list %}
+        <div class="cyber-card p-5 text-center text-secondary mb-5">
+            <i class="bi bi-person-slash fs-1 text-warning"></i>
+            <p class="mt-3 mb-0">{{ translate('No reported missing persons found matching the criteria.', 'मापदंड से मेल खाने वाला कोई लापता व्यक्ति नहीं मिला।', 'માપદંડ સાથે મેળ ખાતી કોઈ ગુમ થયેલ વ્યક્તિ મળી નથી.') }}</p>
+        </div>
+    {% else %}
+        <div class="row g-3">
+            {% for person in missing_list %}
+                <div class="col-md-4 col-sm-6">
+                    <div class="cyber-card h-100 p-3 {% if person.status == 'found' %}border-success{% else %}border-warning{% endif %} d-flex flex-column justify-content-between">
+                        <div>
+                            <!-- Photograph block -->
+                            <div class="text-center bg-dark p-2 rounded mb-3 border border-secondary" style="height: 220px; overflow: hidden; display: flex; align-items: center; justify-content: center;">
+                                {% if person.photo_path %}
+                                    <img src="{{ url_for('missing_persons.serve_photo', filename=person.photo_path) }}" class="img-fluid rounded" style="max-height: 100%; max-width: 100%; object-fit: contain;" alt="Photo">
+                                {% else %}
+                                    <div class="text-secondary d-flex flex-column align-items-center">
+                                        <i class="bi bi-person-bounding-box fs-1"></i>
+                                        <span class="small mt-1">{{ translate('No Photo Provided', 'कोई फोटो उपलब्ध नहीं', 'કોઈ ફોટો આપેલ નથી') }}</span>
+                                    </div>
+                                {% endif %}
+                            </div>
+
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <h5 class="text-light mb-0" style="font-family: 'Outfit', sans-serif;">{{ person.fullname }}</h5>
+                                <span class="badge {% if person.status == 'found' %}bg-success{% else %}bg-warning text-dark{% endif %}">
+                                    {{ person.status.upper() }}
+                                </span>
+                            </div>
+
+                            <p class="text-secondary small mb-1">
+                                <strong>{{ translate('Age / Gender:', 'आयु / लिंग:', 'ઉંમર / લિંગ:') }}</strong> {{ person.age }} / {{ translate(person.gender, 'पुरुष' if person.gender=='Male' else 'महिला', 'પુરુષ' if person.gender=='Male' else 'મહિલા') }}
+                            </p>
+                            <p class="text-secondary small mb-1">
+                                <strong>{{ translate('Last Seen Location:', 'अंतिम बार देखा गया स्थान:', 'છેલ્લે જોયેલું સ્થળ:') }}</strong> {{ person.last_seen_location }}
+                            </p>
+                            <p class="text-secondary small mb-2">
+                                <strong>{{ translate('Last Seen Date:', 'अंतिम बार देखी गई तारीख:', 'છેલ્લે જોયેલી તારીખ:') }}</strong> {{ person.last_seen_date }}
+                            </p>
+                            
+                            <p class="text-light small text-truncate-3 mb-3" style="min-height: 3.5rem;">
+                                {{ person.description }}
+                            </p>
+                        </div>
+
+                        <div class="border-top border-secondary pt-2 mt-2 d-flex justify-content-between align-items-center">
+                            <span class="text-muted small"><i class="bi bi-hash"></i> {{ person.id }}</span>
+                            <a href="{{ url_for('missing_persons.detail_missing', id=person.id) }}" class="btn btn-outline-warning btn-sm py-1 font-monospace">
+                                {{ translate('VIEW DETAILS', 'विवरण देखें', 'વિગતો જુઓ') }} <i class="bi bi-chevron-right"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

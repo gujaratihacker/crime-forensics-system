@@ -1,0 +1,119 @@
+{% extends "base.html" %}
+
+{% block title %}Investigator Workspace - Dashboard{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-4 py-4">
+    <div class="row">
+        <!-- Sidebar Profile -->
+        <div class="col-md-3 mb-4">
+            <div class="cyber-card p-3">
+                <div class="text-center mb-4 pb-3 border-bottom border-secondary">
+                    <i class="bi bi-shield-check text-info fs-1"></i>
+                    <h5 class="mt-2 text-light">{{ session.get('fullname') }}</h5>
+                    <span class="badge bg-info text-dark font-monospace text-uppercase" style="font-size: 0.75rem;">Investigator</span>
+                </div>
+
+                <div class="mb-4">
+                    <small class="text-secondary d-block fw-bold" style="font-size: 0.7rem;">Department</small>
+                    <span class="text-light small fw-bold">Cyber Crime Cell / Forensics Lab</span>
+                </div>
+                
+                <div class="d-grid gap-2">
+                    <a href="{{ url_for('investigator.dashboard') }}" class="btn btn-outline-info active text-start"><i class="bi bi-journal-text me-2"></i> Case Ledger</a>
+                    <a href="{{ url_for('live_incidents.public_incidents') }}" class="btn btn-outline-danger text-start"><i class="bi bi-broadcast me-2"></i> Monitor Live Streams</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Investigator Workspace -->
+        <div class="col-md-9">
+            <!-- Counters -->
+            <div class="row g-3 mb-4">
+                <div class="col-md-4">
+                    <div class="cyber-card p-3 text-center border-info">
+                        <small class="text-secondary fw-bold d-block">Active cases</small>
+                        <h2 class="text-info mt-1 font-monospace">{{ assigned_cases }}</h2>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="cyber-card p-3 text-center border-success">
+                        <small class="text-secondary fw-bold d-block">Closed cases</small>
+                        <h2 class="text-success mt-1 font-monospace">{{ closed_cases }}</h2>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="cyber-card p-3 text-center border-warning">
+                        <small class="text-secondary fw-bold d-block">Investigation leads</small>
+                        <h2 class="text-warning mt-1 font-monospace">{{ total_leads }}</h2>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Case list -->
+            <div class="cyber-card">
+                <div class="cyber-card-header d-flex justify-content-between align-items-center">
+                    <span><i class="bi bi-folder-symlink-fill text-info me-2" aria-hidden="true"></i> Assigned cases</span>
+                </div>
+                <div class="p-3">
+                    {% if not cases %}
+                        <div class="text-center py-5 text-secondary">
+                            <i class="bi bi-folder-check fs-1 text-success"></i>
+                            <p class="mt-2 mb-0">You have no active cases assigned.</p>
+                        </div>
+                    {% else %}
+                        <div class="table-responsive">
+                            <table class="table table-dark table-hover align-middle border-secondary mb-0">
+                                <thead>
+                                    <tr class="text-secondary small">
+                                        <th scope="col">CASE ID</th>
+                                        <th scope="col">COMPLAINT</th>
+                                        <th scope="col">REPORTER</th>
+                                        <th scope="col">CATEGORY</th>
+                                        <th scope="col">PRIORITY</th>
+                                        <th scope="col">STATUS</th>
+                                        <th scope="col" class="text-end">ACTION</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for case in cases %}
+                                        <tr class="{% if case.priority == 'CRITICAL' %}table-active-row-critical{% endif %}">
+                                            <td class="font-monospace fw-bold text-info">{{ case.case_id }}</td>
+                                            <td class="font-monospace small text-secondary">{{ case.complaint_id }}</td>
+                                            <td>
+                                                {% if case.reporting_mode == 'anonymous' %}
+                                                    <span class="badge badge-anonymous"><i class="bi bi-eye-slash-fill"></i> Anonymous Reporter</span>
+                                                {% else %}
+                                                    <span>{{ case.citizen_name }}</span>
+                                                {% endif %}
+                                            </td>
+                                            <td class="small">{{ case.category }}</td>
+                                            <td>
+                                                {% if case.priority == 'CRITICAL' %}
+                                                    <span class="badge bg-danger text-uppercase">{{ case.priority }}</span>
+                                                {% elif case.priority == 'HIGH' %}
+                                                    <span class="badge bg-warning text-dark text-uppercase">{{ case.priority }}</span>
+                                                {% else %}
+                                                    <span class="badge bg-info text-dark text-uppercase">{{ case.priority }}</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                <span class="badge badge-pending text-uppercase">{{ case.case_status.replace('_', ' ') }}</span>
+                                            </td>
+                                            <td class="text-end">
+                                                <a href="{{ url_for('investigator.case_detail', case_id=case.case_id) }}" class="btn btn-sm btn-cyber-cyan">
+                                                    <i class="bi bi-folder2-open"></i> Open Case File
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

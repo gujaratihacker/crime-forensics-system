@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+
+{% block title %}{{ translate('Report Missing Person - Cyber Portal', 'लापता व्यक्ति की रिपोर्ट करें - साइबर पोर्टल', 'ગુમ થયેલ વ્યક્તિની જાણ કરો - સાયબર પોર્ટલ') }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4 mb-5">
+    <div class="row justify-content-center">
+        <div class="col-md-9">
+            <div class="cyber-card p-4">
+                <div class="d-flex align-items-center mb-4 border-bottom border-secondary pb-3">
+                    <i class="bi bi-person-plus text-warning fs-2 me-2"></i>
+                    <div>
+                        <h2 class="mb-0" style="font-family: 'Outfit', sans-serif;">{{ translate('Report Missing Person', 'लापता व्यक्ति की रिपोर्ट करें', 'ગુમ થયેલ વ્યક્તિની જાણ કરો') }}</h2>
+                        <p class="text-secondary mb-0 small">{{ translate('Register details to enlist citizen intelligence and community sighting efforts.', 'नागरिकों की खुफिया जानकारी और सामुदायिक साइटिंग प्रयासों को सूचीबद्ध करने के लिए विवरण दर्ज करें।', 'નાગરિકોની ગુપ્ત માહિતી અને સામુદાયિક સાઇટીંગ પ્રયાસોને સૂચિબદ્ધ કરવા માટે વિગતો રજીસ્ટર કરો.') }}</p>
+                    </div>
+                </div>
+
+                <div class="safety-alert">
+                    <i class="bi bi-exclamation-triangle-fill text-warning me-2"></i>
+                    <strong>{{ translate('Important Alert:', 'महत्वपूर्ण चेतावनी:', 'મહત્વપૂર્ણ ચેતવણી:') }}</strong> {{ translate('Providing false information about a missing individual is a punishable offense. Ensure information provided is accurate.', 'लापता व्यक्ति के बारे में झूठी जानकारी प्रदान करना एक दंडनीय अपराध है। सुनिश्चित करें कि प्रदान की गई जानकारी सटीक है।', 'ગુમ થયેલ વ્યક્તિ વિશે ખોટી માહિતી આપવી એ શિક્ષાપાત્ર ગુનો છે. ખાતરી કરો કે આપવામાં આવેલી માહિતી સચોટ છે.') }}
+                </div>
+
+                <form method="POST" action="{{ url_for('missing_persons.report_missing') }}" enctype="multipart/form-data">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+
+                    <!-- Personal Details -->
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="fullname" class="form-label text-secondary small fw-bold">{{ translate('FULL NAME', 'पूरा नाम', 'પૂરું નામ') }} <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control cyber-input" id="fullname" name="fullname" placeholder="e.g. Rajesh Sharma" required>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <label for="age" class="form-label text-secondary small fw-bold">{{ translate('AGE', 'आयु', 'ઉંમર') }} <span class="text-danger">*</span></label>
+                            <input type="number" class="form-control cyber-input" id="age" name="age" placeholder="e.g. 24" required>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <label for="gender" class="form-label text-secondary small fw-bold">{{ translate('GENDER', 'लिंग', 'લિંગ') }} <span class="text-danger">*</span></label>
+                            <select class="form-select cyber-input" id="gender" name="gender" required>
+                                <option value="" disabled selected>{{ translate('Select...', 'चुनें...', 'પસંદ કરો...') }}</option>
+                                <option value="Male">{{ translate('Male', 'पुरुष', 'પુરુષ') }}</option>
+                                <option value="Female">{{ translate('Female', 'महिला', 'મહિલા') }}</option>
+                                <option value="Other">{{ translate('Other', 'अन्य', 'અન્ય') }}</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="contact_phone" class="form-label text-secondary small fw-bold">{{ translate('CONTACT PHONE NUMBER', 'संपर्क फोन नंबर', 'સંપર્ક ફોન નંબર') }} <span class="text-danger">*</span></label>
+                            <input type="tel" class="form-control cyber-input" id="contact_phone" name="contact_phone" placeholder="e.g. +919876543210" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="photo" class="form-label text-secondary small fw-bold">{{ translate('PHOTOGRAPH UPLOAD', 'तस्वीर अपलोड करें', 'ફોટોગ્રાફ અપલોડ કરો') }}</label>
+                            <input type="file" class="form-control cyber-input" id="photo" name="photo" accept="image/*">
+                            <div class="form-text text-muted small">{{ translate('Only images allowed (PNG, JPG, JPEG, GIF)', 'केवल चित्र स्वीकार्य हैं (PNG, JPG, JPEG, GIF)', 'ફક્ત છબીઓ જ સ્વીકાર્ય છે (PNG, JPG, JPEG, GIF)') }}</div>
+                        </div>
+                    </div>
+
+                    <!-- Last Seen Details -->
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="last_seen_location" class="form-label text-secondary small fw-bold">{{ translate('LAST SEEN LOCATION', 'अंतिम बार देखा गया स्थान', 'છેલ્લે જોયેલું સ્થળ') }} <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control cyber-input" id="last_seen_location" name="last_seen_location" placeholder="e.g. Sector 5 Market, Gandhinagar" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="last_seen_date" class="form-label text-secondary small fw-bold">{{ translate('LAST SEEN DATE', 'अंतिम बार देखी गई तारीख', 'છેલ્લે જોયેલી તારીખ') }} <span class="text-danger">*</span></label>
+                            <input type="date" class="form-control cyber-input" id="last_seen_date" name="last_seen_date" required>
+                        </div>
+                    </div>
+
+                    <!-- Physical Description -->
+                    <div class="mb-4">
+                        <label for="description" class="form-label text-secondary small fw-bold">{{ translate('PHYSICAL DESCRIPTION & IDENTIFICATION MARKS', 'शारीरिक विवरण और पहचान चिह्न', 'શારીરિક વર્ણન અને ઓળખ ગુણ') }} <span class="text-danger">*</span></label>
+                        <textarea class="form-control cyber-input" id="description" name="description" rows="5" placeholder="{{ translate('Specify clothing, height, hair color, birthmarks, tattoos, or other unique identifiers...', 'कपड़े, ऊंचाई, बालों का रंग, जन्मचिह्न, टैटू या अन्य विशिष्ट पहचानकर्ताओं को निर्दिष्ट करें...', 'કપડાં, ઊંચાઈ, વાળનો રંગ, જન્મચિહ્ન, ટેટૂ અથવા અન્ય અનન્ય ઓળખકર્તાઓને સ્પષ્ટ કરો...') }}" required></textarea>
+                    </div>
+
+                    <button type="submit" class="btn btn-cyber-cyan w-100 py-2 fs-5"><i class="bi bi-check-circle"></i> {{ translate('Submit Missing Person Report', 'लापता व्यक्ति की रिपोर्ट दर्ज करें', 'ગુમ થયેલ વ્યક્તિની રિપોર્ટ સબમિટ કરો') }}</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

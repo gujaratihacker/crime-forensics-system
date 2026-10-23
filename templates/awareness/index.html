@@ -1,0 +1,389 @@
+{% extends "base.html" %}
+
+{% block title %}{{ translate('Cyber Safety & Security Hub - Cyber Portal', 'साइबर सुरक्षा और जागरूकता हब', 'સાયબર સુરક્ષા અને જાગૃતિ હબ') }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4 mb-5">
+    <!-- Hero Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4 pb-2 border-bottom border-secondary flex-wrap gap-3">
+        <div>
+            <h1 class="h2 mb-0" style="font-family: 'Outfit', sans-serif;">
+                <i class="bi bi-shield-fill-check text-info"></i> {{ translate('Cyber Safety Awareness Hub', 'साइबर सुरक्षा जागरूकता हब', 'સાયબર સુરક્ષા જાગૃતિ હબ') }}
+            </h1>
+            <p class="text-secondary mb-0 small">
+                {{ translate('Educational resource cells on scams, online guards, guides, and security tips.', 'घोटालों, ऑनलाइन सुरक्षा, गाइड और सुरक्षा युक्तियों पर शैक्षिक संसाधन सेल।', 'કૌભાંડો, ઓનલાઇન સુરક્ષા, માર્ગદર્શિકા અને સુરક્ષા ટિપ્સ પર શૈક્ષણિક સંસાધન સેલ.') }}
+            </p>
+        </div>
+        
+        <!-- Quick Downloads in Navbar/Header -->
+        <div class="d-flex gap-2 flex-wrap">
+            {% if session.get('role') == 'admin' %}
+                <a href="{{ url_for('admin.awareness_scams') }}" class="btn btn-primary btn-sm fw-bold">
+                    <i class="bi bi-pencil-square me-1" aria-hidden="true"></i> Manage hub
+                </a>
+            {% endif %}
+            <a href="{{ url_for('awareness.download_guide', lang='en') }}" class="btn btn-outline-light btn-sm fw-bold">
+                <i class="bi bi-download"></i> English Guide
+            </a>
+            <a href="{{ url_for('awareness.download_guide', lang='hi') }}" class="btn btn-outline-info btn-sm fw-bold">
+                <i class="bi bi-download"></i> हिन्दी गाइड
+            </a>
+            <a href="{{ url_for('awareness.download_guide', lang='gu') }}" class="btn btn-outline-warning btn-sm fw-bold">
+                <i class="bi bi-download"></i> ગુજરાતી ગાઇડ
+            </a>
+        </div>
+    </div>
+
+    <!-- Alert / Incident Warning Banner -->
+    <div class="safety-alert mb-5 py-3 d-flex align-items-center">
+        <i class="bi bi-exclamation-triangle-fill text-warning fs-3 me-3"></i>
+        <div>
+            <h5 class="text-light mb-1 font-monospace">{{ translate('Critical Alert: Report Cyber Fraud Immediately', 'महत्वपूर्ण चेतावनी: साइबर धोखाधड़ी की तुरंत रिपोर्ट करें', 'મહત્વપૂર્ણ ચેતવણી: સાયબર છેતરપિંડીની તાત્કાલિક જાણ કરો') }}</h5>
+            <p class="text-secondary small mb-0">
+                {{ translate('If you have suffered a financial loss, call the National Helpline 1930 immediately or report on cybercrime.gov.in. Golden hour reporting helps freeze transactions.', 'यदि आपको वित्तीय नुकसान हुआ है, तो तुरंत राष्ट्रीय हेल्पलाइन 1930 पर कॉल करें या cybercrime.gov.in पर रिपोर्ट करें। गोल्डन आवर रिपोर्टिंग लेनदेन को फ्रीज करने में मदद करती है।', 'જો તમને નાણાકીય નુકસાન થયું હોય, તો તરત જ રાષ્ટ્રીય હેલ્પલાઇન 1930 પર કૉલ કરો અથવા cybercrime.gov.in પર રિપોર્ટ કરો. ગોલ્ડન અવર રિપોર્ટિંગ વ્યવહારો ફ્રીઝ કરવામાં મદદ કરે છે.') }}
+            </p>
+        </div>
+    </div>
+
+    <!-- Scam Examples Grid -->
+    <h3 class="text-light mb-4 font-monospace"><i class="bi bi-bug text-danger"></i> {{ translate('Common Scams Explained', 'आम घोटालों का विवरण', 'સામાન્ય કૌભાંડોની સમજૂતી') }}</h3>
+    <div class="row g-4 mb-5">
+        <!-- Card 1: Phishing -->
+        <div class="col-md-4 col-sm-6">
+            <div class="cyber-card p-3 border-danger h-100 d-flex flex-column justify-content-between">
+                <div>
+                    <div class="d-flex align-items-center mb-2">
+                        <i class="bi bi-envelope-open text-danger fs-3 me-2"></i>
+                        <h5 class="text-light mb-0">{{ translate('Phishing & Malicious Links', 'फ़िशिंग और दुर्भावनापूर्ण लिंक', 'ફિશિંગ અને નુકસાનકારક લિંક્સ') }}</h5>
+                    </div>
+                    <p class="text-secondary small">
+                        {{ translate('Fraudulent emails and messages pretending to be from banks, electricity boards, or government, urging you to click a link to avoid account suspension or win rewards.', 'बैंकों, बिजली बोर्डों या सरकार से होने का नाटक करने वाले फर्जी ईमेल और संदेश, आपको खाता निलंबन से बचने या पुरस्कार जीतने के लिए एक लिंक पर क्लिक करने का आग्रह करते हैं।', 'બેંકો, વીજળી બોર્ડ અથવા સરકાર તરફથી હોવાનો ઢોંગ કરતા નકલી ઇમેઇલ અને સંદેશાઓ, તમને એકાઉન્ટ સસ્પેન્ડ થતું અટકાવવા અથવા ઇનામ જીતવા માટે લિંક પર ક્લિક કરવા દબાણ કરે છે.') }}
+                    </p>
+                </div>
+                <div class="bg-dark p-2 rounded small text-danger font-monospace">
+                    <strong>{{ translate('Indicator:', 'संकेत:', 'સંકેત:') }}</strong> {{ translate('Urgent language, mismatching sender domains, demanding UPI/Card PINs.', 'अत्यावश्यक भाषा, प्रेषक डोमेन का बेमेल होना, यूपीआई/कार्ड पिन की मांग करना।', 'તાકીદની ભાષા, મોકલનારના ડોમેન અલગ હોવા, યુપીઆઈ/કાર્ડ પિનની માંગણી.') }}
+                </div>
+            </div>
+        </div>
+
+        <!-- Card 2: UPI Safety -->
+        <div class="col-md-4 col-sm-6">
+            <div class="cyber-card p-3 border-warning h-100 d-flex flex-column justify-content-between">
+                <div>
+                    <div class="d-flex align-items-center mb-2">
+                        <i class="bi bi-qr-code text-warning fs-3 me-2"></i>
+                        <h5 class="text-light mb-0">{{ translate('UPI Sighting / Payment Fraud', 'यूपीआई भुगतान धोखाधड़ी', 'યુપીઆઈ ચુકવણી છેતરપિંડી') }}</h5>
+                    </div>
+                    <p class="text-secondary small">
+                        {{ translate('Scammers convince you that you are receiving money (e.g. for an OLX sale) and ask you to scan a QR code or enter your UPI PIN. UPI PIN is only needed to SEND money, never to receive.', 'स्कैमर्स आपको विश्वास दिलाते हैं कि आप पैसे प्राप्त कर रहे हैं (जैसे OLX बिक्री के लिए) और आपसे क्यूआर कोड स्कैन करने या अपना यूपीआई पिन दर्ज करने के लिए कहते हैं। यूपीआई पिन केवल पैसे भेजने के लिए आवश्यक है, प्राप्त करने के लिए कभी नहीं।', 'સ્કેમર્સ તમને ખાતરી અપાવે છે કે તમે પૈસા મેળવી રહ્યા છો (દા.ત. OLX પર વેચાણ માટે) અને તમને QR કોડ સ્કેન કરવા અથવા UPI પિન દાખલ કરવા કહે છે. UPI પિન ફક્ત પૈસા મોકલવા માટે જરૂરી છે, મેળવવા માટે ક્યારેય નહીં.') }}
+                    </p>
+                </div>
+                <div class="bg-dark p-2 rounded small text-warning font-monospace">
+                    <strong>{{ translate('Rule:', 'नियम:', 'નિયમ:') }}</strong> {{ translate('PIN required only to SEND money. Scanning QR code = Debiting your account.', 'पिन केवल पैसे भेजने के लिए आवश्यक है। क्यूआर कोड स्कैन करना = आपके खाते से डेबिट होना।', 'પિન ફક્ત પૈસા મોકલવા માટે જરૂરી છે. QR કોડ સ્કેન કરવો = તમારા ખાતામાંથી ડેબિટ થવું.') }}
+                </div>
+            </div>
+        </div>
+
+        <!-- Card 3: Banking Safety -->
+        <div class="col-md-4 col-sm-6">
+            <div class="cyber-card p-3 border-info h-100 d-flex flex-column justify-content-between">
+                <div>
+                    <div class="d-flex align-items-center mb-2">
+                        <i class="bi bi-bank text-info fs-3 me-2"></i>
+                        <h5 class="text-light mb-0">{{ translate('Banking / OTP Impersonation', 'बैंकिंग / ओटीपी प्रतिरूपण', 'બેંકિંગ / OTP વેશપલટો') }}</h5>
+                    </div>
+                    <p class="text-secondary small">
+                        {{ translate('Fraudsters call claiming to be bank executives, warning that your credit card or account will block, and demand OTP or CVV. Bank officials never ask for OTP or credit card PIN.', 'धोखेबाज बैंक अधिकारी होने का दावा करते हुए कॉल करते हैं, चेतावनी देते हैं कि आपका क्रेडिट कार्ड या खाता ब्लॉक हो जाएगा, और ओटीपी या सीवीवी की मांग करते हैं। बैंक अधिकारी कभी भी ओटीपी या क्रेडिट कार्ड पिन नहीं मांगते।', 'છેતરપિંડી કરનારાઓ બેંક અધિકારી હોવાનો દાવો કરીને ફોન કરે છે, ચેતવણી આપે છે કે તમારું ક્રેડિટ કાર્ડ અથવા એકાઉન્ટ બ્લોક થઈ જશે, અને OTP અથવા CVV માંગે છે. બેંક અધિકારીઓ ક્યારેય OTP કે ક્રેડિટ કાર્ડ પિન માંગતા નથી.') }}
+                    </p>
+                </div>
+                <div class="bg-dark p-2 rounded small text-info font-monospace">
+                    <strong>{{ translate('Rule:', 'नियम:', 'નિયમ:') }}</strong> {{ translate('Never share OTP, CVV, or card PIN with anyone.', 'कभी भी किसी के साथ ओटीपी, सीवीवी या कार्ड पिन साझा न करें।', 'ક્યારેય પણ કોઈની સાથે OTP, CVV અથવા કાર્ડ પિન શેર કરશો નહીં.') }}
+                </div>
+            </div>
+        </div>
+
+        <!-- Card 4: Deepfake Awareness -->
+        <div class="col-md-4 col-sm-6">
+            <div class="cyber-card p-3 border-purple h-100 d-flex flex-column justify-content-between">
+                <div>
+                    <div class="d-flex align-items-center mb-2">
+                        <i class="bi bi-person-video text-purple fs-3 me-2"></i>
+                        <h5 class="text-light mb-0">{{ translate('Deepfake Video & Voice Scams', 'डीपफेक वीडियो और वॉयस घोटाले', 'ડીપફેક વિડીયો અને વોઇસ કૌભાંડો') }}</h5>
+                    </div>
+                    <p class="text-secondary small">
+                        {{ translate('AI generated clone voices or face-swapped video calls mimicking your relatives asking for emergency funds. Scammers obtain target photos and audio clips from social media sites.', 'आपातकालीन धन की मांग करने वाले आपके रिश्तेदारों की नकल करते हुए एआई जनित क्लोन आवाजें या फेस-स्वैप वीडियो कॉल। स्कैमर्स सोशल मीडिया साइटों से लक्षित तस्वीरें और ऑडियो क्लिप प्राप्त करते हैं।', 'ઇમરજન્સી ફંડ્સ માંગતા તમારા સંબંધીઓની નકલ કરતા AI જનરેટેડ ક્લોન અવાજો અથવા ફેસ-સ્વેપ વિડિયો કૉલ્સ. સ્કેમર્સ સોશિયલ મીડિયા સાઇટ્સ પરથી લક્ષ્ય ફોટા અને ઓડિયો ક્લિપ્સ મેળવે છે.') }}
+                    </p>
+                </div>
+                <div class="bg-dark p-2 rounded small text-purple font-monospace">
+                    <strong>{{ translate('Action:', 'कार्रवाई:', 'પગલું:') }}</strong> {{ translate('Verify on another channel before transferring. Look for unnatural facial borders.', 'स्थानांतरित करने से पहले दूसरे माध्यम पर सत्यापित करें। अप्राकृतिक चेहरे की सीमाओं को देखें।', 'ટ્રાન્સફર કરતા પહેલા બીજા માધ્યમથી ચકાસણી કરો. અકુદરતી ચહેરાના હાવભાવ જુઓ.') }}
+                </div>
+            </div>
+        </div>
+
+        <!-- Card 5: Fake Jobs -->
+        <div class="col-md-4 col-sm-6">
+            <div class="cyber-card p-3 border-danger h-100 d-flex flex-column justify-content-between">
+                <div>
+                    <div class="d-flex align-items-center mb-2">
+                        <i class="bi bi-briefcase text-danger fs-3 me-2"></i>
+                        <h5 class="text-light mb-0">{{ translate('Fake-Job Offers', 'फर्जी नौकरी के प्रस्ताव', 'નકલી નોકરીની ઑફર્સ') }}</h5>
+                    </div>
+                    <p class="text-secondary small">
+                        {{ translate('Part-time online jobs offering high money for liking YouTube videos or review sites. Once you join, they force you to deposit money in fake VIP wallets for high-yield returns.', 'यूट्यूब वीडियो या समीक्षा साइटों को पसंद करने के लिए उच्च पैसे की पेशकश करने वाली अंशकालिक ऑनलाइन नौकरियां। एक बार जब आप शामिल हो जाते हैं, तो वे आपको उच्च-उपज रिटर्न के लिए नकली वीआईपी वॉलेट में पैसे जमा करने के लिए मजबूर करते हैं।', 'યુટ્યુબ વિડીયો લાઈક કરવા અથવા સાઇટ્સની સમીક્ષા કરવા માટે ઊંચા નાણાં ઓફર કરતી પાર્ટ-ટાઇમ ઓનલાઇન નોકરીઓ. એકવાર તમે જોડાઓ પછી, તેઓ તમને ઊંચા વળતર માટે નકલી VIP વોલેટ્સમાં પૈસા જમા કરાવવા દબાણ કરે છે.') }}
+                    </p>
+                </div>
+                <div class="bg-dark p-2 rounded small text-danger font-monospace">
+                    <strong>{{ translate('Check:', 'जांचें:', 'તપાસો:') }}</strong> {{ translate('No real job asks for advance payment or fees to process salary.', 'कोई भी वास्तविक नौकरी वेतन प्रक्रिया के लिए अग्रिम भुगतान या शुल्क नहीं मांगती है।', 'કોઈપણ અસલી નોકરી પગાર પ્રક્રિયા માટે એડવાન્સ ચુકવણી અથવા ફી માંગતી નથી.') }}
+                </div>
+            </div>
+        </div>
+
+        <!-- Card 6: Investment Scams -->
+        <div class="col-md-4 col-sm-6">
+            <div class="cyber-card p-3 border-warning h-100 d-flex flex-column justify-content-between">
+                <div>
+                    <div class="d-flex align-items-center mb-2">
+                        <i class="bi bi-graph-up-arrow text-warning fs-3 me-2"></i>
+                        <h5 class="text-light mb-0">{{ translate('Telegram Investment Scams', 'टेलीग्राम निवेश घोटाले', 'ટેલિગ્રામ રોકાણ કૌભાંડો') }}</h5>
+                    </div>
+                    <p class="text-secondary small">
+                        {{ translate('Telegram or WhatsApp groups boasting guaranteed profits on stocks, IPOs, or crypto. They use simulated broker screens showing fake balance growth and trap capital deposits.', 'स्टॉक, आईपीओ या क्रिप्टो पर गारंटीकृत मुनाफे का दावा करने वाले टेलीग्राम या व्हाट्सएप समूह। वे नकली ब्रोकर स्क्रीन का उपयोग करते हैं जो नकली शेष वृद्धि दिखाते हैं और जमा की गई पूंजी को फंसाते हैं।', 'ટેલિગ્રામ કે વોટ્સએપ ગ્રૂપ સ્ટોક્સ, આઈપીઓ કે ક્રિપ્ટો પર ગેરેન્ટેડ નફાનો દાવો કરે છે. તેઓ નકલી બેલેન્સ વૃદ્ધિ દર્શાવતી સિમ્યુલેટેડ બ્રોકર સ્ક્રીનનો ઉપયોગ કરીને ડિપોઝિટ ફસાવે છે.') }}
+                    </p>
+                </div>
+                <div class="bg-dark p-2 rounded small text-warning font-monospace">
+                    <strong>{{ translate('Check:', 'जांचें:', 'તપાસો:') }}</strong> {{ translate('Avoid high-yield promises. Verify platform with SEBI register.', 'उच्च-उपज वादों से बचें। सेबी रजिस्टर के साथ प्लेटफॉर्म सत्यापित करें।', 'ઊંચા વળતરના વચનો ટાળો. SEBI રજિસ્ટર સાથે પ્લેટફોર્મ ચકાસો.') }}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% if additional_scams %}
+        <section class="mb-5" aria-labelledby="additional-scams-heading">
+            <div class="d-flex justify-content-between align-items-end gap-3 mb-3 flex-wrap">
+                <div>
+                    <h2 class="h4 mb-1" id="additional-scams-heading">More scams to watch</h2>
+                    <p class="text-secondary small mb-0">Recent guidance added by the Civic Desk safety team.</p>
+                </div>
+                {% if session.get('role') == 'admin' %}
+                    <a href="{{ url_for('admin.awareness_scams') }}" class="small">Edit entries <i class="bi bi-arrow-right" aria-hidden="true"></i></a>
+                {% endif %}
+            </div>
+            <div class="row g-3">
+                {% for scam in additional_scams %}
+                    <div class="col-md-4 col-sm-6">
+                        <article class="cyber-card p-3 h-100">
+                            <div class="d-flex align-items-center gap-2 mb-2">
+                                <i class="bi {{ scam.icon }} text-danger fs-4" aria-hidden="true"></i>
+                                <h3 class="h6 mb-0">{{ scam.title }}</h3>
+                            </div>
+                            <p class="small text-secondary">{{ scam.summary }}</p>
+                            <div class="small mb-2"><strong>Warning signs:</strong> {{ scam.warning_signs }}</div>
+                            <div class="small text-success"><strong>Stay safe:</strong> {{ scam.safety_advice }}</div>
+                        </article>
+                    </div>
+                {% endfor %}
+            </div>
+        </section>
+    {% endif %}
+
+    <!-- Targeted Audience Guidelines -->
+    <h3 class="text-light mb-4 font-monospace"><i class="bi bi-shield-lock"></i> {{ translate('Targeted Audience Guardrails', 'लक्षित दर्शक सुरक्षा निर्देश', 'લક્ષિત પ્રેક્ષક સુરક્ષા માર્ગદર્શિકા') }}</h3>
+    <div class="row g-4 mb-5">
+        <!-- Children Section -->
+        <div class="col-md-4">
+            <div class="cyber-card p-4 h-100 border-info">
+                <h5 class="text-info font-monospace mb-3"><i class="bi bi-backpack"></i> {{ translate('Child Online Safety', 'बच्चों की ऑनलाइन सुरक्षा', 'બાળકોની ઓનલાઇન સુરક્ષા') }}</h5>
+                <ul class="text-secondary small ps-3">
+                    <li class="mb-2">{{ translate('Configure safe search filters and block suspicious gaming portal accesses.', 'सुरक्षित खोज फ़िल्टर कॉन्फ़िगर करें और संदिग्ध गेमिंग पोर्टल एक्सेस को ब्लॉक करें।', 'સુરક્ષિત સર્ચ ફિલ્ટર્સ ગોઠવો અને શંકાસ્પદ ગેમિંગ પોર્ટલ એક્સેસ બ્લોક કરો.') }}</li>
+                    <li class="mb-2">{{ translate('Guide them never to share photographs or home details on chatting channels.', 'उन्हें निर्देश दें कि वे चैटिंग चैनलों पर कभी भी फोटो या घर का विवरण साझा न करें।', 'તેમને માર્ગદર્શન આપો કે ચેટિંગ ચેનલો પર ક્યારેય ફોટોગ્રાફ્સ કે ઘરની વિગતો શેર ન કરે.') }}</li>
+                    <li>{{ translate('Enable screen duration controls and keep devices in shared areas.', 'स्क्रीन अवधि नियंत्रण सक्षम करें और उपकरणों को साझा क्षेत्रों में रखें।', 'સ્ક્રીન સમય મર્યાદા સક્ષમ કરો અને ઉપકરણોને સામાન્ય રૂમમાં રાખો.') }}</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Senior Citizens -->
+        <div class="col-md-4">
+            <div class="cyber-card p-4 h-100 border-warning">
+                <h5 class="text-warning font-monospace mb-3"><i class="bi bi-heart-pulse"></i> {{ translate('Senior Citizen Safety', 'वरिष्ठ नागरिकों की सुरक्षा', 'વરિષ્ઠ નાગરિકોની સુરક્ષા') }}</h5>
+                <ul class="text-secondary small ps-3">
+                    <li class="mb-2">{{ translate('Beware of callers claiming to verify bank KYC details or pension portal updates.', 'बैंक केवाईसी विवरण या पेंशन पोर्टल अपडेट को सत्यापित करने का दावा करने वाले कॉल करने वालों से सावधान रहें।', 'બેંક KYC વિગતો અથવા પેન્શન પોર્ટલ અપડેટ્સ ચકાસવાનો દાવો કરનારાઓથી સાવધ રહો.') }}</li>
+                    <li class="mb-2">{{ translate('Never install software (AnyDesk, TeamViewer) at the request of callers.', 'कॉल करने वालों के अनुरोध पर कभी भी सॉफ्टवेयर (AnyDesk, TeamViewer) इंस्टॉल न करें।', 'કોલ કરનારના કહેવા પર ક્યારેય સોફ્ટવેર (AnyDesk, TeamViewer) ઇન્સ્ટોલ કરશો નહીં.') }}</li>
+                    <li>{{ translate('Consult family members or local bank branch before transferring large sums.', 'बड़ी रकम ट्रांसफर करने से पहले परिवार के सदस्यों या स्थानीय बैंक शाखा से सलाह लें।', 'મોટી રકમ ટ્રાન્સફર કરતા પહેલા પરિવારના સભ્યો અથવા સ્થાનિક બેંક શાખાની સલાહ લો.') }}</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Social Media / Passwords -->
+        <div class="col-md-4">
+            <div class="cyber-card p-4 h-100 border-purple">
+                <h5 class="text-purple font-monospace mb-3"><i class="bi bi-shield-check"></i> {{ translate('Social Media & Password Hygiene', 'सोशल मीडिया और पासवर्ड स्वच्छता', 'સોશિયલ મીડિયા અને પાસવર્ડ સ્વચ્છતા') }}</h5>
+                <ul class="text-secondary small ps-3">
+                    <li class="mb-2">{{ translate('Use strong passwords with special characters. Turn on Two-Factor verification.', 'विशेष वर्णों के साथ मजबूत पासवर्ड का उपयोग करें। टू-फैक्टर सत्यापन चालू करें।', 'ખાસ ચિહ્નો સાથે મજબૂત પાસવર્ડ વાપરો. ટુ-ફેક્ટર વેરિફિકેશન ચાલુ કરો.') }}</li>
+                    <li class="mb-2">{{ translate('Set profile visibility to friends and hide contact details from searches.', 'प्रोफ़ाइल दृश्यता को मित्रों तक सेट करें और खोजों से संपर्क विवरण छिपाएं।', 'પ્રોફાઇલ વિઝિબિલિટી મિત્રો માટે સેટ કરો અને શોધમાંથી સંપર્ક વિગતો છુપાવો.') }}</li>
+                    <li>{{ translate('Avoid clicking checking links shared on groups claiming free gifts or surveys.', 'मुफ्त उपहार या सर्वेक्षण का दावा करने वाले समूहों पर साझा किए गए चेकिंग लिंक पर क्लिक करने से बचें।', 'મફત ભેટ અથવા સર્વેક્ષણનો દાવો કરતી લિંક્સ પર ક્લિક કરવાનું ટાળો.') }}</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- Interactive Safety Checklist -->
+    <div class="row g-4 mb-5">
+        <div class="col-md-6">
+            <div class="cyber-card p-4">
+                <h4 class="text-light mb-3 font-monospace" style="font-family: 'Outfit', sans-serif;">
+                    <i class="bi bi-card-checklist text-info"></i> {{ translate('Interactive Safety Checklist', 'इंटरैक्टिव सुरक्षा चेकलिस्ट', 'ઇન્ટરેક્ટિવ સુરક્ષા ચેકલિસ્ટ') }}
+                </h4>
+                <p class="text-secondary small">{{ translate('Tick the boxes to calculate your online cyber protection score.', 'अपने ऑनलाइन साइबर सुरक्षा स्कोर की गणना करने के लिए बक्से पर टिक करें।', 'તમારો ઓનલાઇન સાયબર પ્રોટેક્શન સ્કોર ગણવા માટે બોક્સ ટીક કરો.') }}</p>
+                
+                <div class="d-flex flex-column gap-3 mt-3">
+                    <div class="form-check">
+                        <input class="form-check-input checklist-item" type="checkbox" id="check2fa">
+                        <label class="form-check-label text-light small" for="check2fa">
+                            {{ translate('I have enabled 2-Factor Authentication (2FA) on all email and social accounts.', 'मैंने सभी ईमेल और सोशल खातों पर टू-फैक्टर ऑथेंटिकेशन (2FA) सक्षम किया है।', 'મેં તમામ ઇમેઇલ અને સોશિયલ એકાઉન્ટ્સ પર ટુ-ફેક્ટર ઓથેન્ટિકેશન (2FA) સક્ષમ કર્યું છે.') }}
+                        </label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input checklist-item" type="checkbox" id="checkUnique">
+                        <label class="form-check-label text-light small" for="checkUnique">
+                            {{ translate('I use unique, complex passwords for netbanking and avoid repeating passwords.', 'मैं नेटबैंकिंग के लिए अद्वितीय, जटिल पासवर्ड का उपयोग करता हूं और पासवर्ड दोहराने से बचता हूं।', 'હું નેટબેંકિંગ માટે અનન્ય અને જટિલ પાસવર્ડનો ઉપયોગ કરું છું અને પાસવર્ડ પુનરાવર્તન ટાળું છું.') }}
+                        </label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input checklist-item" type="checkbox" id="checkOtp">
+                        <label class="form-check-label text-light small" for="checkOtp">
+                            {{ translate('I never share OTPs, credit card CVVs, or pins over phone calls or chats.', 'मैं फोन कॉल या चैट पर कभी भी ओटीपी, क्रेडिट कार्ड सीवीवी या पिन साझा नहीं करता हूं।', 'હું ફોન કૉલ અથવા ચેટ પર ક્યારેય OTP, ક્રેડિટ કાર્ડ CVV કે પિન શેર કરતો નથી.') }}
+                        </label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input checklist-item" type="checkbox" id="checkQr">
+                        <label class="form-check-label text-light small" for="checkQr">
+                            {{ translate('I understand scanning a QR code is only for paying, never for receiving money.', 'मैं समझता हूं कि क्यूआर कोड स्कैन करना केवल भुगतान करने के लिए है, पैसे प्राप्त करने के लिए कभी नहीं।', 'હું સમજું છું કે QR કોડ સ્કેન કરવો એ માત્ર ચૂકવણી કરવા માટે છે, પૈસા મેળવવા માટે ક્યારેય નહીં.') }}
+                        </label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input checklist-item" type="checkbox" id="checkAnydesk">
+                        <label class="form-check-label text-light small" for="checkAnydesk">
+                            {{ translate('I will never install screen-sharing apps (AnyDesk/TeamViewer) for callers.', 'मैं कॉल करने वालों के कहने पर कभी भी स्क्रीन-शेयरिंग ऐप (AnyDesk/TeamViewer) इंस्टॉल नहीं करूंगा।', 'હું ફોન કરનારના કહેવા પર ક્યારેય સ્ક્રીન-શેરિંગ એપ્લિકેશન્સ ઇન્સ્ટોલ નહીં કરું.') }}
+                        </label>
+                    </div>
+                </div>
+
+                <div class="border-top border-secondary pt-3 mt-4 d-flex justify-content-between align-items-center">
+                    <span class="text-secondary small">{{ translate('Protection Level:', 'सुरक्षा स्तर:', 'સુરક્ષા સ્તર:') }} <strong id="scoreLabel" class="text-danger">0%</strong></span>
+                    <div class="progress w-50" style="height: 10px; background-color: #1e293b;">
+                        <div id="progressBar" class="progress-bar bg-danger" role="progressbar" style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Video Tutorials Carousel/Mock Player -->
+        <div class="col-md-6">
+            <div class="cyber-card p-4 h-100">
+                <h4 class="text-light mb-3 font-monospace" style="font-family: 'Outfit', sans-serif;">
+                    <i class="bi bi-play-circle text-danger"></i> {{ translate('Simulated Video Tutorials', 'सिम्युलेटेड वीडियो ट्यूटोरियल', 'સિમ્યુલેટેડ વિડીયો ટ્યુટોરિયલ્સ') }}
+                </h4>
+                <p class="text-secondary small mb-3">{{ translate('Simulated recordings showcasing phishing indicators and wallet freezing protocols.', 'फ़िशिंग संकेतकों और वॉलेट फ्रीजिंग प्रोटोकॉल को प्रदर्शित करने वाली सिम्युलेटेड रिकॉर्डिंग।', 'ફિશિંગ સૂચકાંકો અને વૉલેટ ફ્રીઝિંગ પ્રોટોકોલ દર્શાવતું સિમ્યુલેટેડ રેકોર્ડિંગ.') }}</p>
+
+                <!-- Mock Player Card -->
+                <div class="position-relative bg-dark rounded border border-secondary overflow-hidden text-center d-flex flex-column align-items-center justify-content-center" style="height: 230px;">
+                    <div class="text-secondary p-3">
+                        <i class="bi bi-play-btn-fill fs-1 text-danger"></i>
+                        <h6 class="text-light mt-2">{{ translate('Freezing Scammed UPI Transactions (2 Mins)', 'घोटाले वाले यूपीआई लेनदेन को फ्रीज करना (2 मिनट)', 'છેતરપિંડીવાળા UPI વ્યવહારો ફ્રીઝ કરવા (2 મિનિટ)') }}</h6>
+                        <p class="small text-muted">{{ translate('Interactive workflow demonstration.', 'इंटरैक्टिव वर्कफ़्लो प्रदर्शन।', 'ઇન્ટરેક્ટિવ વર્કફ્લો પ્રદર્શન.') }}</p>
+                    </div>
+                    
+                    <!-- Play overlay button -->
+                    <button class="btn btn-danger btn-sm position-absolute" style="bottom: 15px;" onclick="alert('Simulated Tutorial: Calls to 1930 within the Golden Hour will flag transaction reference numbers on the NPCI portal, freezing recipient accounts immediately.')">
+                        <i class="bi bi-play-fill"></i> {{ translate('Play Simulation', 'सिमुलेशन चलाएं', 'સિમ્યુલેશન ચલાવો') }}
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- FAQ Accordion -->
+    <h3 class="text-light mb-4 font-monospace"><i class="bi bi-question-circle text-info"></i> {{ translate('Frequently Asked Questions', 'अक्सर पूछे जाने वाले प्रश्न', 'વારંવાર પૂછાતા પ્રશ્નો') }}</h3>
+    <div class="accordion border border-secondary rounded overflow-hidden" id="faqAccordion">
+        <!-- FAQ Item 1 -->
+        <div class="accordion-item bg-dark border-secondary">
+            <h2 class="accordion-header bg-dark border-bottom border-secondary">
+                <button class="accordion-button bg-dark text-light border-0 collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faqOne" aria-expanded="false" aria-controls="faqOne">
+                    {{ translate('What should I do immediately after losing money in a cyber fraud?', 'साइबर धोखाधड़ी में पैसे खोने के तुरंत बाद मुझे क्या करना चाहिए?', 'સાયબર છેતરપિંડીમાં પૈસા ગુમાવ્યા પછી મારે તરત જ શું કરવું જોઈએ?') }}
+                </button>
+            </h2>
+            <div id="faqOne" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                <div class="accordion-body text-secondary small bg-dark">
+                    {{ translate('Within the first 2 hours (Golden Hour), call 1930 immediately or log a query on cybercrime.gov.in. Keep banking statements, transaction IDs, UPI reference IDs, and recipient phone numbers ready. Quick actions enable banks to block the funds before scammers withdraw them.', 'पहले 2 घंटों (गोल्डन ऑवर) के भीतर, तुरंत 1930 पर कॉल करें या cybercrime.gov.in पर क्वेरी दर्ज करें। बैंकिंग स्टेटमेंट, ट्रांजैक्शन आईडी, यूपीआई संदर्भ आईडी और प्राप्तकर्ता के फोन नंबर तैयार रखें। त्वरित कार्रवाई बैंकों को स्कैमर्स द्वारा पैसे निकालने से पहले ब्लॉक करने में सक्षम बनाती है।', 'પ્રથમ 2 કલાક (ગોલ્ડન અવર) ની અંદર, તરત જ 1930 પર કૉલ કરો અથવા cybercrime.gov.in પર ફરિયાદ નોંધાવો. બેંક સ્ટેટમેન્ટ, વ્યવહાર ID, UPI રેફરન્સ ID અને પૈસા મેળવનારનો ફોન નંબર તૈયાર રાખો. ઝડપી પગલાં લેવાથી સ્કેમર્સ પૈસા ઉપાડે તે પહેલાં બેંકોને વ્યવહાર ફ્રીઝ કરવાની મંજૂરી મળે છે.') }}
+                </div>
+            </div>
+        </div>
+
+        <!-- FAQ Item 2 -->
+        <div class="accordion-item bg-dark border-secondary">
+            <h2 class="accordion-header bg-dark border-bottom border-secondary">
+                <button class="accordion-button bg-dark text-light border-0 collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faqTwo" aria-expanded="false" aria-controls="faqTwo">
+                    {{ translate('Does scanning a QR code request a password or PIN input?', 'क्या क्यूआर कोड स्कैन करने के लिए पासवर्ड या पिन इनपुट की आवश्यकता होती है?', 'શું QR કોડ સ્કેન કરવાથી પાસવર્ડ અથવા પિન દાખલ કરવાની જરૂર પડે છે?') }}
+                </button>
+            </h2>
+            <div id="faqTwo" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                <div class="accordion-body text-secondary small bg-dark">
+                    {{ translate('No. QR codes (Quick Response codes) are only scanned to SEND money. Scanning a QR code and entering your PIN will instantly debit/deduct money from your account. Never scan QR codes claiming to credit cash or raffle money to your account.', 'नहीं। क्यूआर कोड केवल पैसे भेजने के लिए स्कैन किए जाते हैं। क्यूआर कोड स्कैन करने और अपना पिन दर्ज करने से आपके खाते से तुरंत पैसे कट जाएंगे। अपने खाते में नकद या रैफल मनी क्रेडिट करने का दावा करने वाले क्यूआर कोड को कभी भी स्कैन न करें।', 'ના. QR કોડ્સ ફક્ત પૈસા મોકલવા માટે સ્કેન કરવામાં આવે છે. QR કોડ સ્કેન કરીને તમારો પિન દાખલ કરવાથી તમારા ખાતામાંથી તરત જ પૈસા ડેબિટ થઈ જશે. તમારા ખાતામાં કેશ જમા કરવાનો દાવો કરતા QR કોડ ક્યારેય સ્કેન કરશો નહીં.') }}
+                </div>
+            </div>
+        </div>
+
+        <!-- FAQ Item 3 -->
+        <div class="accordion-item bg-dark border-secondary">
+            <h2 class="accordion-header bg-dark">
+                <button class="accordion-button bg-dark text-light border-0 collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faqThree" aria-expanded="false" aria-controls="faqThree">
+                    {{ translate('How do I verify if an online job offer is genuine?', 'मैं कैसे सत्यापित करूं कि कोई ऑनलाइन नौकरी का प्रस्ताव वास्तविक है?', 'હું કેવી રીતે ચકાસી શકું કે કોઈ ઓનલાઇન નોકરીની ઓફર અસલી છે?') }}
+                </button>
+            </h2>
+            <div id="faqThree" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                <div class="accordion-body text-secondary small bg-dark">
+                    {{ translate('If the recruitment process happens entirely on WhatsApp/Telegram, asks you to pay money for "training, laptops, registration", or involves liking posts/videos for returns, it is 100% fake. Real employers conduct verified interview processes and never request fees to initiate contracts.', 'यदि भर्ती प्रक्रिया पूरी तरह से व्हाट्सएप/टेलीग्राम पर होती है, आपसे "प्रशिक्षण, लैपटॉप, पंजीकरण" के लिए पैसे मांगती है, या रिटर्न के लिए पोस्ट/वीडियो पसंद करने को कहती है, तो यह 100% फर्जी है। वास्तविक नियोक्ता सत्यापित साक्षात्कार प्रक्रियाएं आयोजित करते हैं और अनुबंध शुरू करने के लिए कभी शुल्क नहीं मांगते हैं।', 'જો ભરતી પ્રક્રિયા સંપૂર્ણપણે વોટ્સએપ/ટેલિગ્રામ પર થાય છે, તમારી પાસે "તાલીમ, લેપટોપ, રજીસ્ટ્રેશન" માટે પૈસા માંગે છે, અથવા વળતર માટે પોસ્ટ/વિડિયો લાઈક કરવાનું કહે છે, તો તે 100% નકલી છે. વાસ્તવિક નોકરીદાતાઓ મુલાકાત પ્રક્રિયાઓનું આયોજન કરે છે અને ક્યારેય ફી માંગતા નથી.') }}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Checkbox score counter logic
+document.querySelectorAll('.checklist-item').forEach(item => {
+    item.addEventListener('change', calculateScore);
+});
+
+function calculateScore() {
+    const items = document.querySelectorAll('.checklist-item');
+    let checkedCount = 0;
+    items.forEach(i => {
+        if (i.checked) checkedCount++;
+    });
+    
+    const percentage = Math.round((checkedCount / items.length) * 100);
+    
+    const scoreLabel = document.getElementById('scoreLabel');
+    const progressBar = document.getElementById('progressBar');
+    
+    scoreLabel.innerText = percentage + '%';
+    progressBar.style.width = percentage + '%';
+    progressBar.setAttribute('aria-valuenow', percentage);
+    
+    // Adjust colors dynamically based on percentage
+    if (percentage < 40) {
+        scoreLabel.className = 'text-danger fw-bold';
+        progressBar.className = 'progress-bar bg-danger';
+    } else if (percentage < 80) {
+        scoreLabel.className = 'text-warning fw-bold';
+        progressBar.className = 'progress-bar bg-warning';
+    } else {
+        scoreLabel.className = 'text-success fw-bold';
+        progressBar.className = 'progress-bar bg-success';
+    }
+}
+</script>
+{% endblock %}

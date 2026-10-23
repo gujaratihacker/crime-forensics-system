@@ -1,0 +1,107 @@
+{% extends "base.html" %}
+
+{% block title %}{{ translate('Report Crime - Forensics System', 'अपराध रिपोर्ट - फोरेंसिक प्रणाली', 'ગુનાનો અહેવાલ - ફોરેન્સિક સિસ્ટમ') }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4 mb-5">
+    <div class="row justify-content-center">
+        <div class="col-md-9">
+            <div class="cyber-card p-4">
+                <div class="d-flex align-items-center mb-4 border-bottom border-secondary pb-3">
+                    <i class="bi bi-file-earmark-medical text-info fs-2 me-2"></i>
+                    <div>
+                        <h2 class="mb-0">{{ translate('Report an incident', 'घटना की रिपोर्ट करें', 'ઘટનાની જાણ કરો') }}</h2>
+                        <p class="text-secondary mb-0 small">{{ translate('Ensure details are accurate. Fields marked with * are mandatory.', 'सुनिश्चित करें कि विवरण सटीक हैं। * से चिह्नित फ़ील्ड अनिवार्य हैं।', 'ખાતરી કરો કે વિગતો સચોટ છે. * ચિહ્નિત ક્ષેત્રો ફરજિયાત છે.') }}</p>
+                    </div>
+                </div>
+
+                <div class="safety-alert">
+                    <i class="bi bi-shield-exclamation me-2"></i>
+                    <strong>{{ translate('Legal & Safety Warning:', 'कानूनी और सुरक्षा चेतावनी:', 'કાનૂની અને સુરક્ષા ચેતવણી:') }}</strong> {{ translate('Only upload material that you are legally permitted to provide. Do not intentionally place yourself or others in danger to collect details.', 'केवल वही सामग्री अपलोड करें जिसे प्रदान करने की आपको कानूनी रूप से अनुमति है। विवरण एकत्र करने के लिए जानबूझकर खुद को या दूसरों को खतरे में न डालें।', 'માત્ર એવી સામગ્રી અપલોડ કરો જે પ્રદાન કરવાની તમને કાનૂની રીતે મંજૂરી છે. વિગતો એકત્રિત કરવા માટે જાણીજોઈને તમારી જાતને અથવા અન્ય લોકોને જોખમમાં મૂકશો નહીં.') }}
+                </div>
+
+                <form method="POST" action="{{ url_for('complaints.submit') }}">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+
+                    <!-- Reporting Mode -->
+                    <div class="mb-4 bg-dark p-3 rounded border border-secondary">
+                        <label class="form-label fw-bold text-info"><i class="bi bi-eye-slash" aria-hidden="true"></i> {{ translate('Privacy options', 'गोपनीयता विकल्प', 'ગોપનીયતા વિકલ્પો') }}</label>
+                        <div class="form-check mb-2">
+                            <input class="form-check-input" type="radio" name="reporting_mode" id="modeIdentified" value="identified" checked>
+                            <label class="form-check-label text-light" for="modeIdentified">
+                                <strong>{{ translate('Report with my identity', 'मेरी पहचान के साथ रिपोर्ट करें', 'મારી ઓળખ સાથે રિપોર્ટ કરો') }}</strong> {{ translate('(Your details will be accessible to authorized investigators)', '(आपका विवरण अधिकृत जांचकर्ताओं के लिए सुलभ होगा)', '(તમારી વિગતો અધિકૃત તપાસકર્તાઓ માટે ઉપલબ્ધ રહેશે)') }}
+                            </label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="reporting_mode" id="modeAnonymous" value="anonymous">
+                            <label class="form-check-label text-light" for="modeAnonymous" style="color: var(--neon-purple);">
+                                <strong>{{ translate('Report anonymously', 'अनाम रिपोर्ट करें', 'અનામી રિપોર્ટ કરો') }}</strong> {{ translate('(Hides your identity details from ordinary public lookups and wraps your complaint profile)', '(साधारण सार्वजनिक खोजों से आपकी पहचान छुपाता है और आपकी शिकायत प्रोफ़ाइल को लपेटता है)', '(સામાન્ય સાર્વજનિક શોધથી તમારી ઓળખ છુપાવે છે અને તમારી ફરિયાદ પ્રોફાઇલને આવરી લે છે)') }}
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Category & Details -->
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="category" class="form-label">{{ translate('Incident category', 'घटना की श्रेणी', 'ઘટનાનો પ્રકાર') }} <span class="text-danger">*</span></label>
+                            <select class="form-select cyber-input" id="category" name="category" required>
+                                <option value="" disabled selected>{{ translate('Select category...', 'श्रेणी चुनें...', 'શ્રેણી પસંદ કરો...') }}</option>
+                                <option value="Financial Cyber Fraud">{{ translate('Financial Cyber Fraud', 'वित्तीय साइबर धोखाधड़ी', 'નાણાકીય સાયબર છેતરપિંડી') }}</option>
+                                <option value="Cyber Harassment">{{ translate('Cyber Harassment / Cyberstalking', 'साइबर उत्पीड़न / साइबरस्टॉकिंग', 'સાયબર પજવણી / સાયબરસ્ટોકિંગ') }}</option>
+                                <option value="Identity Theft">{{ translate('Identity Theft / Impersonation', 'पहचान की चोरी / प्रतिरूपण', 'ઓળખની ચોરી / વેશપલટો') }}</option>
+                                <option value="Malware/Ransomware Attack">{{ translate('Malware/Ransomware Attack', 'मालवेयर/रैनसमवेयर हमला', 'માલવેર/રેન્સમવેર હુમલો') }}</option>
+                                <option value="Website Defacement">{{ translate('Website Defacement', 'वेबसाइट विकृति', 'વેબસાઇટ ડિફેસમેન્ટ') }}</option>
+                                <option value="Other">{{ translate('Other Cyber Crime', 'अन्य साइबर अपराध', 'અન્ય સાયબર ગુનો') }}</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <label for="incident_date" class="form-label">{{ translate('Date of incident', 'घटना की तारीख', 'ઘટનાની તારીખ') }} <span class="text-danger">*</span></label>
+                            <input type="date" class="form-control cyber-input" id="incident_date" name="incident_date" required>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <label for="incident_time" class="form-label">{{ translate('Approximate time', 'लगभग समय', 'અંદાજિત સમય') }} <span class="text-danger">*</span></label>
+                            <input type="time" class="form-control cyber-input" id="incident_time" name="incident_time" required>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="location" class="form-label">{{ translate('Where did it happen? (City, platform, or website)', 'घटना कहां हुई? (शहर, प्लेटफ़ॉर्म या वेबसाइट)', 'ઘટના ક્યાં બની? (શહેર, પ્લેટફોર્મ અથવા વેબસાઇટ)') }} <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control cyber-input" id="location" name="location" placeholder="e.g. WhatsApp, Mumbai, Fake bank site url" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="financial_loss" class="form-label">{{ translate('Estimated financial loss (INR)', 'अनुमानित वित्तीय नुकसान (INR)', 'અંદાજિત નાણાકીય નુકસાન (INR)') }}</label>
+                            <input type="number" step="0.01" class="form-control cyber-input" id="financial_loss" name="financial_loss" placeholder="0.00" value="0.00">
+                        </div>
+                    </div>
+
+                    <!-- Description -->
+                    <div class="mb-3">
+                        <label for="description" class="form-label">{{ translate('What happened?', 'क्या हुआ?', 'શું બન્યું?') }} <span class="text-danger">*</span></label>
+                        <textarea class="form-control cyber-input" id="description" name="description" rows="5" placeholder="{{ translate('Describe what happened, when it began, and any details that may help explain the incident.', 'क्या हुआ, कब शुरू हुआ और घटना को समझने में मददगार अन्य जानकारी लिखें।', 'શું બન્યું, ક્યારે શરૂ થયું અને ઘટનાને સમજવામાં મદદરૂપ વિગતો લખો.') }}" required></textarea>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="victim_info" class="form-label">{{ translate('Affected person (if different from you)', 'प्रभावित व्यक्ति (यदि आपसे अलग हों)', 'અસરગ્રસ્ત વ્યક્તિ (જો તમે ન હોવ તો)') }}</label>
+                            <input type="text" class="form-control cyber-input" id="victim_info" name="victim_info" placeholder="{{ translate('Leave empty if you are the sole victim', 'यदि आप एकमात्र पीड़ित हैं तो खाली छोड़ दें', 'જો તમે એકમાત્ર ભોગ બનનાર હોવ તો ખાલી છોડો') }}">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="suspect_info" class="form-label">{{ translate('Details about the person or account involved', 'संबंधित व्यक्ति या खाते का विवरण', 'સંબંધિત વ્યક્તિ અથવા એકાઉન્ટની વિગતો') }}</label>
+                            <input type="text" class="form-control cyber-input" id="suspect_info" name="suspect_info" placeholder="e.g. Instagram handle @stalker_01, phone +919876...">
+                        </div>
+                    </div>
+
+                    <!-- Additional Details -->
+                    <div class="mb-4">
+                        <label for="additional_info" class="form-label text-secondary small fw-bold">{{ translate('ADDITIONAL PERTINENT INFORMATION', 'अतिरिक्त प्रासंगिक जानकारी', 'વધારानी પ્રાસંગિક માહિતી') }}</label>
+                        <textarea class="form-control cyber-input" id="additional_info" name="additional_info" rows="2" placeholder="{{ translate('Any details about bank names, transaction logs, timestamps, or IP details if known...', 'बैंक के नाम, लेनदेन लॉग, टाइमस्टैम्प, या आईपी विवरण के बारे में कोई भी विवरण यदि ज्ञात हो...', 'જો જાણીતું હોય તો બેંકના નામ, વ્યવહાર લોગ, ટાઇમસ્ટેમ્પ અથવા IP વિગતો વિશેની કોઈપણ વિગતો...') }}"></textarea>
+                    </div>
+
+                    <button type="submit" class="btn btn-cyber-cyan w-100 py-2 fs-5"><i class="bi bi-send me-1" aria-hidden="true"></i> {{ translate('Submit report', 'रिपोर्ट भेजें', 'રિપોર્ટ મોકલો') }}</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
