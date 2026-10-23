@@ -127,6 +127,17 @@ CREATE TABLE IF NOT EXISTS investigation_notes (
     FOREIGN KEY (investigator_id) REFERENCES users(id) ON DELETE CASCADE
 ) ENGINE=InnoDB;
 
+CREATE TABLE IF NOT EXISTS case_messages (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    case_id VARCHAR(20) NOT NULL,
+    sender_id INT NOT NULL,
+    message TEXT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (case_id) REFERENCES cases(id) ON DELETE CASCADE,
+    FOREIGN KEY (sender_id) REFERENCES users(id) ON DELETE CASCADE,
+    INDEX idx_case_messages_case_created (case_id, created_at)
+) ENGINE=InnoDB;
+
 -- 9. Case Updates (Timeline) Table
 CREATE TABLE IF NOT EXISTS case_updates (
     id INT AUTO_INCREMENT PRIMARY KEY,

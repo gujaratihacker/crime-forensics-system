@@ -124,7 +124,7 @@
             <!-- Add Sighting Form -->
             <div class="cyber-card p-4 mb-4">
                 <h4 class="text-light mb-3 font-monospace" style="font-family: 'Outfit', sans-serif;">
-                    <i class="bi bi-broadcast text-danger"></i> {{ translate('REPORT_A_SIGHTING_OR_UPDATE', 'साइटिंग या अपडेट की रिपोर्ट करें', 'સાઇટીંગ અથવા અપડેટની જાણ કરો') }}
+                    <i class="bi bi-broadcast text-danger"></i> {{ translate('Report a sighting or share an update', 'दिखाई देने की सूचना दें या जानकारी साझा करें', 'જોવા મળ્યાની જાણ કરો અથવા માહિતી શેર કરો') }}
                 </h4>
 
                 <form method="POST" action="{{ url_for('missing_persons.comment_missing', id=person.id) }}">
@@ -154,7 +154,7 @@
                         <textarea class="form-control cyber-input" id="identification_details" name="identification_details" rows="2" placeholder="e.g. Wearing a blue hoodie, walked with a slight limp, matching birthmark on hand..."></textarea>
                     </div>
 
-                    <button type="submit" class="btn btn-cyber-cyan w-100 py-2"><i class="bi bi-send-fill"></i> {{ translate('Submit Sighting Sighting Update', 'साइटिंग अपडेट सबमिट करें', 'સાઇટીંગ અપડેટ સબમિટ કરો') }}</button>
+                    <button type="submit" class="btn btn-cyber-cyan w-100 py-2"><i class="bi bi-send-fill"></i> {{ translate('Submit sighting', 'जानकारी भेजें', 'માહિતી મોકલો') }}</button>
                 </form>
             </div>
 

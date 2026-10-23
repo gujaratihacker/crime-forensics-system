@@ -39,11 +39,7 @@ def dashboard():
             """, (user_id,))
             closed_complaints = cursor.fetchone()['count']
             
-            # 4. Total evidence uploaded
-            cursor.execute("SELECT COUNT(*) as count FROM evidence WHERE uploaded_by = %s", (user_id,))
-            total_evidence = cursor.fetchone()['count']
-            
-            # 5. List of complaints
+            # 4. List of complaints
             cursor.execute("""
                 SELECT c.id, c.category, c.incident_date, c.status, c.priority, c.reporting_mode, c.created_at,
                        ca.id as case_id, ca.status as case_status
@@ -62,7 +58,6 @@ def dashboard():
         total_complaints=total_complaints,
         active_complaints=active_complaints,
         closed_complaints=closed_complaints,
-        total_evidence=total_evidence,
         complaints=complaints_list
     )
 

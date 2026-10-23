@@ -2,6 +2,7 @@ from flask import Blueprint, render_template, request, redirect, url_for, flash,
 from utils.auth import login_required, get_db_connection, roles_allowed
 from utils.security import sanitize_string, validate_csrf_token
 from utils.audit import log_audit
+from services.case_messages import ensure_case_messages_table
 from datetime import datetime
 
 investigator_bp = Blueprint('investigator', __name__, url_prefix='/investigator')
@@ -95,6 +96,17 @@ def case_detail(case_id):
             # Authorization check: investigators can only view their own assigned cases (admins can see all)
             if user_role == 'investigator' and case_info['investigator_id'] != user_id:
                 abort(403, "You are not authorized to access this case file.")
+
+            ensure_case_messages_table(conn)
+            cursor.execute("""
+                SELECT m.message, m.created_at, m.sender_id,
+                       u.fullname AS sender_name, u.role AS sender_role
+                FROM case_messages m
+                JOIN users u ON u.id = m.sender_id
+                WHERE m.case_id = %s
+                ORDER BY m.created_at ASC, m.id ASC
+            """, (case_id,))
+            case_messages = cursor.fetchall()
                 
             # 2. Fetch evidence linked to this case (includes complaint evidence)
             cursor.execute("""
@@ -179,6 +191,7 @@ def case_detail(case_id):
         case=case_info,
         evidence=evidence_list,
         notes=notes_list,
+        case_messages=case_messages,
         timeline=timeline,
         suspects=suspect_ids_list,
         leads=leads,

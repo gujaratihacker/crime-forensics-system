@@ -65,7 +65,7 @@ def seed_database():
             tables = [
                 'audit_logs', 'investigation_leads', 'comment_flags', 'comments',
                 'live_viewers', 'live_incidents', 'related_cases', 'suspect_identifiers',
-                'suspects', 'case_updates', 'investigation_notes', 'chain_of_custody',
+                'suspects', 'case_updates', 'case_messages', 'investigation_notes', 'chain_of_custody',
                 'awareness_scams',
                 'evidence_access_logs', 'evidence', 'investigators', 'cases', 'complaints', 'users'
             ]

@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+
+{% block title %}{{ translate('Social Media Crime Reports - Cyber Portal', 'सोशल मीडिया अपराध रिपोर्ट - साइबर पोर्टल', 'સોશિયલ મીડિયા ગુનાના અહેવાલો - સાયબર પોર્ટલ') }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4 mb-5">
+    <div class="d-flex align-items-center mb-4 border-bottom border-secondary pb-3">
+        <i class="bi bi-shield-exclamation text-info fs-2 me-2"></i>
+        <div>
+            <h1 class="h2 mb-0" style="font-family: 'Outfit', sans-serif;">{{ translate('Social Media Crime Reports', 'सोशल मीडिया अपराध रिपोर्ट', 'સોશિયલ મીડિયા ગુનાના અહેવાલો') }}</h1>
+            <p class="text-secondary mb-0 small">
+                {% if session.get('role') == 'investigator' %}
+                    {{ translate('Reports assigned to you.', 'आपको सौंपी गई रिपोर्टें।', 'તમને સોંપાયેલા અહેવાલો.') }}
+                {% else %}
+                    {{ translate('All submitted social media crime reports.', 'सोशल मीडिया अपराध की सभी प्रस्तुत रिपोर्टें।', 'સોશિયલ મીડિયા ગુનાના તમામ સબમિટ કરેલા અહેવાલો.') }}
+                {% endif %}
+            </p>
+        </div>
+    </div>
+
+    {% if reports %}
+        <div class="row g-3">
+            {% for report in reports %}
+                <div class="col-12">
+                    <article class="cyber-card p-4">
+                        <div class="d-flex justify-content-between align-items-start flex-wrap gap-2 mb-3">
+                            <div>
+                                <h2 class="h5 text-light mb-1">{{ report.platform }} — {{ report.crime_type }}</h2>
+                                <span class="text-secondary small">{{ translate('Reference:', 'संदर्भ:', 'સંદર્ભ:') }} {{ report.complaint_id }}</span>
+                            </div>
+                            <div class="d-flex gap-2 flex-wrap">
+                                <span class="badge bg-secondary">{{ report.status|replace('_', ' ')|title }}</span>
+                                <span class="badge bg-info text-dark">{{ report.priority }}</span>
+                            </div>
+                        </div>
+
+                        <dl class="row mb-3">
+                            <dt class="col-sm-3 text-secondary">{{ translate('Profile URL', 'प्रोफ़ाइल URL', 'પ્રોફાઇલ URL') }}</dt>
+                            <dd class="col-sm-9 text-break"><code>{{ report.profile_url }}</code></dd>
+                            <dt class="col-sm-3 text-secondary">{{ translate('Reported by', 'रिपोर्टकर्ता', 'રિપોર્ટ કરનાર') }}</dt>
+                            <dd class="col-sm-9 text-light">{{ report.reporter_name or translate('Unknown', 'अज्ञात', 'અજ્ઞાત') }}</dd>
+                            {% if session.get('role') == 'admin' %}
+                                <dt class="col-sm-3 text-secondary">{{ translate('Assigned investigator', 'सौंपे गए जांचकर्ता', 'સોંપાયેલા તપાસકર્તા') }}</dt>
+                                <dd class="col-sm-9 text-light">{{ report.investigator_name or translate('Not assigned', 'सौंपा नहीं गया', 'સોંપાયેલ નથી') }}</dd>
+                            {% endif %}
+                            <dt class="col-sm-3 text-secondary">{{ translate('Submitted', 'जमा किया गया', 'સબમિટ થયેલ') }}</dt>
+                            <dd class="col-sm-9 text-light">{{ report.created_at }}</dd>
+                        </dl>
+
+                        <details class="mb-3">
+                            <summary class="text-info">{{ translate('View report details', 'रिपोर्ट का विवरण देखें', 'રિપોર્ટની વિગતો જુઓ') }}</summary>
+                            <pre class="text-light text-wrap mt-2 mb-0">{{ report.description }}</pre>
+                        </details>
+
+                        {% if report.case_id %}
+                            <a href="{{ url_for('investigator.case_detail', case_id=report.case_id) }}" class="btn btn-outline-info btn-sm">
+                                <i class="bi bi-folder2-open me-1" aria-hidden="true"></i>{{ translate('Open assigned case', 'सौंपा गया केस खोलें', 'સોંપાયેલ કેસ ખોલો') }}
+                            </a>
+                        {% endif %}
+                    </article>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="cyber-card p-5 text-center text-secondary">
+            <i class="bi bi-inbox fs-1 d-block mb-2"></i>
+            {% if session.get('role') == 'investigator' %}
+                {{ translate('There are no social media reports assigned to you.', 'आपको कोई सोशल मीडिया रिपोर्ट नहीं सौंपी गई है।', 'તમને કોઈ સોશિયલ મીડિયા રિપોર્ટ સોંપાયો નથી.') }}
+            {% else %}
+                {{ translate('There are no social media crime reports yet.', 'अभी तक कोई सोशल मीडिया अपराध रिपोर्ट नहीं है।', 'હજુ સુધી કોઈ સોશિયલ મીડિયા ગુનાનો અહેવાલ નથી.') }}
+            {% endif %}
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

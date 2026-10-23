@@ -277,27 +277,27 @@
             </div>
         </div>
 
-        <!-- Video Tutorials Carousel/Mock Player -->
+        <!-- Video Tutorial -->
         <div class="col-md-6">
             <div class="cyber-card p-4 h-100">
                 <h4 class="text-light mb-3 font-monospace" style="font-family: 'Outfit', sans-serif;">
-                    <i class="bi bi-play-circle text-danger"></i> {{ translate('Simulated Video Tutorials', 'सिम्युलेटेड वीडियो ट्यूटोरियल', 'સિમ્યુલેટેડ વિડીયો ટ્યુટોરિયલ્સ') }}
+                    <i class="bi bi-play-circle text-danger"></i> {{ translate('Video Tutorial', 'वीडियो ट्यूटोरियल', 'વિડિયો ટ્યુટોરિયલ') }}
                 </h4>
-                <p class="text-secondary small mb-3">{{ translate('Simulated recordings showcasing phishing indicators and wallet freezing protocols.', 'फ़िशिंग संकेतकों और वॉलेट फ्रीजिंग प्रोटोकॉल को प्रदर्शित करने वाली सिम्युलेटेड रिकॉर्डिंग।', 'ફિશિંગ સૂચકાંકો અને વૉલેટ ફ્રીઝિંગ પ્રોટોકોલ દર્શાવતું સિમ્યુલેટેડ રેકોર્ડિંગ.') }}</p>
+                <p class="text-secondary small mb-3">{{ translate('Watch this video tutorial on YouTube.', 'यह वीडियो ट्यूटोरियल YouTube पर देखें।', 'આ વિડિયો ટ્યુટોરિયલ YouTube પર જુઓ.') }}</p>
 
-                <!-- Mock Player Card -->
-                <div class="position-relative bg-dark rounded border border-secondary overflow-hidden text-center d-flex flex-column align-items-center justify-content-center" style="height: 230px;">
-                    <div class="text-secondary p-3">
-                        <i class="bi bi-play-btn-fill fs-1 text-danger"></i>
-                        <h6 class="text-light mt-2">{{ translate('Freezing Scammed UPI Transactions (2 Mins)', 'घोटाले वाले यूपीआई लेनदेन को फ्रीज करना (2 मिनट)', 'છેતરપિંડીવાળા UPI વ્યવહારો ફ્રીઝ કરવા (2 મિનિટ)') }}</h6>
-                        <p class="small text-muted">{{ translate('Interactive workflow demonstration.', 'इंटरैक्टिव वर्कफ़्लो प्रदर्शन।', 'ઇન્ટરેક્ટિવ વર્કફ્લો પ્રદર્શન.') }}</p>
-                    </div>
-                    
-                    <!-- Play overlay button -->
-                    <button class="btn btn-danger btn-sm position-absolute" style="bottom: 15px;" onclick="alert('Simulated Tutorial: Calls to 1930 within the Golden Hour will flag transaction reference numbers on the NPCI portal, freezing recipient accounts immediately.')">
-                        <i class="bi bi-play-fill"></i> {{ translate('Play Simulation', 'सिमुलेशन चलाएं', 'સિમ્યુલેશન ચલાવો') }}
-                    </button>
+                <div class="ratio ratio-16x9 rounded overflow-hidden border border-secondary">
+                    <iframe
+                        src="https://www.youtube-nocookie.com/embed/id9L71cOi2g"
+                        title="{{ translate('Cyber safety video tutorial', 'साइबर सुरक्षा वीडियो ट्यूटोरियल', 'સાયબર સુરક્ષા વિડિયો ટ્યુટોરિયલ') }}"
+                        loading="lazy"
+                        referrerpolicy="strict-origin-when-cross-origin"
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                        allowfullscreen>
+                    </iframe>
                 </div>
+                <a class="btn btn-outline-light btn-sm mt-3 align-self-start" href="https://youtu.be/id9L71cOi2g" target="_blank" rel="noopener noreferrer">
+                    <i class="bi bi-box-arrow-up-right me-1" aria-hidden="true"></i>{{ translate('Open on YouTube', 'YouTube पर खोलें', 'YouTube પર ખોલો') }}
+                </a>
             </div>
         </div>
     </div>

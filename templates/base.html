@@ -28,25 +28,25 @@
             
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav me-auto">
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('live_incidents.public_incidents') }}">
-                            <i class="bi bi-broadcast me-1" aria-hidden="true"></i> {{ translate('Live incidents', 'लाइव घटनाएं', 'લાઇવ ઘટનાઓ') }}
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="servicesMenu" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="bi bi-grid me-1" aria-hidden="true"></i> {{ translate('Services', 'सेवाएं', 'સેવાઓ') }}
                         </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('missing_persons.list_missing') }}">
-                            <i class="bi bi-person-search me-1" aria-hidden="true"></i> {{ translate('Missing persons', 'लापता व्यक्ति', 'ગુમ થયેલ વ્યક્તિઓ') }}
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('awareness.index') }}">
-                            <i class="bi bi-shield-check me-1" aria-hidden="true"></i> {{ translate('Safety guidance', 'सुरक्षा हब', 'સુરક્ષા હબ') }}
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('social_media_crimes.report_crime') }}">
-                            <i class="bi bi-chat-square-text me-1" aria-hidden="true"></i> {{ translate('Social media reports', 'सोशल मीडिया अपराध', 'સોશિયલ ગુનાઓ') }}
-                        </a>
+                        <ul class="dropdown-menu" aria-labelledby="servicesMenu">
+                            {% if session.get('role') == 'citizen' %}
+                                <li><a class="dropdown-item" href="{{ url_for('complaints.submit') }}"><i class="bi bi-file-earmark-medical me-2" aria-hidden="true"></i>{{ translate('Report cyber crime', 'साइबर अपराध रिपोर्ट करें', 'સાયબર ગુનાની જાણ કરો') }}</a></li>
+                                <li><a class="dropdown-item" href="{{ url_for('social_media_crimes.report_crime') }}"><i class="bi bi-chat-square-text me-2" aria-hidden="true"></i>{{ translate('Report social media crime', 'सोशल मीडिया अपराध रिपोर्ट करें', 'સોશિયલ મીડિયા ગુનાની જાણ કરો') }}</a></li>
+                                <li><a class="dropdown-item" href="{{ url_for('live_incidents.start_live_incident_get') }}"><i class="bi bi-camera-video me-2" aria-hidden="true"></i>{{ translate('Start a livestream', 'लाइव स्ट्रीम शुरू करें', 'લાઇવ સ્ટ્રીમ શરૂ કરો') }}</a></li>
+                                <li><hr class="dropdown-divider"></li>
+                            {% endif %}
+                            <li><a class="dropdown-item" href="{{ url_for('live_incidents.public_incidents') }}"><i class="bi bi-broadcast me-2" aria-hidden="true"></i>{{ translate('Live incidents', 'लाइव घटनाएं', 'લાઇવ ઘટનાઓ') }}</a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('missing_persons.list_missing') }}"><i class="bi bi-person-search me-2" aria-hidden="true"></i>{{ translate('Missing persons', 'लापता व्यक्ति', 'ગુમ થયેલ વ્યક્તિઓ') }}</a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('awareness.index') }}"><i class="bi bi-shield-check me-2" aria-hidden="true"></i>{{ translate('Safety guidance', 'सुरक्षा हब', 'સુરક્ષા હબ') }}</a></li>
+                            {% if session.get('role') in ['admin', 'investigator'] %}
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item" href="{{ url_for('social_media_crimes.report_crime') }}"><i class="bi bi-chat-square-text me-2" aria-hidden="true"></i>{{ translate('Social media reports', 'सोशल मीडिया अपराध', 'સોશિયલ ગુનાઓ') }}</a></li>
+                            {% endif %}
+                        </ul>
                     </li>
                 </ul>
                 

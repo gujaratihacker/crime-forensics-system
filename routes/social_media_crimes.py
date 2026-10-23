@@ -12,8 +12,41 @@ social_media_crimes_bp = Blueprint('social_media_crimes', __name__, url_prefix='
 
 @social_media_crimes_bp.route('/report', methods=['GET', 'POST'])
 @login_required
-@roles_allowed('citizen')
+@roles_allowed('citizen', 'investigator', 'admin')
 def report_crime():
+    user_role = session.get('role')
+    if user_role in ('investigator', 'admin'):
+        if request.method != 'GET':
+            abort(403, "Only citizens can submit social media crime reports.")
+
+        conn = get_db_connection()
+        try:
+            with conn.cursor() as cursor:
+                query = """
+                    SELECT c.id AS complaint_id, c.created_at, c.status, c.priority,
+                           c.description, c.reporting_mode,
+                           CASE WHEN c.reporting_mode = 'anonymous' THEN 'Anonymous Reporter'
+                                ELSE reporter.fullname END AS reporter_name,
+                           sm.platform, sm.crime_type, sm.profile_url,
+                           ca.id AS case_id, ca.status AS case_status,
+                           investigator.fullname AS investigator_name
+                    FROM social_media_complaints sm
+                    JOIN complaints c ON c.id = sm.complaint_id
+                    LEFT JOIN cases ca ON ca.complaint_id = c.id
+                    LEFT JOIN users reporter ON reporter.id = c.citizen_id
+                    LEFT JOIN users investigator ON investigator.id = ca.investigator_id
+                """
+                if user_role == 'investigator':
+                    query += " WHERE ca.investigator_id = %s"
+                    cursor.execute(query + " ORDER BY c.created_at DESC", (session.get('user_id'),))
+                else:
+                    cursor.execute(query + " ORDER BY c.created_at DESC")
+                reports = cursor.fetchall()
+        finally:
+            conn.close()
+
+        return render_template('social_media_crimes/reports.html', reports=reports)
+
     if request.method == 'POST':
         # CSRF check
         token = request.form.get('csrf_token')

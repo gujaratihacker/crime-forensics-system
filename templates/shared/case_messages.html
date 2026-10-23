@@ -1,0 +1,45 @@
+{% set message_case_id = case.case_id if case.case_id is defined else case.id %}
+<section class="cyber-card p-4 mb-4">
+    <h4 class="mb-2 text-light border-bottom border-secondary pb-2">
+        <i class="bi bi-chat-dots text-info me-1" aria-hidden="true"></i> Case communication
+    </h4>
+    <p class="small text-secondary">Messages here are shared with the reporter and the assigned investigator. Private investigation notes are not shown here.</p>
+
+    <div class="list-group list-group-flush bg-transparent mb-3">
+        {% if not case_messages %}
+            <div class="text-center py-3 text-secondary">
+                <p class="mb-0 small">No messages yet. Start the conversation with the assigned investigator.</p>
+            </div>
+        {% else %}
+            {% for message in case_messages %}
+                <article class="list-group-item bg-transparent text-light border-secondary px-0 py-3">
+                    <div class="d-flex justify-content-between align-items-center gap-2 mb-1">
+                        <span class="fw-bold {% if message.sender_role == 'investigator' %}text-info{% else %}text-light{% endif %}">
+                            {{ message.sender_name }}
+                            <span class="badge bg-secondary">{{ message.sender_role|title }}</span>
+                        </span>
+                        <small class="text-secondary">{{ message.created_at }}</small>
+                    </div>
+                    <p class="mb-0 small text-light" style="white-space: pre-wrap;">{{ message.message }}</p>
+                </article>
+            {% endfor %}
+        {% endif %}
+    </div>
+
+    {% if session.get('role') in ['citizen', 'investigator'] %}
+        <form method="POST" action="{{ url_for('complaints.send_case_message', case_id=message_case_id) }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+            {% if session.get('role') == 'citizen' %}
+                <input type="hidden" name="complaint_id" value="{{ complaint.id }}">
+            {% endif %}
+            <label for="caseMessage" class="form-label text-secondary small fw-bold">Your message</label>
+            <textarea class="form-control cyber-input mb-2" id="caseMessage" name="message" rows="3" maxlength="5000" placeholder="Write a message about this case..." required></textarea>
+            <div class="d-flex justify-content-between align-items-center">
+                <small class="text-secondary">Maximum 5,000 characters.</small>
+                <button type="submit" class="btn btn-sm btn-cyber-cyan">
+                    <i class="bi bi-send me-1" aria-hidden="true"></i> Send message
+                </button>
+            </div>
+        </form>
+    {% endif %}
+</section>

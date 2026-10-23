@@ -1,6 +1,8 @@
 import os
 import sys
 import unittest
+from io import BytesIO
+from unittest.mock import patch
 from werkzeug.security import generate_password_hash, check_password_hash
 
 # Add parent directory to path so we can import app modules
@@ -27,6 +29,186 @@ class ForensicsAppTestCase(unittest.TestCase):
         # Verify check works
         self.assertTrue(check_password_hash(hash_val, password))
         self.assertFalse(check_password_hash(hash_val, "WrongPassword@123"))
+
+    def test_registration_preserves_values_and_shows_email_error_inline(self):
+        """Invalid registration keeps entered non-sensitive values and marks the email field."""
+        with self.client.session_transaction() as test_session:
+            test_session['csrf_token'] = 'test-token'
+
+        response = self.client.post('/register', data={
+            'csrf_token': 'test-token',
+            'fullname': 'Ankit Example',
+            'username': 'ankit_example',
+            'email': 'not-an-email',
+            'phone': '+919876543210',
+            'password': 'SecurePassword123',
+            'confirm_password': 'SecurePassword123',
+            'doc_type': 'Aadhar Card',
+            'verification_file': (BytesIO(b'test document'), 'proof.png')
+        })
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn(b'value="Ankit Example"', response.data)
+        self.assertIn(b'value="ankit_example"', response.data)
+        self.assertIn(b'value="not-an-email"', response.data)
+        self.assertIn(b'value="+919876543210"', response.data)
+        self.assertIn(b'id="emailError">Please enter a valid email address.', response.data)
+        self.assertNotIn(b'class="alert alert-danger"', response.data)
+        self.assertNotIn(b'value="SecurePassword123"', response.data)
+
+    def test_registration_shows_password_mismatch_at_confirmation_field(self):
+        """Password mismatch is displayed beside confirmation without losing form values."""
+        with self.client.session_transaction() as test_session:
+            test_session['csrf_token'] = 'test-token'
+
+        response = self.client.post('/register', data={
+            'csrf_token': 'test-token',
+            'fullname': 'Ankit Example',
+            'username': 'ankit_example',
+            'email': 'ankit@example.com',
+            'phone': '+919876543210',
+            'password': 'SecurePassword123',
+            'confirm_password': 'DifferentPassword123',
+            'doc_type': 'PAN Card',
+            'verification_file': (BytesIO(b'test document'), 'proof.png')
+        })
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn(b'value="ankit@example.com"', response.data)
+        self.assertIn(b'id="confirmPasswordError">Passwords do not match.', response.data)
+        self.assertNotIn(b'value="SecurePassword123"', response.data)
+        self.assertNotIn(b'value="DifferentPassword123"', response.data)
+
+    def test_investigator_only_sees_assigned_social_media_reports(self):
+        """Investigator report listing is filtered to their assigned cases."""
+        with self.client.session_transaction() as test_session:
+            test_session.update({'user_id': 7, 'role': 'investigator'})
+
+        with patch('routes.social_media_crimes.get_db_connection') as get_connection:
+            cursor = get_connection.return_value.cursor.return_value.__enter__.return_value
+            cursor.fetchall.return_value = [{
+                'complaint_id': 'CMP-2026-00001',
+                'created_at': '2026-10-23',
+                'status': 'submitted',
+                'priority': 'LOW',
+                'description': 'Social report details',
+                'reporting_mode': 'identified',
+                'reporter_name': 'Test Citizen',
+                'platform': 'Instagram',
+                'crime_type': 'Fake profile',
+                'profile_url': 'https://example.com/profile',
+                'case_id': 'CASE-2026-00001',
+                'case_status': 'assigned',
+                'investigator_name': 'Test Investigator'
+            }]
+
+            response = self.client.get('/social-media-crimes/report')
+            executed_query, query_params = cursor.execute.call_args[0]
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn(b'Social report details', response.data)
+        self.assertIn('WHERE ca.investigator_id = %s', executed_query)
+        self.assertEqual(query_params, (7,))
+
+    def test_admin_can_view_all_social_media_reports(self):
+        """Administrator report list only queries reports with social-media metadata."""
+        with self.client.session_transaction() as test_session:
+            test_session.update({'user_id': 1, 'role': 'admin'})
+
+        with patch('routes.social_media_crimes.get_db_connection') as get_connection:
+            cursor = get_connection.return_value.cursor.return_value.__enter__.return_value
+            cursor.fetchall.return_value = []
+
+            response = self.client.get('/social-media-crimes/report')
+            executed_query = cursor.execute.call_args[0][0]
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn(b'All submitted social media crime reports.', response.data)
+        self.assertIn('FROM social_media_complaints sm', executed_query)
+        self.assertNotIn('WHERE ca.investigator_id', executed_query)
+
+    def test_staff_cannot_submit_social_media_report(self):
+        """Staff roles can view reports but cannot submit citizen reports."""
+        with self.client.session_transaction() as test_session:
+            test_session.update({'user_id': 1, 'role': 'admin'})
+
+        with patch('routes.social_media_crimes.get_db_connection') as get_connection:
+            response = self.client.post('/social-media-crimes/report')
+
+        self.assertEqual(response.status_code, 403)
+        get_connection.assert_not_called()
+
+    def test_citizen_and_assigned_investigator_can_message_case(self):
+        """Both authorized case participants can send shared messages."""
+        participants = (
+            ('citizen', 10, '/complaints/detail/CR-2026-00001'),
+            ('investigator', 20, '/investigator/case/CASE-2026-00001')
+        )
+        for role, user_id, expected_location in participants:
+            with self.subTest(role=role):
+                with self.client.session_transaction() as test_session:
+                    test_session.update({
+                        'user_id': user_id,
+                        'role': role,
+                        'csrf_token': 'test-token'
+                    })
+
+                with patch('routes.complaints.get_db_connection') as get_connection, \
+                        patch('routes.complaints.ensure_case_messages_table') as ensure_table, \
+                        patch('routes.complaints.log_audit') as log_audit:
+                    cursor = get_connection.return_value.cursor.return_value.__enter__.return_value
+                    cursor.fetchone.return_value = {
+                        'complaint_id': 'CR-2026-00001',
+                        'investigator_id': 20,
+                        'citizen_id': 10
+                    }
+                    response = self.client.post(
+                        '/complaints/case/CASE-2026-00001/messages',
+                        data={
+                            'csrf_token': 'test-token',
+                            'complaint_id': 'CR-2026-00001',
+                            'message': 'Please share a case update.'
+                        }
+                    )
+
+                self.assertEqual(response.status_code, 302)
+                self.assertEqual(response.location, expected_location)
+                ensure_table.assert_called_once()
+                log_audit.assert_called_once()
+                self.assertEqual(cursor.execute.call_count, 2)
+                insert_sql, insert_params = cursor.execute.call_args[0]
+                self.assertIn('INSERT INTO case_messages', insert_sql)
+                self.assertEqual(insert_params, ('CASE-2026-00001', user_id, 'Please share a case update.'))
+
+    def test_citizen_cannot_message_another_reporters_case(self):
+        """A citizen cannot send a message on a case they do not own."""
+        with self.client.session_transaction() as test_session:
+            test_session.update({
+                'user_id': 11,
+                'role': 'citizen',
+                'csrf_token': 'test-token'
+            })
+
+        with patch('routes.complaints.get_db_connection') as get_connection, \
+                patch('routes.complaints.ensure_case_messages_table') as ensure_table:
+            cursor = get_connection.return_value.cursor.return_value.__enter__.return_value
+            cursor.fetchone.return_value = {
+                'complaint_id': 'CR-2026-00001',
+                'investigator_id': 20,
+                'citizen_id': 10
+            }
+            response = self.client.post(
+                '/complaints/case/CASE-2026-00001/messages',
+                data={
+                    'csrf_token': 'test-token',
+                    'complaint_id': 'CR-2026-00001',
+                    'message': 'This should be rejected.'
+                }
+            )
+
+        self.assertEqual(response.status_code, 403)
+        ensure_table.assert_not_called()
+        self.assertEqual(cursor.execute.call_count, 1)
 
     def test_evidence_hashing(self):
         """Test SHA-256 file hashing correctness."""

@@ -20,79 +20,106 @@ def is_strong_password(password):
 def register():
     if 'user_id' in session:
         return redirect_by_role(session.get('role'))
-        
+
+    form_data = {}
+    errors = {}
+    form_error = None
+
+    def render_register():
+        return render_template(
+            'auth/register.html',
+            form_data=form_data,
+            errors=errors,
+            form_error=form_error
+        )
+
     if request.method == 'POST':
+        form_data = {
+            'fullname': sanitize_string(request.form.get('fullname')),
+            'username': sanitize_string(request.form.get('username')),
+            'email': sanitize_string(request.form.get('email')),
+            'phone': sanitize_string(request.form.get('phone')),
+            'doc_type': sanitize_string(request.form.get('doc_type'))
+        }
+        password = request.form.get('password', '')
+        confirm_password = request.form.get('confirm_password', '')
+
         # CSRF Check
         token = request.form.get('csrf_token')
         if not validate_csrf_token(token):
-            flash("Security check failed (CSRF token missing or invalid).", "danger")
-            return render_template('auth/register.html')
-            
-        fullname = sanitize_string(request.form.get('fullname'))
-        username = sanitize_string(request.form.get('username'))
-        email = sanitize_string(request.form.get('email'))
-        phone = sanitize_string(request.form.get('phone'))
-        password = request.form.get('password')
-        confirm_password = request.form.get('confirm_password')
-        
-        # Server-side validation
-        if not all([fullname, username, email, phone, password, confirm_password]):
-            flash("All fields are required.", "danger")
-            return render_template('auth/register.html')
-            
-        if not is_valid_email(email):
-            flash("Please enter a valid email address.", "danger")
-            return render_template('auth/register.html')
-            
-        if password != confirm_password:
-            flash("Passwords do not match.", "danger")
-            return render_template('auth/register.html')
-            
-        if not is_strong_password(password):
-            flash("Password must be at least 8 characters long and contain both letters and numbers.", "danger")
-            return render_template('auth/register.html')
-            
-        # Verification proof validation
-        doc_type = sanitize_string(request.form.get('doc_type'))
-        if not doc_type:
-            flash("Please select a verification document type.", "danger")
-            return render_template('auth/register.html')
-            
-        if 'verification_file' not in request.files:
-            flash("Verification proof document is required.", "danger")
-            return render_template('auth/register.html')
-            
-        v_file = request.files['verification_file']
+            form_error = "Security check failed. Please submit the form again."
+            return render_register()
+
+        required_fields = {
+            'fullname': 'Full name',
+            'username': 'Username',
+            'email': 'Email address',
+            'phone': 'Phone number',
+            'doc_type': 'Verification document type'
+        }
+        for field, label in required_fields.items():
+            if not form_data[field]:
+                errors[field] = f"{label} is required."
+
+        if not password:
+            errors['password'] = "Password is required."
+        elif not is_strong_password(password):
+            errors['password'] = "Password must be at least 8 characters long and contain both letters and numbers."
+
+        if not confirm_password:
+            errors['confirm_password'] = "Please confirm your password."
+        elif password != confirm_password:
+            errors['confirm_password'] = "Passwords do not match."
+
+        if form_data['email'] and not is_valid_email(form_data['email']):
+            errors['email'] = "Please enter a valid email address."
+
+        v_file = request.files.get('verification_file')
         if not v_file or not v_file.filename:
-            flash("Verification proof document is required.", "danger")
-            return render_template('auth/register.html')
-            
-        if not is_allowed_file(v_file.filename):
-            flash("Invalid document format. Allowed types: png, jpg, jpeg, pdf.", "danger")
-            return render_template('auth/register.html')
-            
-        # Securely save the file
-        os.makedirs(Config.VERIFICATION_UPLOAD_FOLDER, exist_ok=True)
-        stored_filename = get_secure_upload_name(v_file.filename)
-        filepath = os.path.join(Config.VERIFICATION_UPLOAD_FOLDER, stored_filename)
-        v_file.save(filepath)
-            
-        conn = get_db_connection()
+            errors['verification_file'] = "Verification proof document is required."
+        elif not is_allowed_file(v_file.filename):
+            errors['verification_file'] = "Invalid document format. Allowed types: png, jpg, jpeg, pdf."
+
+        if errors:
+            return render_register()
+
+        conn = None
         try:
+            conn = get_db_connection()
             with conn.cursor() as cursor:
                 # Check for existing username or email
-                cursor.execute("SELECT id FROM users WHERE username = %s OR email = %s", (username, email))
-                existing = cursor.fetchone()
-                if existing:
-                    flash("Username or Email already registered.", "danger")
-                    return render_template('auth/register.html')
+                cursor.execute(
+                    "SELECT username, email FROM users WHERE username = %s OR email = %s",
+                    (form_data['username'], form_data['email'])
+                )
+                existing_users = cursor.fetchall()
+                if existing_users:
+                    if any(user['username'] == form_data['username'] for user in existing_users):
+                        errors['username'] = "This username is already registered."
+                    if any(user['email'] == form_data['email'] for user in existing_users):
+                        errors['email'] = "This email address is already registered."
+                    return render_register()
+
+                # Save the verification document only after validation succeeds.
+                os.makedirs(Config.VERIFICATION_UPLOAD_FOLDER, exist_ok=True)
+                stored_filename = get_secure_upload_name(v_file.filename)
+                filepath = os.path.join(Config.VERIFICATION_UPLOAD_FOLDER, stored_filename)
+                v_file.save(filepath)
                 
                 # Insert user
                 pw_hash = generate_password_hash(password)
                 cursor.execute("""
                     INSERT INTO users (username, email, password_hash, phone, fullname, role, verification_doc_type, verification_doc_path)
                     VALUES (%s, %s, %s, %s, %s, 'citizen', %s, %s)
-                """, (username, email, pw_hash, phone, fullname, doc_type, stored_filename))
+                """, (
+                    form_data['username'],
+                    form_data['email'],
+                    pw_hash,
+                    form_data['phone'],
+                    form_data['fullname'],
+                    form_data['doc_type'],
+                    stored_filename
+                ))
                 
                 new_user_id = cursor.lastrowid
                 
@@ -100,19 +127,22 @@ def register():
                 log_audit(
                     user_id=new_user_id,
                     action="USER_REGISTRATION",
-                    description=f"New citizen account registered: username={username}, email={email}."
+                    description=f"New citizen account registered: username={form_data['username']}, email={form_data['email']}."
                 )
                 
             flash("Registration successful! You can now log in.", "success")
             return redirect(url_for('auth.login'))
             
         except Exception as e:
-            flash("An error occurred during registration. Please try again.", "danger")
+            form_error = "An error occurred during registration. Please try again."
             print(f"REGISTRATION ERROR: {e}")
         finally:
-            conn.close()
+            if conn:
+                conn.close()
+
+        return render_register()
             
-    return render_template('auth/register.html')
+    return render_register()
 
 @auth_bp.route('/login', methods=['GET', 'POST'])
 def login():

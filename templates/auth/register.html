@@ -15,59 +15,70 @@
                 
                 <form method="POST" action="{{ url_for('auth.register') }}" id="registerForm" enctype="multipart/form-data">
                     <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                    {% if form_error %}
+                        <div class="alert alert-danger" role="alert">{{ form_error }}</div>
+                    {% endif %}
                     
                     <div class="row">
                         <div class="col-md-6 mb-3">
                             <label for="fullname" class="form-label">{{ translate('Full name', 'पूरा नाम', 'પૂરું નામ') }}</label>
-                            <input type="text" class="form-control cyber-input" id="fullname" name="fullname" placeholder="John Doe" required>
+                            <input type="text" class="form-control cyber-input{% if errors.get('fullname') %} is-invalid{% endif %}" id="fullname" name="fullname" value="{{ form_data.get('fullname', '') }}" placeholder="John Doe" aria-describedby="fullnameError" required>
+                            {% if errors.get('fullname') %}<div class="invalid-feedback d-block" id="fullnameError">{{ errors['fullname'] }}</div>{% endif %}
                         </div>
                         <div class="col-md-6 mb-3">
                             <label for="username" class="form-label">{{ translate('Username', 'उपयोगकर्ता नाम', 'વપરાશકર્તા નામ') }}</label>
-                            <input type="text" class="form-control cyber-input" id="username" name="username" placeholder="johndoe12" required>
+                            <input type="text" class="form-control cyber-input{% if errors.get('username') %} is-invalid{% endif %}" id="username" name="username" value="{{ form_data.get('username', '') }}" placeholder="johndoe12" aria-describedby="usernameError" required>
+                            {% if errors.get('username') %}<div class="invalid-feedback d-block" id="usernameError">{{ errors['username'] }}</div>{% endif %}
                         </div>
                     </div>
                     
                     <div class="row">
                         <div class="col-md-6 mb-3">
                             <label for="email" class="form-label">{{ translate('Email address', 'ईमेल पता', 'ઈમેલ સરનામું') }}</label>
-                            <input type="email" class="form-control cyber-input" id="email" name="email" placeholder="johndoe@email.com" required>
+                            <input type="email" class="form-control cyber-input{% if errors.get('email') %} is-invalid{% endif %}" id="email" name="email" value="{{ form_data.get('email', '') }}" placeholder="johndoe@email.com" aria-describedby="emailError" required>
+                            {% if errors.get('email') %}<div class="invalid-feedback d-block" id="emailError">{{ errors['email'] }}</div>{% endif %}
                         </div>
                         <div class="col-md-6 mb-3">
                             <label for="phone" class="form-label">{{ translate('Phone number', 'फ़ोन नंबर', 'ફોન નંબર') }}</label>
-                            <input type="tel" class="form-control cyber-input" id="phone" name="phone" placeholder="+919876543210" required>
+                            <input type="tel" class="form-control cyber-input{% if errors.get('phone') %} is-invalid{% endif %}" id="phone" name="phone" value="{{ form_data.get('phone', '') }}" placeholder="+919876543210" aria-describedby="phoneError" required>
+                            {% if errors.get('phone') %}<div class="invalid-feedback d-block" id="phoneError">{{ errors['phone'] }}</div>{% endif %}
                         </div>
                     </div>
                     
                     <div class="row">
                         <div class="col-md-6 mb-3">
                             <label for="password" class="form-label">{{ translate('Password', 'पासवर्ड', 'પાસવર્ડ') }}</label>
-                            <input type="password" class="form-control cyber-input" id="password" name="password" placeholder="{{ translate('At least 8 chars, letters+digits', 'कम से कम 8 अक्षर, अक्षर + अंक', 'ઓછામાં ઓછા 8 અક્ષરો, અક્ષરો + અંકો') }}" required>
+                            <input type="password" class="form-control cyber-input{% if errors.get('password') %} is-invalid{% endif %}" id="password" name="password" placeholder="{{ translate('At least 8 chars, letters+digits', 'कम से कम 8 अक्षर, अक्षर + अंक', 'ઓછામાં ઓછા 8 અક્ષરો, અક્ષરો + અંકો') }}" aria-describedby="passwordError" required>
+                            {% if errors.get('password') %}<div class="invalid-feedback d-block" id="passwordError">{{ errors['password'] }}</div>{% endif %}
                         </div>
                         <div class="col-md-6 mb-3">
                             <label for="confirm_password" class="form-label">{{ translate('Confirm password', 'पासवर्ड की पुष्टि करें', 'પાસવર્ડની પુષ્ટિ કરો') }}</label>
-                            <input type="password" class="form-control cyber-input" id="confirm_password" name="confirm_password" placeholder="{{ translate('Re-type password', 'पासवर्ड दोबारा टाइप करें', 'પાસવર્ડ ફરીથી ટાઇપ કરો') }}" required>
+                            <input type="password" class="form-control cyber-input{% if errors.get('confirm_password') %} is-invalid{% endif %}" id="confirm_password" name="confirm_password" placeholder="{{ translate('Re-type password', 'पासवर्ड दोबारा टाइप करें', 'પાસવર્ડ ફરીથી ટાઇપ કરો') }}" aria-describedby="confirmPasswordError" required>
+                            {% if errors.get('confirm_password') %}<div class="invalid-feedback d-block" id="confirmPasswordError">{{ errors['confirm_password'] }}</div>{% endif %}
                         </div>
                     </div>
 
                     <div class="row mb-3">
                         <div class="col-md-6 mb-3">
                             <label for="doc_type" class="form-label">{{ translate('Verification document type', 'सत्यापन दस्तावेज़ का प्रकार', 'ચકાસણી દસ્તાવેજનો પ્રકાર') }} <span class="text-danger">*</span></label>
-                            <select class="form-select cyber-input" id="doc_type" name="doc_type" required>
-                                <option value="" disabled selected>{{ translate('Select proof...', 'प्रमाण चुनें...', 'પુરાવો પસંદ કરો...') }}</option>
-                                <option value="Aadhar Card">{{ translate('Aadhar Card', 'आधार कार्ड', 'આધાર કાર્ડ') }}</option>
-                                <option value="PAN Card">{{ translate('PAN Card', 'पैन कार्ड', 'પાન કાર્ડ') }}</option>
-                                <option value="Voter ID">{{ translate('Voter ID', 'मतदाता पहचान पत्र', 'મતદાર આઈડી') }}</option>
+                            <select class="form-select cyber-input{% if errors.get('doc_type') %} is-invalid{% endif %}" id="doc_type" name="doc_type" aria-describedby="docTypeError" required>
+                                <option value="" disabled{% if not form_data.get('doc_type') %} selected{% endif %}>{{ translate('Select proof...', 'प्रमाण चुनें...', 'પુરાવો પસંદ કરો...') }}</option>
+                                <option value="Aadhar Card"{% if form_data.get('doc_type') == 'Aadhar Card' %} selected{% endif %}>{{ translate('Aadhar Card', 'आधार कार्ड', 'આધાર કાર્ડ') }}</option>
+                                <option value="PAN Card"{% if form_data.get('doc_type') == 'PAN Card' %} selected{% endif %}>{{ translate('PAN Card', 'पैन कार्ड', 'પાન કાર્ડ') }}</option>
+                                <option value="Voter ID"{% if form_data.get('doc_type') == 'Voter ID' %} selected{% endif %}>{{ translate('Voter ID', 'मतदाता पहचान पत्र', 'મતદાર આઈડી') }}</option>
                             </select>
+                            {% if errors.get('doc_type') %}<div class="invalid-feedback d-block" id="docTypeError">{{ errors['doc_type'] }}</div>{% endif %}
                         </div>
                         <div class="col-md-6 mb-3">
                             <label for="verification_file" class="form-label">{{ translate('Upload verification document', 'सत्यापन दस्तावेज़ अपलोड करें', 'ચકાસણી દસ્તાવેજ અપલોડ કરો') }} <span class="text-danger">*</span></label>
-                            <input type="file" class="form-control cyber-input" id="verification_file" name="verification_file" required>
+                            <input type="file" class="form-control cyber-input{% if errors.get('verification_file') %} is-invalid{% endif %}" id="verification_file" name="verification_file" aria-describedby="verificationFileError" required>
+                            {% if errors.get('verification_file') %}<div class="invalid-feedback d-block" id="verificationFileError">{{ errors['verification_file'] }}</div>{% endif %}
                         </div>
                     </div>
                     
                     <div class="safety-alert mb-4 py-2">
                         <i class="bi bi-shield-fill-check me-2"></i>
-                        {{ translate('Your password is securely hashed before it is stored.', 'सहेजने से पहले आपके पासवर्ड को सुरक्षित रूप से हैश किया जाता है।', 'સંગ્રહ કરતા પહેલાં તમારો પાસવર્ડ સુરક્ષિત રીતે હૅશ કરવામાં આવે છે.') }}
+                        {{ translate('Your password is securely hashed before it is stored. For your security, passwords and uploaded files must be entered again if the form has an error.', 'सहेजने से पहले आपके पासवर्ड को सुरक्षित रूप से हैश किया जाता है। सुरक्षा के लिए, फ़ॉर्म में त्रुटि होने पर पासवर्ड और अपलोड की गई फ़ाइल दोबारा भरें।', 'સંગ્રહ કરતા પહેલાં તમારો પાસવર્ડ સુરક્ષિત રીતે હૅશ કરવામાં આવે છે. સુરક્ષા માટે, ફોર્મમાં ભૂલ આવે તો પાસવર્ડ અને અપલોડ કરેલી ફાઇલ ફરીથી દાખલ કરો.') }}
                     </div>
                     
                     <button type="submit" class="btn btn-cyber-cyan w-100 py-2 fs-5"><i class="bi bi-person-check-fill" aria-hidden="true"></i> {{ translate('Create account', 'खाता बनाएं', 'ખાતું બનાવો') }}</button>
@@ -82,15 +93,4 @@
     </div>
 </div>
 
-<script>
-document.getElementById('registerForm').addEventListener('submit', function(e) {
-    var password = document.getElementById('password').value;
-    var confirm = document.getElementById('confirm_password').value;
-    
-    if (password !== confirm) {
-        e.preventDefault();
-        alert("{{ translate('Passwords do not match!', 'पासवर्ड मेल नहीं खाते!', 'પાસવર્ડ્સ મેચ થતા નથી!') }}");
-    }
-});
-</script>
 {% endblock %}
