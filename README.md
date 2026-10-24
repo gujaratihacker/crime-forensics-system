@@ -94,26 +94,42 @@ Flask backend. The Flask app and MySQL/MariaDB database must also be deployed
 to a Python host; Netlify does not run this project as a persistent Flask
 server.
 
-1. Deploy the repository to a Python web host that supports Gunicorn and
-   persistent storage. The included `Procfile` starts the Flask app using the
-   host's `PORT` environment variable.
-2. Provision an empty MySQL/MariaDB database reachable by the Flask service,
-   then configure `DB_HOST`, `DB_USER`, `DB_PASSWORD`, and `DB_NAME` on the
-   backend. Also set `SECRET_KEY` to a long, random secret and
-   `SESSION_COOKIE_SECURE=true`. Never use the demo credentials for a public
-   deployment.
-3. Attach persistent storage at the app's `uploads` directory. Evidence,
-   verification files, missing-person images, live snapshots, and recordings
-   are stored there and will otherwise be lost when the backend restarts.
-4. Initialize a **new, empty demo database** once with `python seed_data.py`.
-   This script drops and recreates project tables each time it runs. Do not run
-   it against a database containing data you need.
-5. In Netlify, import this GitHub repository and add the `FLASK_BACKEND_URL`
-   environment variable containing the backend's public HTTPS origin, such as
-   `https://your-app.example.com` (no path). The root `netlify.toml` invokes
-   `scripts/build_netlify.py`, which generates a catch-all proxy rewrite.
-6. Deploy the Netlify site. If the backend URL changes, update the Netlify
-   environment variable and redeploy.
+### Railway backend setup
+
+1. In Railway, create a project and deploy this GitHub repository as a service.
+   The included `Procfile` starts Gunicorn using Railway's `PORT`.
+2. Add a MySQL service to the same Railway project. In the Flask service's
+   Variables settings, map the MySQL service's generated values to the
+   application's variables (replace `MySQL` with the exact name of your
+   database service if different):
+   - `DB_HOST=${{ MySQL.MYSQLHOST }}`
+   - `DB_USER=${{ MySQL.MYSQLUSER }}`
+   - `DB_PASSWORD=${{ MySQL.MYSQLPASSWORD }}`
+   - `DB_NAME=${{ MySQL.MYSQLDATABASE }}`
+   - `SECRET_KEY`: a newly generated, long random secret
+   - `SESSION_COOKIE_SECURE=true`
+3. Attach a persistent Railway volume to the Flask service at `/app/uploads`.
+   Evidence, verification files, missing-person images, live snapshots, and
+   recordings are stored there.
+4. Before initializing the database, set `SEED_ADMIN_PASSWORD`,
+   `SEED_INVESTIGATOR_PASSWORD`, and `SEED_CITIZEN_PASSWORD` in the Flask
+   service's Variables. Use unique private passwords of at least 12 characters
+   containing letters and numbers. Run `python seed_data.py` once from the
+   backend service's shell against a **new, empty database**. This script drops
+   and recreates project tables when it runs; never run it against data you
+   need. The local demo passwords remain defaults only for local development.
+5. Generate a public HTTPS domain for the Flask service in Railway and wait
+   until the backend is healthy.
+
+### Netlify proxy setup
+
+1. Import the same GitHub repository into Netlify.
+2. Add the `FLASK_BACKEND_URL` build environment variable with the Railway
+   backend's HTTPS origin, for example `https://your-app.up.railway.app`
+   (no path). The root `netlify.toml` invokes `scripts/build_netlify.py`, which
+   generates the catch-all proxy rewrite.
+3. Deploy the Netlify site. If the backend URL changes, update the environment
+   variable and redeploy.
 
 Netlify's proxy rewrites time out after 26 seconds. Large evidence/video
 uploads or long-running requests may need direct backend or object-storage

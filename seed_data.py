@@ -3,6 +3,17 @@ import pymysql
 from werkzeug.security import generate_password_hash
 from config import Config
 
+
+def get_seed_password(environment_name, local_default):
+    """Use deployment-specific credentials when seeding demo accounts."""
+    password = os.environ.get(environment_name)
+    if password is None:
+        return local_default
+    if len(password) < 12 or not any(char.isalpha() for char in password) or not any(char.isdigit() for char in password):
+        raise ValueError(f"{environment_name} must be at least 12 characters and contain letters and numbers.")
+    return password
+
+
 def create_folders():
     """Create necessary upload directories if they don't exist."""
     folders = [Config.UPLOAD_FOLDER, Config.LIVE_SNAPSHOTS_FOLDER]
@@ -32,9 +43,12 @@ def read_sql_schema(filepath):
     return statements
 
 def seed_database():
+    admin_password = get_seed_password('SEED_ADMIN_PASSWORD', 'Admin@123')
+    investigator_password = get_seed_password('SEED_INVESTIGATOR_PASSWORD', 'Investigator@123')
+    citizen_password = get_seed_password('SEED_CITIZEN_PASSWORD', 'Citizen@123')
     create_folders()
     
-    print("Connecting to MySQL server at localhost...")
+    print(f"Connecting to MySQL server at {Config.DB_HOST}...")
     # Connect without specifying database to create it
     conn = pymysql.connect(
         host=Config.DB_HOST,
@@ -86,7 +100,7 @@ def seed_database():
             {
                 'username': 'admin1',
                 'email': 'admin@forensics.local',
-                'password_hash': generate_password_hash('Admin@123'),
+                'password_hash': generate_password_hash(admin_password),
                 'phone': '+919999999901',
                 'fullname': 'Super Admin Officer',
                 'role': 'admin'
@@ -94,7 +108,7 @@ def seed_database():
             {
                 'username': 'investigator1',
                 'email': 'investigator1@forensics.local',
-                'password_hash': generate_password_hash('Investigator@123'),
+                'password_hash': generate_password_hash(investigator_password),
                 'phone': '+919999999902',
                 'fullname': 'Inspector Rajesh Kumar',
                 'role': 'investigator'
@@ -102,7 +116,7 @@ def seed_database():
             {
                 'username': 'investigator2',
                 'email': 'investigator2@forensics.local',
-                'password_hash': generate_password_hash('Investigator@123'),
+                'password_hash': generate_password_hash(investigator_password),
                 'phone': '+919999999903',
                 'fullname': 'Sub-Inspector Anjali Sharma',
                 'role': 'investigator'
@@ -110,7 +124,7 @@ def seed_database():
             {
                 'username': 'citizen1',
                 'email': 'citizen1@forensics.local',
-                'password_hash': generate_password_hash('Citizen@123'),
+                'password_hash': generate_password_hash(citizen_password),
                 'phone': '+919876543210',
                 'fullname': 'Fictional Citizen A',
                 'role': 'citizen'
@@ -118,7 +132,7 @@ def seed_database():
             {
                 'username': 'citizen2',
                 'email': 'citizen2@forensics.local',
-                'password_hash': generate_password_hash('Citizen@123'),
+                'password_hash': generate_password_hash(citizen_password),
                 'phone': '+919876543211',
                 'fullname': 'Fictional Citizen B',
                 'role': 'citizen'

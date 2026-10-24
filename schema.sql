@@ -1,9 +1,6 @@
 -- Smart Online Crime Reporting, Case Management & Digital Evidence Forensics System
 -- Database Schema
 
-CREATE DATABASE IF NOT EXISTS crime_forensics_db;
-USE crime_forensics_db;
-
 -- 1. Users Table
 CREATE TABLE IF NOT EXISTS users (
     id INT AUTO_INCREMENT PRIMARY KEY,

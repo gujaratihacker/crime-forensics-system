@@ -1,7 +1,9 @@
 import tempfile
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 
+from seed_data import get_seed_password
 from scripts.build_netlify import build_netlify_redirects
 
 
@@ -40,6 +42,16 @@ class NetlifyRedirectBuildTests(unittest.TestCase):
                     'https://flask.example.com:99999',
                     Path(temp_dir) / 'publish',
                 )
+
+    def test_seed_password_can_be_overridden_for_deployment(self):
+        password = 'UniqueDeployment123'
+        with patch.dict('os.environ', {'SEED_ADMIN_PASSWORD': password}):
+            self.assertEqual(get_seed_password('SEED_ADMIN_PASSWORD', 'local-demo'), password)
+
+    def test_seed_password_rejects_weak_deployment_override(self):
+        with patch.dict('os.environ', {'SEED_ADMIN_PASSWORD': 'weak'}):
+            with self.assertRaises(ValueError):
+                get_seed_password('SEED_ADMIN_PASSWORD', 'local-demo')
 
 
 if __name__ == '__main__':
