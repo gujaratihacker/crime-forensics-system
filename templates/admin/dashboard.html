@@ -17,66 +17,13 @@
             <p class="text-secondary mb-0">Review incoming reports, monitor casework, and track system activity.</p>
         </div>
         <div class="d-flex flex-wrap gap-2 mt-3 mt-md-0">
-            <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#addInvestigatorModal">
-                <i class="bi bi-person-plus me-1" aria-hidden="true"></i> Add investigator
+            <a href="{{ url_for('admin.users') }}" class="btn btn-primary btn-sm">
+                <i class="bi bi-people me-1" aria-hidden="true"></i> Manage users
             </button>
             <a href="{{ url_for('admin.awareness_scams') }}" class="btn btn-outline-info btn-sm">
                 <i class="bi bi-shield-exclamation me-1" aria-hidden="true"></i> Safety hub
             </a>
             <a href="{{ url_for('admin.audit_logs') }}" class="btn btn-outline-info btn-sm"><i class="bi bi-file-earmark-lock me-1" aria-hidden="true"></i> Audit trail</a>
-        </div>
-    </div>
-
-    <div class="modal fade" id="addInvestigatorModal" tabindex="-1" aria-labelledby="addInvestigatorTitle" aria-hidden="true">
-        <div class="modal-dialog modal-lg modal-dialog-centered">
-            <div class="modal-content">
-                <form method="POST" action="{{ url_for('admin.add_investigator') }}">
-                    <div class="modal-header">
-                        <div>
-                            <h2 class="modal-title fs-5" id="addInvestigatorTitle">Add investigator</h2>
-                            <p class="text-secondary small mb-0">Create a new investigator login and profile.</p>
-                        </div>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
-                    <div class="modal-body">
-                        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
-                        <div class="row g-3">
-                            <div class="col-md-6">
-                                <label class="form-label" for="investigatorFullname">Full name</label>
-                                <input class="form-control cyber-input" id="investigatorFullname" name="fullname" maxlength="100" autocomplete="name" required>
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label" for="investigatorUsername">Username</label>
-                                <input class="form-control cyber-input" id="investigatorUsername" name="username" maxlength="50" autocomplete="username" required>
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label" for="investigatorEmail">Email</label>
-                                <input class="form-control cyber-input" type="email" id="investigatorEmail" name="email" maxlength="100" autocomplete="email" required>
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label" for="investigatorPhone">Phone</label>
-                                <input class="form-control cyber-input" type="tel" id="investigatorPhone" name="phone" maxlength="20" autocomplete="tel" required>
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label" for="investigatorPassword">Initial password</label>
-                                <input class="form-control cyber-input" type="password" id="investigatorPassword" name="password" minlength="8" autocomplete="new-password" required>
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label" for="investigatorRank">Rank <span class="text-secondary fw-normal">(optional)</span></label>
-                                <input class="form-control cyber-input" id="investigatorRank" name="rank" maxlength="50" placeholder="Junior Detective">
-                            </div>
-                            <div class="col-12">
-                                <label class="form-label" for="investigatorDepartment">Department <span class="text-secondary fw-normal">(optional)</span></label>
-                                <input class="form-control cyber-input" id="investigatorDepartment" name="department" maxlength="100" placeholder="Cyber Crime Cell">
-                            </div>
-                        </div>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
-                        <button type="submit" class="btn btn-primary"><i class="bi bi-person-check me-1" aria-hidden="true"></i> Create account</button>
-                    </div>
-                </form>
-            </div>
         </div>
     </div>
 

@@ -1,0 +1,147 @@
+{% extends "base.html" %}
+
+{% block title %}User Management - Admin{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-3 px-lg-4 py-4">
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4 pb-3 border-bottom border-secondary">
+        <div>
+            <div class="dashboard-eyebrow">CIVIC DESK <span>/</span> ADMINISTRATION</div>
+            <h1 class="h2 mb-1">User management</h1>
+            <p class="text-secondary mb-0">View investigators and manage citizen, investigator, and administrator accounts.</p>
+        </div>
+        <a href="{{ url_for('admin.dashboard') }}" class="btn btn-outline-secondary btn-sm">
+            <i class="bi bi-arrow-left me-1" aria-hidden="true"></i> Dashboard
+        </a>
+    </div>
+
+    <section class="cyber-card p-3 p-lg-4 mb-4" aria-labelledby="create-user-heading">
+        <h2 class="h5 mb-3" id="create-user-heading"><i class="bi bi-person-plus text-info me-2" aria-hidden="true"></i>Add an account</h2>
+        <form method="POST" action="{{ url_for('admin.add_user') }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+            <div class="row g-3">
+                <div class="col-md-6 col-xl-4">
+                    <label class="form-label" for="userFullname">Full name</label>
+                    <input class="form-control cyber-input" id="userFullname" name="fullname" maxlength="100" autocomplete="name" required>
+                </div>
+                <div class="col-md-6 col-xl-4">
+                    <label class="form-label" for="userUsername">Username</label>
+                    <input class="form-control cyber-input" id="userUsername" name="username" maxlength="50" autocomplete="username" required>
+                </div>
+                <div class="col-md-6 col-xl-4">
+                    <label class="form-label" for="userEmail">Email</label>
+                    <input class="form-control cyber-input" type="email" id="userEmail" name="email" maxlength="100" autocomplete="email" required>
+                </div>
+                <div class="col-md-6 col-xl-4">
+                    <label class="form-label" for="userPhone">Phone</label>
+                    <input class="form-control cyber-input" type="tel" id="userPhone" name="phone" maxlength="20" autocomplete="tel" required>
+                </div>
+                <div class="col-md-6 col-xl-4">
+                    <label class="form-label" for="userPassword">Initial password</label>
+                    <input class="form-control cyber-input" type="password" id="userPassword" name="password" minlength="8" autocomplete="new-password" required>
+                    <div class="form-text">At least 8 characters, including a letter and a number.</div>
+                </div>
+                <div class="col-md-6 col-xl-4">
+                    <label class="form-label" for="userRole">Role</label>
+                    <select class="form-select cyber-input" id="userRole" name="role" required>
+                        <option value="investigator" selected>Investigator</option>
+                        <option value="citizen">Citizen</option>
+                        <option value="admin">Administrator</option>
+                    </select>
+                </div>
+                <div class="col-md-6 col-xl-4">
+                    <label class="form-label" for="userRank">Investigator rank <span class="text-secondary">(optional)</span></label>
+                    <input class="form-control cyber-input" id="userRank" name="rank" maxlength="50" placeholder="Junior Detective">
+                </div>
+                <div class="col-md-6 col-xl-4">
+                    <label class="form-label" for="userDepartment">Investigator department <span class="text-secondary">(optional)</span></label>
+                    <input class="form-control cyber-input" id="userDepartment" name="department" maxlength="100" placeholder="Cyber Crime Cell">
+                </div>
+                <div class="col-12">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-person-check me-1" aria-hidden="true"></i>Create account
+                    </button>
+                </div>
+            </div>
+        </form>
+    </section>
+
+    <section class="cyber-card p-3 p-lg-4" aria-labelledby="accounts-heading">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <div>
+                <h2 class="h5 mb-1" id="accounts-heading">All accounts</h2>
+                <p class="text-secondary small mb-0">{{ users|length }} account(s), including investigators</p>
+            </div>
+            <span class="badge bg-info text-dark">{{ users|selectattr('role', 'equalto', 'investigator')|list|length }} investigators</span>
+        </div>
+        {% if not users %}
+            <div class="text-center text-secondary py-4">
+                <i class="bi bi-people fs-2" aria-hidden="true"></i>
+                <p class="mb-0 mt-2">No user accounts are available.</p>
+            </div>
+        {% else %}
+            <div class="table-responsive">
+                <table class="table table-dark table-hover align-middle border-secondary mb-0">
+                    <thead>
+                        <tr class="text-secondary small">
+                            <th scope="col">NAME / USERNAME</th>
+                            <th scope="col">CONTACT</th>
+                            <th scope="col">INVESTIGATOR PROFILE</th>
+                            <th scope="col">ROLE</th>
+                            <th scope="col">CREATED</th>
+                            <th scope="col">ACTIONS</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for user in users %}
+                            <tr>
+                                <td>
+                                    <strong>{{ user.fullname }}</strong>
+                                    <span class="d-block text-secondary small">@{{ user.username }}</span>
+                                </td>
+                                <td class="small">
+                                    <span class="d-block">{{ user.email }}</span>
+                                    <span class="text-secondary">{{ user.phone }}</span>
+                                </td>
+                                <td class="small">
+                                    {% if user.role == 'investigator' %}
+                                        {{ user.rank or 'Junior Detective' }}
+                                        <span class="d-block text-secondary">{{ user.department or 'Cyber Crime Cell' }}</span>
+                                        <span class="text-info">{{ user.assigned_cases_count }} assigned case(s)</span>
+                                    {% else %}
+                                        <span class="text-secondary">-</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <form method="POST" action="{{ url_for('admin.update_user_role', user_id=user.id) }}" class="d-flex gap-2">
+                                        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                                        <select class="form-select form-select-sm cyber-input" name="role" aria-label="Role for {{ user.username }}" {% if user.id == current_user_id %}disabled{% endif %}>
+                                            <option value="citizen" {% if user.role == 'citizen' %}selected{% endif %}>Citizen</option>
+                                            <option value="investigator" {% if user.role == 'investigator' %}selected{% endif %}>Investigator</option>
+                                            <option value="admin" {% if user.role == 'admin' %}selected{% endif %}>Administrator</option>
+                                        </select>
+                                        {% if user.id == current_user_id %}
+                                            <span class="badge bg-secondary align-self-center">You</span>
+                                        {% else %}
+                                            <button type="submit" class="btn btn-outline-info btn-sm text-nowrap">Update</button>
+                                        {% endif %}
+                                    </form>
+                                </td>
+                                <td class="small text-nowrap">{{ user.created_at.strftime('%Y-%m-%d') if user.created_at else '-' }}</td>
+                                <td>
+                                    <form method="POST" action="{{ url_for('admin.delete_user', user_id=user.id) }}" onsubmit="return confirm('Remove the account for {{ user.username }}? This cannot be undone.');">
+                                        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                                        <button type="submit" class="btn btn-outline-danger btn-sm text-nowrap" {% if user.id == current_user_id %}disabled title="You cannot remove your own account"{% endif %}>
+                                            <i class="bi bi-person-x me-1" aria-hidden="true"></i>Remove
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% endif %}
+    </section>
+</div>
+{% endblock %}

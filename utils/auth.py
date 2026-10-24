@@ -26,6 +26,22 @@ def login_required(f):
         if 'user_id' not in session:
             flash("Authentication required. Please login first.", "warning")
             return redirect(url_for('auth.login'))
+
+        conn = get_db_connection()
+        try:
+            with conn.cursor() as cursor:
+                cursor.execute("SELECT role FROM users WHERE id = %s", (session['user_id'],))
+                user = cursor.fetchone()
+        finally:
+            conn.close()
+
+        if not user:
+            session.clear()
+            flash("Your account is no longer available. Please login again.", "warning")
+            return redirect(url_for('auth.login'))
+
+        session['role'] = user['role']
+        g.authenticated_user_role = user['role']
         return f(*args, **kwargs)
     return decorated_function
 
@@ -38,7 +54,7 @@ def roles_allowed(*roles):
                 flash("Authentication required. Please login first.", "warning")
                 return redirect(url_for('auth.login'))
             
-            user_role = session.get('role')
+            user_role = getattr(g, 'authenticated_user_role', session.get('role'))
             if user_role not in roles:
                 # Audit logging handles database failures so authorization remains deterministic.
                 log_unauthorized_access(session.get('user_id'), user_role, roles)

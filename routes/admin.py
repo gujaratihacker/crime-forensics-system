@@ -237,6 +237,245 @@ def add_investigator():
     return redirect(url_for('admin.dashboard'))
 
 
+@admin_bp.route('/users')
+@login_required
+@roles_allowed('admin')
+def users():
+    conn = get_db_connection()
+    try:
+        with conn.cursor() as cursor:
+            cursor.execute("""
+                SELECT u.id, u.username, u.email, u.phone, u.fullname, u.role, u.created_at,
+                       i.rank, i.department,
+                       (SELECT COUNT(*) FROM cases c WHERE c.investigator_id = u.id) AS assigned_cases_count
+                FROM users u
+                LEFT JOIN investigators i ON i.user_id = u.id
+                ORDER BY FIELD(u.role, 'admin', 'investigator', 'citizen'), u.fullname
+            """)
+            user_list = cursor.fetchall()
+    finally:
+        conn.close()
+
+    return render_template('admin/users.html', users=user_list, current_user_id=session.get('user_id'))
+
+
+@admin_bp.route('/users/add', methods=['POST'])
+@login_required
+@roles_allowed('admin')
+def add_user():
+    if not validate_csrf_token(request.form.get('csrf_token')):
+        flash("Security token expired or invalid.", "danger")
+        return redirect(url_for('admin.users'))
+
+    fullname = sanitize_string(request.form.get('fullname'))
+    username = sanitize_string(request.form.get('username'))
+    email = sanitize_string(request.form.get('email')).lower()
+    phone = sanitize_string(request.form.get('phone'))
+    password = request.form.get('password', '')
+    role = sanitize_string(request.form.get('role'))
+    rank = sanitize_string(request.form.get('rank')) or 'Junior Detective'
+    department = sanitize_string(request.form.get('department')) or 'Cyber Crime Cell'
+
+    if not all([fullname, username, email, phone, password]):
+        flash("Name, username, email, phone, and password are required.", "danger")
+        return redirect(url_for('admin.users'))
+    if len(fullname) > 100 or len(username) > 50 or len(email) > 100 or len(phone) > 20:
+        flash("One or more fields exceed the allowed length.", "danger")
+        return redirect(url_for('admin.users'))
+    if role not in {'citizen', 'investigator', 'admin'}:
+        flash("Select a valid account role.", "danger")
+        return redirect(url_for('admin.users'))
+    if not re.fullmatch(r"[^@\s]+@[^@\s]+\.[^@\s]+", email):
+        flash("Enter a valid email address.", "danger")
+        return redirect(url_for('admin.users'))
+    if not re.fullmatch(r"[A-Za-z0-9_.-]{3,50}", username):
+        flash("Username must be 3-50 characters and use only letters, numbers, dots, underscores, or hyphens.", "danger")
+        return redirect(url_for('admin.users'))
+    if len(password) < 8 or not any(char.isalpha() for char in password) or not any(char.isdigit() for char in password):
+        flash("Password must be at least 8 characters and contain both letters and numbers.", "danger")
+        return redirect(url_for('admin.users'))
+    if len(rank) > 50 or len(department) > 100:
+        flash("Rank or department exceeds the allowed length.", "danger")
+        return redirect(url_for('admin.users'))
+
+    conn = get_db_connection()
+    try:
+        conn.begin()
+        with conn.cursor() as cursor:
+            cursor.execute("SELECT id FROM users WHERE username = %s OR email = %s", (username, email))
+            if cursor.fetchone():
+                conn.rollback()
+                flash("That username or email is already registered.", "danger")
+                return redirect(url_for('admin.users'))
+
+            cursor.execute("""
+                INSERT INTO users (username, email, password_hash, phone, fullname, role)
+                VALUES (%s, %s, %s, %s, %s, %s)
+            """, (username, email, generate_password_hash(password), phone, fullname, role))
+            new_user_id = cursor.lastrowid
+            if role == 'investigator':
+                cursor.execute("""
+                    INSERT INTO investigators (user_id, rank, department)
+                    VALUES (%s, %s, %s)
+                """, (new_user_id, rank, department))
+        conn.commit()
+    except Exception as e:
+        conn.rollback()
+        flash("Could not create the account. Please try again.", "danger")
+        print(f"USER CREATION ERROR: {e}")
+        return redirect(url_for('admin.users'))
+    finally:
+        conn.close()
+
+    log_audit(
+        user_id=session.get('user_id'),
+        action="USER_CREATED",
+        description=f"Admin created {role} account: username={username}, email={email}."
+    )
+    flash(f"Account for {fullname} was created.", "success")
+    return redirect(url_for('admin.users'))
+
+
+@admin_bp.route('/users/<int:user_id>/role', methods=['POST'])
+@login_required
+@roles_allowed('admin')
+def update_user_role(user_id):
+    if not validate_csrf_token(request.form.get('csrf_token')):
+        flash("Security token expired or invalid.", "danger")
+        return redirect(url_for('admin.users'))
+    if user_id == session.get('user_id'):
+        flash("You cannot change your own account role.", "danger")
+        return redirect(url_for('admin.users'))
+
+    new_role = sanitize_string(request.form.get('role'))
+    if new_role not in {'citizen', 'investigator', 'admin'}:
+        flash("Select a valid account role.", "danger")
+        return redirect(url_for('admin.users'))
+
+    conn = get_db_connection()
+    try:
+        conn.begin()
+        with conn.cursor() as cursor:
+            cursor.execute("SELECT id, username, role FROM users WHERE id = %s FOR UPDATE", (user_id,))
+            user = cursor.fetchone()
+            if not user:
+                conn.rollback()
+                flash("Account not found.", "warning")
+                return redirect(url_for('admin.users'))
+            if user['role'] == new_role:
+                conn.rollback()
+                flash("The account already has that role.", "info")
+                return redirect(url_for('admin.users'))
+
+            if user['role'] == 'admin' and new_role != 'admin':
+                cursor.execute("SELECT COUNT(*) AS count FROM users WHERE role = 'admin'")
+                if cursor.fetchone()['count'] <= 1:
+                    conn.rollback()
+                    flash("The last administrator account cannot be demoted.", "danger")
+                    return redirect(url_for('admin.users'))
+
+            if user['role'] == 'investigator' and new_role != 'investigator':
+                cursor.execute("SELECT COUNT(*) AS count FROM cases WHERE investigator_id = %s", (user_id,))
+                if cursor.fetchone()['count']:
+                    conn.rollback()
+                    flash("Reassign this investigator's cases before changing their role.", "danger")
+                    return redirect(url_for('admin.users'))
+                cursor.execute("DELETE FROM investigators WHERE user_id = %s", (user_id,))
+
+            if new_role == 'investigator':
+                cursor.execute("SELECT user_id FROM investigators WHERE user_id = %s", (user_id,))
+                if not cursor.fetchone():
+                    cursor.execute("""
+                        INSERT INTO investigators (user_id, rank, department)
+                        VALUES (%s, 'Junior Detective', 'Cyber Crime Cell')
+                    """, (user_id,))
+
+            cursor.execute("UPDATE users SET role = %s WHERE id = %s", (new_role, user_id))
+        conn.commit()
+    except Exception as e:
+        conn.rollback()
+        flash("Could not update the account role. Please try again.", "danger")
+        print(f"USER ROLE UPDATE ERROR: {e}")
+        return redirect(url_for('admin.users'))
+    finally:
+        conn.close()
+
+    log_audit(
+        user_id=session.get('user_id'),
+        action="USER_ROLE_UPDATED",
+        description=f"Admin changed account role for username={user['username']} from {user['role']} to {new_role}."
+    )
+    flash(f"Role updated for {user['username']}.", "success")
+    return redirect(url_for('admin.users'))
+
+
+@admin_bp.route('/users/<int:user_id>/delete', methods=['POST'])
+@login_required
+@roles_allowed('admin')
+def delete_user(user_id):
+    if not validate_csrf_token(request.form.get('csrf_token')):
+        flash("Security token expired or invalid.", "danger")
+        return redirect(url_for('admin.users'))
+    if user_id == session.get('user_id'):
+        flash("You cannot remove your own account.", "danger")
+        return redirect(url_for('admin.users'))
+
+    conn = get_db_connection()
+    try:
+        conn.begin()
+        with conn.cursor() as cursor:
+            cursor.execute("SELECT id, username, role FROM users WHERE id = %s FOR UPDATE", (user_id,))
+            user = cursor.fetchone()
+            if not user:
+                conn.rollback()
+                flash("Account not found.", "warning")
+                return redirect(url_for('admin.users'))
+
+            if user['role'] == 'admin':
+                cursor.execute("SELECT COUNT(*) AS count FROM users WHERE role = 'admin'")
+                if cursor.fetchone()['count'] <= 1:
+                    conn.rollback()
+                    flash("The last administrator account cannot be removed.", "danger")
+                    return redirect(url_for('admin.users'))
+
+            cursor.execute("SELECT COUNT(*) AS count FROM cases WHERE investigator_id = %s", (user_id,))
+            if cursor.fetchone()['count']:
+                conn.rollback()
+                flash("Reassign this user's cases before removing the account.", "danger")
+                return redirect(url_for('admin.users'))
+
+            dependent_records = (
+                ("investigation_notes", "investigator_id"),
+                ("case_messages", "sender_id"),
+                ("investigation_leads", "created_by"),
+                ("evidence_access_logs", "user_id")
+            )
+            for table, user_column in dependent_records:
+                cursor.execute(f"SELECT COUNT(*) AS count FROM {table} WHERE {user_column} = %s", (user_id,))
+                if cursor.fetchone()['count']:
+                    conn.rollback()
+                    flash("This account has investigation history that must be preserved; change its role instead.", "danger")
+                    return redirect(url_for('admin.users'))
+
+            cursor.execute("DELETE FROM users WHERE id = %s", (user_id,))
+        conn.commit()
+    except Exception as e:
+        conn.rollback()
+        flash("Could not remove the account. Please try again.", "danger")
+        print(f"USER DELETION ERROR: {e}")
+        return redirect(url_for('admin.users'))
+    finally:
+        conn.close()
+
+    log_audit(
+        user_id=session.get('user_id'),
+        action="USER_DELETED",
+        description=f"Admin removed account: username={user['username']}, role={user['role']}."
+    )
+    flash(f"Account for {user['username']} was removed.", "success")
+    return redirect(url_for('admin.users'))
+
+
 @admin_bp.route('/awareness-scams')
 @login_required
 @roles_allowed('admin')

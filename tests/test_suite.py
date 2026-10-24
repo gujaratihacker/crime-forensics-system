@@ -2,7 +2,8 @@ import os
 import sys
 import unittest
 from io import BytesIO
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch
+from flask import session
 from werkzeug.security import generate_password_hash, check_password_hash
 
 # Add parent directory to path so we can import app modules
@@ -17,6 +18,19 @@ class ForensicsAppTestCase(unittest.TestCase):
         # Configure app for testing
         app.config['TESTING'] = True
         self.client = app.test_client()
+        self.auth_role_override = None
+        self.auth_user_exists = True
+        self.auth_connection = MagicMock()
+        auth_cursor = self.auth_connection.cursor.return_value.__enter__.return_value
+        auth_cursor.fetchone.side_effect = self._authenticated_user
+        self.auth_db_patcher = patch('utils.auth.get_db_connection', return_value=self.auth_connection)
+        self.auth_db_patcher.start()
+        self.addCleanup(self.auth_db_patcher.stop)
+
+    def _authenticated_user(self):
+        if not self.auth_user_exists or not session.get('user_id'):
+            return None
+        return {'role': self.auth_role_override or session.get('role')}
         
     def test_password_hashing(self):
         """Test secure password hashing and verification."""
@@ -293,6 +307,177 @@ class ForensicsAppTestCase(unittest.TestCase):
         self.assertEqual(response.status_code, 302)
         with self.client.session_transaction() as test_session:
             self.assertEqual(test_session['_flashes'][-1][1], 'Enter a valid email address.')
+
+    def test_admin_user_list_shows_investigator_accounts(self):
+        """Administrators can view account and investigator profile details."""
+        with self.client.session_transaction() as test_session:
+            test_session.update({'user_id': 1, 'role': 'admin'})
+
+        with patch('routes.admin.get_db_connection') as get_connection:
+            cursor = get_connection.return_value.cursor.return_value.__enter__.return_value
+            cursor.fetchall.return_value = [{
+                'id': 2,
+                'username': 'investigator1',
+                'email': 'investigator1@example.com',
+                'phone': '1234567890',
+                'fullname': 'Test Investigator',
+                'role': 'investigator',
+                'created_at': None,
+                'rank': 'Senior Detective',
+                'department': 'Cyber Crime Unit',
+                'assigned_cases_count': 1
+            }]
+
+            response = self.client.get('/admin/users')
+            query = cursor.execute.call_args[0][0]
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn(b'Test Investigator', response.data)
+        self.assertIn(b'Senior Detective', response.data)
+        self.assertIn('LEFT JOIN investigators', query)
+        self.assertNotIn('password_hash', query)
+
+    def test_admin_cannot_create_account_with_invalid_role(self):
+        """Account creation accepts only the roles supported by the application."""
+        with self.client.session_transaction() as test_session:
+            test_session.update({'user_id': 1, 'role': 'admin', 'csrf_token': 'test-token'})
+
+        with patch('routes.admin.get_db_connection') as get_connection:
+            response = self.client.post('/admin/users/add', data={
+                'csrf_token': 'test-token',
+                'fullname': 'Test User',
+                'username': 'test_user',
+                'email': 'test@example.com',
+                'phone': '1234567890',
+                'password': 'Password123',
+                'role': 'superuser'
+            })
+
+        self.assertEqual(response.status_code, 302)
+        get_connection.assert_not_called()
+        with self.client.session_transaction() as test_session:
+            self.assertEqual(test_session['_flashes'][-1][1], 'Select a valid account role.')
+
+    def test_admin_can_create_investigator_account(self):
+        """Creating an investigator also creates the matching investigator profile."""
+        with self.client.session_transaction() as test_session:
+            test_session.update({'user_id': 1, 'role': 'admin', 'csrf_token': 'test-token'})
+
+        with patch('routes.admin.get_db_connection') as get_connection, \
+                patch('routes.admin.log_audit') as log_audit:
+            conn = get_connection.return_value
+            cursor = conn.cursor.return_value.__enter__.return_value
+            cursor.fetchone.return_value = None
+            cursor.lastrowid = 42
+
+            response = self.client.post('/admin/users/add', data={
+                'csrf_token': 'test-token',
+                'fullname': 'Test Investigator',
+                'username': 'test_investigator',
+                'email': 'investigator@example.com',
+                'phone': '1234567890',
+                'password': 'Password123',
+                'role': 'investigator',
+                'rank': 'Senior Detective',
+                'department': 'Cyber Crime Unit'
+            })
+
+        self.assertEqual(response.status_code, 302)
+        queries = [call.args[0] for call in cursor.execute.call_args_list]
+        self.assertTrue(any('INSERT INTO users' in query for query in queries))
+        self.assertTrue(any('INSERT INTO investigators' in query for query in queries))
+        self.assertEqual(cursor.execute.call_args_list[-1].args[1], (42, 'Senior Detective', 'Cyber Crime Unit'))
+        conn.commit.assert_called_once()
+        log_audit.assert_called_once()
+
+    def test_admin_can_promote_user_to_investigator(self):
+        """Promoting an account creates its investigator profile and updates its role."""
+        with self.client.session_transaction() as test_session:
+            test_session.update({'user_id': 1, 'role': 'admin', 'csrf_token': 'test-token'})
+
+        with patch('routes.admin.get_db_connection') as get_connection, \
+                patch('routes.admin.log_audit') as log_audit:
+            conn = get_connection.return_value
+            cursor = conn.cursor.return_value.__enter__.return_value
+            cursor.fetchone.side_effect = [
+                {'id': 2, 'username': 'test_user', 'role': 'citizen'},
+                None
+            ]
+
+            response = self.client.post('/admin/users/2/role', data={
+                'csrf_token': 'test-token',
+                'role': 'investigator'
+            })
+
+        self.assertEqual(response.status_code, 302)
+        queries = [call.args[0] for call in cursor.execute.call_args_list]
+        self.assertTrue(any('INSERT INTO investigators' in query for query in queries))
+        self.assertTrue(any('UPDATE users SET role' in query for query in queries))
+        conn.commit.assert_called_once()
+        log_audit.assert_called_once()
+
+    def test_admin_cannot_change_own_role(self):
+        """An administrator cannot lock themselves out of administration."""
+        with self.client.session_transaction() as test_session:
+            test_session.update({'user_id': 1, 'role': 'admin', 'csrf_token': 'test-token'})
+
+        with patch('routes.admin.get_db_connection') as get_connection:
+            response = self.client.post('/admin/users/1/role', data={
+                'csrf_token': 'test-token',
+                'role': 'citizen'
+            })
+
+        self.assertEqual(response.status_code, 302)
+        get_connection.assert_not_called()
+        with self.client.session_transaction() as test_session:
+            self.assertEqual(test_session['_flashes'][-1][1], 'You cannot change your own account role.')
+
+    def test_admin_permissions_use_current_database_role(self):
+        """A role downgrade takes effect for the next request, even with an old session cookie."""
+        with self.client.session_transaction() as test_session:
+            test_session.update({'user_id': 1, 'role': 'admin'})
+        self.auth_role_override = 'citizen'
+
+        with patch('routes.admin.get_db_connection') as get_connection:
+            response = self.client.get('/admin/users')
+
+        self.assertEqual(response.status_code, 403)
+        get_connection.assert_not_called()
+        with self.client.session_transaction() as test_session:
+            self.assertEqual(test_session['role'], 'citizen')
+
+    def test_removed_account_session_is_invalidated(self):
+        """A removed account cannot keep using protected routes with an existing session."""
+        with self.client.session_transaction() as test_session:
+            test_session.update({'user_id': 1, 'role': 'admin'})
+        self.auth_user_exists = False
+
+        response = self.client.get('/admin/users')
+
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.location, '/login')
+        with self.client.session_transaction() as test_session:
+            self.assertNotIn('user_id', test_session)
+
+    def test_admin_cannot_delete_user_with_assigned_cases(self):
+        """User deletion must not detach an investigator from assigned cases."""
+        with self.client.session_transaction() as test_session:
+            test_session.update({'user_id': 1, 'role': 'admin', 'csrf_token': 'test-token'})
+
+        with patch('routes.admin.get_db_connection') as get_connection:
+            cursor = get_connection.return_value.cursor.return_value.__enter__.return_value
+            cursor.fetchone.side_effect = [
+                {'id': 2, 'username': 'investigator1', 'role': 'investigator'},
+                {'count': 1}
+            ]
+
+            response = self.client.post('/admin/users/2/delete', data={'csrf_token': 'test-token'})
+
+        self.assertEqual(response.status_code, 302)
+        executed_queries = [call.args[0] for call in cursor.execute.call_args_list]
+        self.assertFalse(any(query.startswith('DELETE FROM users') for query in executed_queries))
+        with self.client.session_transaction() as test_session:
+            self.assertEqual(test_session['_flashes'][-1][1], "Reassign this user's cases before removing the account.")
 
     def test_admin_scam_creation_rejects_unapproved_icon(self):
         """Only a known Bootstrap icon can be stored on a public scam entry."""

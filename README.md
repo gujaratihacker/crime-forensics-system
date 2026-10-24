@@ -14,6 +14,7 @@ This is an **academic demonstration prototype**.
 ## 2. Key Features
 
 - **Multi-Role Access Control (RBAC)**: Custom Flask-session-based authorization separating Citizens, Investigators, and Administrators.
+- **Admin User Management**: Administrators can list accounts, create users with roles, promote or demote accounts, and remove accounts when doing so will not erase investigation history or assigned casework.
 - **Identified & Anonymous Reporting**: Allows citizens to toggle anonymity. When active, citizen profiling information (name, contacts, email, exact location) is isolated and masked, displaying as **Anonymous Reporter** on public feeds.
 - **AI-Assisted Complaint Analysis**: A modular, regex and keyword-based local NLP script that auto-categorizes reports, estimates priority levels, detects missing information, suggests evidence types, and parses suspect indicators (emails, UPI IDs, phone numbers, URLs).
 - **Digital Evidence Vault**: Secure evidence uploads hashed with SHA-256 check values.
