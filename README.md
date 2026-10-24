@@ -87,7 +87,41 @@ This is an **academic demonstration prototype**.
 
 ---
 
-## 6. Test Accounts (Demo Dataset)
+## 6. Deploying with Netlify
+
+Netlify provides the public HTTPS URL and proxies requests to this project's
+Flask backend. The Flask app and MySQL/MariaDB database must also be deployed
+to a Python host; Netlify does not run this project as a persistent Flask
+server.
+
+1. Deploy the repository to a Python web host that supports Gunicorn and
+   persistent storage. The included `Procfile` starts the Flask app using the
+   host's `PORT` environment variable.
+2. Provision an empty MySQL/MariaDB database reachable by the Flask service,
+   then configure `DB_HOST`, `DB_USER`, `DB_PASSWORD`, and `DB_NAME` on the
+   backend. Also set `SECRET_KEY` to a long, random secret and
+   `SESSION_COOKIE_SECURE=true`. Never use the demo credentials for a public
+   deployment.
+3. Attach persistent storage at the app's `uploads` directory. Evidence,
+   verification files, missing-person images, live snapshots, and recordings
+   are stored there and will otherwise be lost when the backend restarts.
+4. Initialize a **new, empty demo database** once with `python seed_data.py`.
+   This script drops and recreates project tables each time it runs. Do not run
+   it against a database containing data you need.
+5. In Netlify, import this GitHub repository and add the `FLASK_BACKEND_URL`
+   environment variable containing the backend's public HTTPS origin, such as
+   `https://your-app.example.com` (no path). The root `netlify.toml` invokes
+   `scripts/build_netlify.py`, which generates a catch-all proxy rewrite.
+6. Deploy the Netlify site. If the backend URL changes, update the Netlify
+   environment variable and redeploy.
+
+Netlify's proxy rewrites time out after 26 seconds. Large evidence/video
+uploads or long-running requests may need direct backend or object-storage
+URLs to work reliably. This is still an academic demonstration system: use
+fictional test data only; do not connect it to real emergency responders or
+government databases.
+
+## 7. Test Accounts (Demo Dataset)
 
 Use these credentials to test the various dashboards:
 
@@ -100,7 +134,7 @@ Use these credentials to test the various dashboards:
 
 ---
 
-## 7. Forensic Integrity & Hashing Design
+## 8. Forensic Integrity & Hashing Design
 
 - **SHA-256 Calculation**: Files uploaded to `uploads/evidence/` are processed in 64KB chunks to prevent RAM exhaustion. A 64-character SHA-256 string is generated and logged in MySQL.
 - **Custody Chain**:
@@ -112,7 +146,7 @@ Use these credentials to test the various dashboards:
 
 ---
 
-## 8. Limitations & Future Scope
+## 9. Limitations & Future Scope
 - **WebRTC Signalling**: This system uses periodic JPEG polling as a robust local alternative to complex WebRTC STUN/TURN servers. Real production implementations would require signalling engines.
 - **Local Hashing**: Hashing happens on the backend. True forensics could add client-side hashing to verify that files are not tampered with during transmission.
 - **Mock AI Service**: The AI recommendations are rule-based. Future versions could integrate actual LLMs or BERT models via API calls.

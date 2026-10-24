@@ -17,6 +17,15 @@ from utils.security import generate_csrf_token
 app = Flask(__name__)
 app.config.from_object(Config)
 
+# Create writable upload directories at startup, including under WSGI servers.
+for folder in (
+    app.config['UPLOAD_FOLDER'],
+    app.config['LIVE_SNAPSHOTS_FOLDER'],
+    app.config['MISSING_PERSONS_UPLOAD_FOLDER'],
+    app.config['VERIFICATION_UPLOAD_FOLDER'],
+):
+    os.makedirs(folder, exist_ok=True)
+
 # Register Blueprints
 app.register_blueprint(auth_bp)
 app.register_blueprint(citizen_bp)

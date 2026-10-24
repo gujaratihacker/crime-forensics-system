@@ -17,6 +17,9 @@ class Config:
     
     # Session lifecycle
     SESSION_PERMANENT = False
+    SESSION_COOKIE_SECURE = os.environ.get('SESSION_COOKIE_SECURE', 'false').lower() == 'true'
+    SESSION_COOKIE_HTTPONLY = True
+    SESSION_COOKIE_SAMESITE = 'Lax'
     
     # Simulated Live Stream snapshot storage
     LIVE_SNAPSHOTS_FOLDER = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'uploads', 'live_snapshots')
