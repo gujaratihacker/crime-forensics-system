@@ -11,7 +11,13 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 from app import app
 from services.hash_service import calculate_sha256
-from services.ai_analysis import analyze_complaint
+from services.ai_analysis import (
+    analyze_complaint,
+    analyze_scam_or_threat,
+    live_analyze_draft,
+    polish_complaint_statement,
+    get_ai_chat_response
+)
 
 class ForensicsAppTestCase(unittest.TestCase):
     def setUp(self):
@@ -516,6 +522,45 @@ class ForensicsAppTestCase(unittest.TestCase):
         res_loss = analyze_complaint(desc_loss, "Financial Cyber Fraud", financial_loss=60000.0)
         self.assertEqual(res_loss['suggested_priority'], "HIGH")
         self.assertEqual(res_loss['suggested_category'], "Financial Cyber Fraud")
+
+    def test_ai_scam_detector_heuristics(self):
+        """Verify multi-factor scam detection on phishing and sextortion threats."""
+        kyc_sample = "Dear user, your SBI account is suspended due to PAN verification. Click http://sbi-kyc-update.xyz or call +919876543210 immediately."
+        res = analyze_scam_or_threat("text", kyc_sample)
+        self.assertGreaterEqual(res['risk_score'], 70)
+        self.assertEqual(res['verdict_badge'], 'danger')
+        self.assertTrue(any("SBI" in t or "Brand" in t for t in res['indicators'] + res['tactics']))
+        self.assertTrue(any(e['type'] == 'phone' for e in res['extracted_entities']))
+
+    def test_ai_live_analyze_and_polish(self):
+        """Verify real-time live draft analysis and statement structuring."""
+        draft_text = "I received a call from 9876543210 claiming to be bank manager and asked for OTP. Lost 20000 INR."
+        live_res = live_analyze_draft(draft_text, category="Financial Cyber Fraud", financial_loss=20000.0)
+        self.assertIn('urgency_score', live_res)
+        self.assertTrue(len(live_res['completeness_checks']) > 0)
+
+        polished = polish_complaint_statement(draft_text, category="Financial Cyber Fraud", location="Online", incident_date="2026-10-28", financial_loss=20000.0, suspect_info="+919876543210")
+        self.assertIn("FORMAL CYBER INCIDENT REPORT", polished)
+        self.assertIn("INR 20,000.00", polished)
+
+    def test_ai_api_endpoints(self):
+        """Test AI Web and JSON API endpoints."""
+        # 1. Page render
+        resp_page = self.client.get('/ai/scam-detector')
+        self.assertEqual(resp_page.status_code, 200)
+
+        # 2. Scan API
+        resp_scan = self.client.post('/ai/api/scan', json={'text': 'Claim 25 lakh lottery won! Call +919999999999'})
+        self.assertEqual(resp_scan.status_code, 200)
+        data_scan = resp_scan.get_json()
+        self.assertEqual(data_scan['status'], 'success')
+        self.assertGreater(data_scan['data']['risk_score'], 30)
+
+        # 3. Chat API
+        resp_chat = self.client.post('/ai/api/chat', json={'message': 'Money debited from UPI'})
+        self.assertEqual(resp_chat.status_code, 200)
+        data_chat = resp_chat.get_json()
+        self.assertIn("1930", data_chat['response'])
 
 if __name__ == '__main__':
     unittest.main()

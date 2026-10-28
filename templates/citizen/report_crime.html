@@ -3,105 +3,390 @@
 {% block title %}{{ translate('Report Crime - Forensics System', 'अपराध रिपोर्ट - फोरेंसिक प्रणाली', 'ગુનાનો અહેવાલ - ફોરેન્સિક સિસ્ટમ') }}{% endblock %}
 
 {% block content %}
-<div class="container mt-4 mb-5">
-    <div class="row justify-content-center">
-        <div class="col-md-9">
-            <div class="cyber-card p-4">
-                <div class="d-flex align-items-center mb-4 border-bottom border-secondary pb-3">
-                    <i class="bi bi-file-earmark-medical text-info fs-2 me-2"></i>
+<div class="container-fluid px-lg-5 py-4">
+    <div class="row g-4">
+        <!-- Main Form Column (Left) -->
+        <div class="col-lg-7">
+            <div class="cyber-card p-4 shadow-sm border">
+                <div class="d-flex align-items-center mb-4 border-bottom pb-3">
+                    <span class="brand-mark me-3" style="width: 48px; height: 48px; font-size: 1.5rem;">
+                        <i class="bi bi-file-earmark-medical text-primary"></i>
+                    </span>
                     <div>
-                        <h2 class="mb-0">{{ translate('Report an incident', 'घटना की रिपोर्ट करें', 'ઘટનાની જાણ કરો') }}</h2>
+                        <h2 class="mb-0 h4 fw-bold text-dark">{{ translate('Report a Cyber Incident', 'साइबर घटना की रिपोर्ट करें', 'સાયબર ઘટનાની જાણ કરો') }}</h2>
                         <p class="text-secondary mb-0 small">{{ translate('Ensure details are accurate. Fields marked with * are mandatory.', 'सुनिश्चित करें कि विवरण सटीक हैं। * से चिह्नित फ़ील्ड अनिवार्य हैं।', 'ખાતરી કરો કે વિગતો સચોટ છે. * ચિહ્નિત ક્ષેત્રો ફરજિયાત છે.') }}</p>
                     </div>
                 </div>
 
-                <div class="safety-alert">
-                    <i class="bi bi-shield-exclamation me-2"></i>
-                    <strong>{{ translate('Legal & Safety Warning:', 'कानूनी और सुरक्षा चेतावनी:', 'કાનૂની અને સુરક્ષા ચેતવણી:') }}</strong> {{ translate('Only upload material that you are legally permitted to provide. Do not intentionally place yourself or others in danger to collect details.', 'केवल वही सामग्री अपलोड करें जिसे प्रदान करने की आपको कानूनी रूप से अनुमति है। विवरण एकत्र करने के लिए जानबूझकर खुद को या दूसरों को खतरे में न डालें।', 'માત્ર એવી સામગ્રી અપલોડ કરો જે પ્રદાન કરવાની તમને કાનૂની રીતે મંજૂરી છે. વિગતો એકત્રિત કરવા માટે જાણીજોઈને તમારી જાતને અથવા અન્ય લોકોને જોખમમાં મૂકશો નહીં.') }}
+                <div class="alert alert-light border border-secondary-subtle p-3 mb-4 small text-secondary d-flex align-items-center">
+                    <i class="bi bi-shield-exclamation text-warning fs-5 me-2"></i>
+                    <div>
+                        <strong>{{ translate('Legal & Safety Warning:', 'कानूनी और सुरक्षा चेतावनी:', 'કાનૂની અને સુરક્ષા ચેતવણી:') }}</strong> {{ translate('Only upload material that you are legally permitted to provide. Do not intentionally place yourself or others in danger to collect details.', 'केवल वही सामग्री अपलोड करें जिसे प्रदान करने की आपको कानूनी रूप से अनुमति है। विवरण एकत्र करने के लिए जानबूझकर खुद को या दूसरों को खतरे में न डालें।', 'માત્ર એવી સામગ્રી અપલોડ કરો જે પ્રદાન કરવાની તમને કાનૂની રીતે મંજૂરી છે. વિગતો એકત્રિત કરવા માટે જાણીજોઈને તમારી જાતને અથવા અન્ય લોકોને જોખમમાં મૂકશો નહીં.') }}
+                    </div>
                 </div>
 
-                <form method="POST" action="{{ url_for('complaints.submit') }}">
+                <form method="POST" action="{{ url_for('complaints.submit') }}" id="complaintForm">
                     <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
 
                     <!-- Reporting Mode -->
-                    <div class="mb-4 bg-dark p-3 rounded border border-secondary">
-                        <label class="form-label fw-bold text-info"><i class="bi bi-eye-slash" aria-hidden="true"></i> {{ translate('Privacy options', 'गोपनीयता विकल्प', 'ગોપનીયતા વિકલ્પો') }}</label>
+                    <div class="mb-4 p-3 rounded border bg-light">
+                        <label class="form-label fw-bold text-dark small text-uppercase mb-2">
+                            <i class="bi bi-eye-slash text-primary me-1" aria-hidden="true"></i> {{ translate('Privacy & Identity Protection', 'गोपनीयता और पहचान सुरक्षा', 'ગોપનીયતા અને ઓળખ સુરક્ષા') }}
+                        </label>
                         <div class="form-check mb-2">
                             <input class="form-check-input" type="radio" name="reporting_mode" id="modeIdentified" value="identified" checked>
-                            <label class="form-check-label text-light" for="modeIdentified">
-                                <strong>{{ translate('Report with my identity', 'मेरी पहचान के साथ रिपोर्ट करें', 'મારી ઓળખ સાથે રિપોર્ટ કરો') }}</strong> {{ translate('(Your details will be accessible to authorized investigators)', '(आपका विवरण अधिकृत जांचकर्ताओं के लिए सुलभ होगा)', '(તમારી વિગતો અધિકૃત તપાસકર્તાઓ માટે ઉપલબ્ધ રહેશે)') }}
+                            <label class="form-check-label text-dark" for="modeIdentified">
+                                <strong>{{ translate('Report with my identity', 'मेरी पहचान के साथ रिपोर्ट करें', 'મારી ઓળખ સાથે રિપોર્ટ કરો') }}</strong> 
+                                <span class="text-secondary small">{{ translate('(Your details will be accessible only to authorized cyber investigators)', '(आपका विवरण केवल अधिकृत जांचकर्ताओं के लिए सुलभ होगा)', '(તમારી વિગતો માત્ર અધિકૃત તપાસકર્તાઓ માટે ઉપલબ્ધ રહેશે)') }}</span>
                             </label>
                         </div>
                         <div class="form-check">
                             <input class="form-check-input" type="radio" name="reporting_mode" id="modeAnonymous" value="anonymous">
-                            <label class="form-check-label text-light" for="modeAnonymous" style="color: var(--neon-purple);">
-                                <strong>{{ translate('Report anonymously', 'अनाम रिपोर्ट करें', 'અનામી રિપોર્ટ કરો') }}</strong> {{ translate('(Hides your identity details from ordinary public lookups and wraps your complaint profile)', '(साधारण सार्वजनिक खोजों से आपकी पहचान छुपाता है और आपकी शिकायत प्रोफ़ाइल को लपेटता है)', '(સામાન્ય સાર્વજનિક શોધથી તમારી ઓળખ છુપાવે છે અને તમારી ફરિયાદ પ્રોફાઇલને આવરી લે છે)') }}
+                            <label class="form-check-label text-dark" for="modeAnonymous">
+                                <strong>{{ translate('Report anonymously', 'अनाम रिपोर्ट करें', 'અનામી રિપોર્ટ કરો') }}</strong> 
+                                <span class="text-secondary small">{{ translate('(Masks your name and profile; recorded as Anonymous Reporter)', '(आपकी पहचान छुपाता है और अनाम रिपोर्टर के रूप में दर्ज करता है)', '(તમારી ઓળખ છુપાવે છે અને અનામી રિપોર્ટર તરીકે નોંધે છે)') }}</span>
                             </label>
                         </div>
                     </div>
 
                     <!-- Category & Details -->
-                    <div class="row">
+                    <div class="row g-3">
                         <div class="col-md-6 mb-3">
-                            <label for="category" class="form-label">{{ translate('Incident category', 'घटना की श्रेणी', 'ઘટનાનો પ્રકાર') }} <span class="text-danger">*</span></label>
-                            <select class="form-select cyber-input" id="category" name="category" required>
-                                <option value="" disabled selected>{{ translate('Select category...', 'श्रेणी चुनें...', 'શ્રેણી પસંદ કરો...') }}</option>
-                                <option value="Financial Cyber Fraud">{{ translate('Financial Cyber Fraud', 'वित्तीय साइबर धोखाधड़ी', 'નાણાકીય સાયબર છેતરપિંડી') }}</option>
-                                <option value="Cyber Harassment">{{ translate('Cyber Harassment / Cyberstalking', 'साइबर उत्पीड़न / साइबरस्टॉकिंग', 'સાયબર પજવણી / સાયબરસ્ટોકિંગ') }}</option>
-                                <option value="Identity Theft">{{ translate('Identity Theft / Impersonation', 'पहचान की चोरी / प्रतिरूपण', 'ઓળખની ચોરી / વેશપલટો') }}</option>
-                                <option value="Malware/Ransomware Attack">{{ translate('Malware/Ransomware Attack', 'मालवेयर/रैनसमवेयर हमला', 'માલવેર/રેન્સમવેર હુમલો') }}</option>
-                                <option value="Website Defacement">{{ translate('Website Defacement', 'वेबसाइट विकृति', 'વેબસાઇટ ડિફેસમેન્ટ') }}</option>
-                                <option value="Other">{{ translate('Other Cyber Crime', 'अन्य साइबर अपराध', 'અન્ય સાયબર ગુનો') }}</option>
+                            <label for="category" class="form-label fw-semibold text-dark">{{ translate('Incident category', 'घटना की श्रेणी', 'ઘટનાનો પ્રકાર') }} <span class="text-danger">*</span></label>
+                            <select class="form-select cyber-input" id="category" name="category" required onchange="triggerLiveAnalyze()">
+                                <option value="" disabled {% if not request.args.get('category') %}selected{% endif %}>{{ translate('Select category...', 'श्रेणी चुनें...', 'શ્રેણી પસંદ કરો...') }}</option>
+                                <option value="Financial Cyber Fraud" {% if request.args.get('category') == 'Financial Cyber Fraud' %}selected{% endif %}>{{ translate('Financial Cyber Fraud', 'वित्तीय साइबर धोखाधड़ी', 'નાણાકીય સાયબર છેતરપિંડી') }}</option>
+                                <option value="Cyber Harassment" {% if request.args.get('category') == 'Cyber Harassment' %}selected{% endif %}>{{ translate('Cyber Harassment / Cyberstalking', 'साइबर उत्पीड़न / साइबरस्टॉकिंग', 'સાયબર પજવણી / સાયબરસ્ટોકિંગ') }}</option>
+                                <option value="Identity Theft" {% if request.args.get('category') == 'Identity Theft' %}selected{% endif %}>{{ translate('Identity Theft / Impersonation', 'पहचान की चोरी / प्रतिरूपण', 'ઓળખની ચોરી / વેશપલટો') }}</option>
+                                <option value="Malware/Ransomware Attack" {% if request.args.get('category') == 'Malware/Ransomware Attack' %}selected{% endif %}>{{ translate('Malware/Ransomware Attack', 'मालवेयर/रैनसमवेयर हमला', 'માલવેર/રેન્સમવેર હુમલો') }}</option>
+                                <option value="Website Defacement" {% if request.args.get('category') == 'Website Defacement' %}selected{% endif %}>{{ translate('Website Defacement', 'वेबसाइट विकृति', 'વેબસાઇટ ડિફેસમેન્ટ') }}</option>
+                                <option value="Other" {% if request.args.get('category') == 'Other' %}selected{% endif %}>{{ translate('Other Cyber Crime', 'अन्य साइबर अपराध', 'અન્ય સાયબર ગુનો') }}</option>
                             </select>
                         </div>
                         <div class="col-md-3 mb-3">
-                            <label for="incident_date" class="form-label">{{ translate('Date of incident', 'घटना की तारीख', 'ઘટનાની તારીખ') }} <span class="text-danger">*</span></label>
-                            <input type="date" class="form-control cyber-input" id="incident_date" name="incident_date" required>
+                            <label for="incident_date" class="form-label fw-semibold text-dark">{{ translate('Date of incident', 'घटना की तारीख', 'ઘટનાની તારીખ') }} <span class="text-danger">*</span></label>
+                            <input type="date" class="form-control cyber-input" id="incident_date" name="incident_date" required onchange="triggerLiveAnalyze()">
                         </div>
                         <div class="col-md-3 mb-3">
-                            <label for="incident_time" class="form-label">{{ translate('Approximate time', 'लगभग समय', 'અંદાજિત સમય') }} <span class="text-danger">*</span></label>
+                            <label for="incident_time" class="form-label fw-semibold text-dark">{{ translate('Approximate time', 'लगभग समय', 'અંદાજિત સમય') }} <span class="text-danger">*</span></label>
                             <input type="time" class="form-control cyber-input" id="incident_time" name="incident_time" required>
                         </div>
                     </div>
 
-                    <div class="row">
+                    <div class="row g-3">
                         <div class="col-md-6 mb-3">
-                            <label for="location" class="form-label">{{ translate('Where did it happen? (City, platform, or website)', 'घटना कहां हुई? (शहर, प्लेटफ़ॉर्म या वेबसाइट)', 'ઘટના ક્યાં બની? (શહેર, પ્લેટફોર્મ અથવા વેબસાઇટ)') }} <span class="text-danger">*</span></label>
-                            <input type="text" class="form-control cyber-input" id="location" name="location" placeholder="e.g. WhatsApp, Mumbai, Fake bank site url" required>
+                            <label for="location" class="form-label fw-semibold text-dark">{{ translate('Where did it happen? (Platform, city, or URL)', 'घटना कहां हुई? (प्लेटफ़ॉर्म या वेबसाइट)', 'ઘટના ક્યાં બની? (પ્લેટફોર્મ અથવા વેબસાઇટ)') }} <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control cyber-input" id="location" name="location" placeholder="e.g. WhatsApp, Mumbai, Fake bank site" required oninput="triggerLiveAnalyze()">
                         </div>
                         <div class="col-md-6 mb-3">
-                            <label for="financial_loss" class="form-label">{{ translate('Estimated financial loss (INR)', 'अनुमानित वित्तीय नुकसान (INR)', 'અંદાજિત નાણાકીય નુકસાન (INR)') }}</label>
-                            <input type="number" step="0.01" class="form-control cyber-input" id="financial_loss" name="financial_loss" placeholder="0.00" value="0.00">
+                            <label for="financial_loss" class="form-label fw-semibold text-dark">{{ translate('Estimated financial loss (INR)', 'अनुमानित वित्तीय नुकसान (INR)', 'અંદાજિત નાણાકીય નુકસાન (INR)') }}</label>
+                            <input type="number" step="0.01" class="form-control cyber-input" id="financial_loss" name="financial_loss" placeholder="0.00" value="{{ request.args.get('financial_loss', '0.00') }}" oninput="triggerLiveAnalyze()">
                         </div>
                     </div>
 
-                    <!-- Description -->
+                    <!-- Description with AI Copilot trigger -->
                     <div class="mb-3">
-                        <label for="description" class="form-label">{{ translate('What happened?', 'क्या हुआ?', 'શું બન્યું?') }} <span class="text-danger">*</span></label>
-                        <textarea class="form-control cyber-input" id="description" name="description" rows="5" placeholder="{{ translate('Describe what happened, when it began, and any details that may help explain the incident.', 'क्या हुआ, कब शुरू हुआ और घटना को समझने में मददगार अन्य जानकारी लिखें।', 'શું બન્યું, ક્યારે શરૂ થયું અને ઘટનાને સમજવામાં મદદરૂપ વિગતો લખો.') }}" required></textarea>
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                            <label for="description" class="form-label fw-semibold text-dark mb-0">
+                                {{ translate('What happened? (Detailed Narrative)', 'क्या हुआ? (विस्तृत विवरण)', 'શું બન્યું? (વિગતવાર વર્ણન)') }} <span class="text-danger">*</span>
+                            </label>
+                            <button type="button" class="btn btn-sm btn-outline-primary d-flex align-items-center" onclick="openAIPolishModal()">
+                                <i class="bi bi-stars text-primary me-1"></i> {{ translate('AI Enhance & Polish', 'एआई से व्यवस्थित करें', 'એઆઈ થી સુધારો') }}
+                            </button>
+                        </div>
+                        <textarea class="form-control cyber-input" id="description" name="description" rows="6" placeholder="{{ translate('Describe what happened, when it began, suspect interactions, payment links clicked, and any details that explain the incident.', 'क्या हुआ, कब शुरू हुआ और घटना को समझाने में मददगार अन्य जानकारी लिखें।', 'શું બન્યું, ક્યારે શરૂ થયું અને ઘટનાને સમજવામાં મદદરૂપ વિગતો લખો.') }}" required oninput="triggerLiveAnalyze()">{{ request.args.get('description', '') }}</textarea>
                     </div>
 
-                    <div class="row">
+                    <div class="row g-3">
                         <div class="col-md-6 mb-3">
-                            <label for="victim_info" class="form-label">{{ translate('Affected person (if different from you)', 'प्रभावित व्यक्ति (यदि आपसे अलग हों)', 'અસરગ્રસ્ત વ્યક્તિ (જો તમે ન હોવ તો)') }}</label>
+                            <label for="victim_info" class="form-label fw-semibold text-dark">{{ translate('Affected person (if different from you)', 'प्रभावित व्यक्ति (यदि आपसे अलग हों)', 'અસરગ્રસ્ત વ્યક્તિ (જો તમે ન હોવ તો)') }}</label>
                             <input type="text" class="form-control cyber-input" id="victim_info" name="victim_info" placeholder="{{ translate('Leave empty if you are the sole victim', 'यदि आप एकमात्र पीड़ित हैं तो खाली छोड़ दें', 'જો તમે એકમાત્ર ભોગ બનનાર હોવ તો ખાલી છોડો') }}">
                         </div>
                         <div class="col-md-6 mb-3">
-                            <label for="suspect_info" class="form-label">{{ translate('Details about the person or account involved', 'संबंधित व्यक्ति या खाते का विवरण', 'સંબંધિત વ્યક્તિ અથવા એકાઉન્ટની વિગતો') }}</label>
-                            <input type="text" class="form-control cyber-input" id="suspect_info" name="suspect_info" placeholder="e.g. Instagram handle @stalker_01, phone +919876...">
+                            <label for="suspect_info" class="form-label fw-semibold text-dark">{{ translate('Suspect details / Touchpoints', 'संबंधित व्यक्ति या खाते का विवरण', 'સંબંધિત વ્યક્તિ અથવા એકાઉન્ટની વિગતો') }}</label>
+                            <input type="text" class="form-control cyber-input" id="suspect_info" name="suspect_info" value="{{ request.args.get('suspect_info', '') }}" placeholder="e.g. Phone +919876..., UPI user@bank, Instagram @stalker" oninput="triggerLiveAnalyze()">
                         </div>
                     </div>
 
                     <!-- Additional Details -->
                     <div class="mb-4">
-                        <label for="additional_info" class="form-label text-secondary small fw-bold">{{ translate('ADDITIONAL PERTINENT INFORMATION', 'अतिरिक्त प्रासंगिक जानकारी', 'વધારानी પ્રાસંગિક માહિતી') }}</label>
-                        <textarea class="form-control cyber-input" id="additional_info" name="additional_info" rows="2" placeholder="{{ translate('Any details about bank names, transaction logs, timestamps, or IP details if known...', 'बैंक के नाम, लेनदेन लॉग, टाइमस्टैम्प, या आईपी विवरण के बारे में कोई भी विवरण यदि ज्ञात हो...', 'જો જાણીતું હોય તો બેંકના નામ, વ્યવહાર લોગ, ટાઇમસ્ટેમ્પ અથવા IP વિગતો વિશેની કોઈપણ વિગતો...') }}"></textarea>
+                        <label for="additional_info" class="form-label text-secondary small fw-bold text-uppercase">{{ translate('Additional Evidence & Notes (Bank UTR, IP, Device details)', 'अतिरिक्त साक्ष्य व नोट', 'વધારાના પુરાવા અને નોંધ') }}</label>
+                        <textarea class="form-control cyber-input" id="additional_info" name="additional_info" rows="2" placeholder="{{ translate('Transaction reference UTR, bank account number, WhatsApp call logs, IP details...', 'लेनदेन संदर्भ यूटीआर, बैंक खाता नंबर, व्हाट्सएप कॉल लॉग, आईपी विवरण...', 'ટ્રાન્ઝેક્શન સંદર્ભ UTR, બેંક એકાઉન્ટ નંબર, કોલ લોગ...') }}"></textarea>
                     </div>
 
-                    <button type="submit" class="btn btn-cyber-cyan w-100 py-2 fs-5"><i class="bi bi-send me-1" aria-hidden="true"></i> {{ translate('Submit report', 'रिपोर्ट भेजें', 'રિપોર્ટ મોકલો') }}</button>
+                    <button type="submit" class="btn btn-primary w-100 py-3 fw-bold fs-5 shadow-sm d-flex align-items-center justify-content-center">
+                        <i class="bi bi-shield-check fs-4 me-2"></i> {{ translate('Submit Formal Incident Report', 'औपचारिक रिपोर्ट दर्ज करें', 'સત્તાવાર રિપોર્ટ નોંધાવો') }}
+                    </button>
                 </form>
+            </div>
+        </div>
+
+        <!-- AI Incident Co-Pilot Sidebar (Right) -->
+        <div class="col-lg-5">
+            <div class="sticky-top" style="top: 20px;">
+                <div class="cyber-card p-4 shadow-sm border mb-4">
+                    <div class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom">
+                        <h5 class="fw-bold mb-0 text-dark d-flex align-items-center">
+                            <i class="bi bi-cpu-fill text-primary me-2"></i> {{ translate('AI Incident Co-Pilot', 'एआई घटना सह-पायलट', 'એઆઈ કો-પાયલટ') }}
+                        </h5>
+                        <span class="badge bg-success-subtle text-success border border-success-subtle small d-flex align-items-center">
+                            <span class="spinner-grow spinner-grow-sm me-1" style="width: 8px; height: 8px;"></span> Live Assistant
+                        </span>
+                    </div>
+
+                    <!-- Priority & Threat Score Meter -->
+                    <div class="p-3 rounded mb-3 bg-light border text-center">
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                            <span class="small text-secondary fw-bold text-uppercase">Threat Urgency Level</span>
+                            <span id="aiPriorityBadge" class="badge bg-success">LOW</span>
+                        </div>
+                        <div class="progress my-2" style="height: 8px;">
+                            <div class="progress-bar bg-success" id="aiUrgencyBar" role="progressbar" style="width: 25%;"></div>
+                        </div>
+                        <p class="small text-muted mb-0" id="aiPriorityReason">Type in your incident narrative to activate real-time threat rating.</p>
+                    </div>
+
+                    <!-- Category Recommendation -->
+                    <div class="mb-3 p-3 rounded bg-light border" id="aiCategoryBox">
+                        <div class="small text-secondary fw-bold text-uppercase mb-1">
+                            <i class="bi bi-lightbulb-fill text-warning me-1"></i> AI Category Match
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span class="fw-bold text-dark small" id="aiSuggestedCategoryText">Financial Cyber Fraud</span>
+                            <button type="button" class="btn btn-sm btn-outline-primary py-0 px-2" onclick="applySuggestedCategory()">Apply</button>
+                        </div>
+                    </div>
+
+                    <!-- Real-Time Extracted Suspect Footprints -->
+                    <div class="mb-3">
+                        <label class="small text-secondary fw-bold text-uppercase d-block mb-1">
+                            <i class="bi bi-fingerprint text-info me-1"></i> Auto-Extracted Suspect Footprints:
+                        </label>
+                        <div id="aiEntitiesContainer" class="d-flex gap-1 flex-wrap min-h-30">
+                            <span class="text-muted small fst-italic">Mention phone, UPI, email, or profile URL in text.</span>
+                        </div>
+                    </div>
+
+                    <!-- Investigation Readiness Checklist -->
+                    <div class="mb-3">
+                        <label class="small text-secondary fw-bold text-uppercase d-block mb-2">
+                            <i class="bi bi-check2-circle text-success me-1"></i> Investigation Readiness Checklist:
+                        </label>
+                        <div id="aiChecksContainer" class="d-flex flex-column gap-2 small">
+                            <!-- Populated dynamically -->
+                        </div>
+                    </div>
+
+                    <!-- Red Flag Alerts -->
+                    <div id="aiRedFlagsBox" class="alert alert-danger p-2 mb-3 small d-none">
+                        <strong class="d-block mb-1"><i class="bi bi-exclamation-octagon-fill me-1"></i> Critical Threat Vector Detected:</strong>
+                        <ul class="mb-0 ps-3" id="aiRedFlagsList"></ul>
+                    </div>
+
+                    <!-- Golden Hour Action Tips -->
+                    <div class="alert alert-info border-info-subtle p-3 mb-0 small">
+                        <strong class="d-block mb-1 text-dark"><i class="bi bi-shield-lock-fill text-info me-1"></i> Forensic Preservation Advice:</strong>
+                        <div id="aiSafetyTips" class="text-secondary">
+                            Do not delete chat history or messages. Keep raw screenshots with visible timestamps ready for upload after filing.
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 </div>
+
+<!-- Modal: AI Enhance & Polish Statement -->
+<div class="modal fade" id="polishModal" tabindex="-1" aria-labelledby="polishModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content shadow">
+            <div class="modal-header">
+                <h5 class="modal-title fw-bold text-dark d-flex align-items-center" id="polishModalLabel">
+                    <i class="bi bi-stars text-primary me-2"></i> {{ translate('AI Report Structuring Assistant', 'एआई रिपोर्ट संरचना सहायक', 'એઆઈ રિપોર્ટ માળખું સહાયક') }}
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p class="small text-secondary mb-3">
+                    {{ translate('Our AI forensic engine transforms conversational statements into a professionally structured formal complaint report with appropriate legal heads.', 'हमारा एआई आपके विवरण को औपचारिक कानूनी शिकायत प्रारूप में व्यवस्थित करता है।', 'અમારું એઆઈ તમારા લખાણને સત્તાવાર કાનૂની ફરિયાદના ફોર્મેટમાં ગોઠવે છે.') }}
+                </p>
+                <div class="mb-3">
+                    <label class="form-label fw-semibold small text-uppercase text-secondary">Structured Statement Preview:</label>
+                    <textarea class="form-control font-monospace small bg-light" id="polishedTextPreview" rows="12"></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary fw-semibold" onclick="applyPolishedText()">
+                    <i class="bi bi-check-lg me-1"></i> Apply to Report
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+let debounceTimer = null;
+let currentSuggestedCategory = "";
+
+function triggerLiveAnalyze() {
+    clearTimeout(debounceTimer);
+    debounceTimer = setTimeout(runLiveAnalyze, 400);
+}
+
+async function runLiveAnalyze() {
+    const desc = document.getElementById('description').value;
+    const cat = document.getElementById('category').value;
+    const loss = document.getElementById('financial_loss').value;
+
+    try {
+        const response = await fetch("{{ url_for('ai.api_live_analyze') }}", {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                description: desc,
+                category: cat,
+                financial_loss: loss
+            })
+        });
+        const res = await response.json();
+        if (res.status === 'success') {
+            updateCopilotUI(res.data);
+        }
+    } catch (e) {
+        console.error("Live AI analysis error:", e);
+    }
+}
+
+function updateCopilotUI(data) {
+    // Priority Meter
+    const badge = document.getElementById('aiPriorityBadge');
+    const bar = document.getElementById('aiUrgencyBar');
+    const reason = document.getElementById('aiPriorityReason');
+
+    badge.innerText = data.suggested_priority;
+    badge.className = `badge bg-${data.priority_color}`;
+    bar.style.width = `${data.urgency_score}%`;
+    bar.className = `progress-bar bg-${data.priority_color}`;
+    reason.innerText = data.priority_reason;
+
+    // Category Suggestion
+    currentSuggestedCategory = data.suggested_category;
+    document.getElementById('aiSuggestedCategoryText').innerText = data.suggested_category;
+
+    // Extracted Entities
+    const entBox = document.getElementById('aiEntitiesContainer');
+    entBox.innerHTML = '';
+    if (data.extracted_entities && data.extracted_entities.length > 0) {
+        data.extracted_entities.forEach(e => {
+            const span = document.createElement('span');
+            span.className = 'badge bg-white text-dark border px-2 py-1 font-monospace small';
+            span.innerText = e.display;
+            entBox.appendChild(span);
+        });
+    } else {
+        entBox.innerHTML = '<span class="text-muted small fst-italic">Mention phone, UPI, email, or link in text.</span>';
+    }
+
+    // Completeness Checks
+    const checksBox = document.getElementById('aiChecksContainer');
+    checksBox.innerHTML = '';
+    (data.completeness_checks || []).forEach(c => {
+        const div = document.createElement('div');
+        div.className = 'd-flex align-items-center justify-content-between p-2 rounded bg-white border';
+        div.innerHTML = `
+            <span class="d-flex align-items-center">
+                <i class="bi ${c.passed ? 'bi-check-circle-fill text-success' : 'bi-circle text-secondary'} me-2"></i>
+                <span class="${c.passed ? 'text-dark' : 'text-secondary'}">${c.title}</span>
+            </span>
+            <span class="badge ${c.passed ? 'bg-success-subtle text-success' : 'bg-light text-secondary'} small">${c.passed ? 'Done' : 'Missing'}</span>
+        `;
+        checksBox.appendChild(div);
+    });
+
+    // Red Flags
+    const redBox = document.getElementById('aiRedFlagsBox');
+    const redList = document.getElementById('aiRedFlagsList');
+    if (data.red_flags && data.red_flags.length > 0) {
+        redBox.classList.remove('d-none');
+        redList.innerHTML = '';
+        data.red_flags.forEach(rf => {
+            const li = document.createElement('li');
+            li.innerText = rf;
+            redList.appendChild(li);
+        });
+    } else {
+        redBox.classList.add('d-none');
+    }
+
+    // Safety Tips
+    if (data.safety_advice && data.safety_advice.length > 0) {
+        document.getElementById('aiSafetyTips').innerHTML = data.safety_advice.map(s => `• ${s}`).join('<br>');
+    }
+}
+
+function applySuggestedCategory() {
+    if (currentSuggestedCategory) {
+        const select = document.getElementById('category');
+        select.value = currentSuggestedCategory;
+        triggerLiveAnalyze();
+    }
+}
+
+async function openAIPolishModal() {
+    const desc = document.getElementById('description').value.trim();
+    if (!desc) {
+        alert("Please write a few sentences about what happened first.");
+        return;
+    }
+
+    const cat = document.getElementById('category').value;
+    const loc = document.getElementById('location').value;
+    const date = document.getElementById('incident_date').value;
+    const loss = document.getElementById('financial_loss').value;
+    const suspect = document.getElementById('suspect_info').value;
+
+    try {
+        const res = await fetch("{{ url_for('ai.api_polish') }}", {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                description: desc,
+                category: cat,
+                location: loc,
+                incident_date: date,
+                financial_loss: loss,
+                suspect_info: suspect
+            })
+        });
+        const json = await res.json();
+        if (json.status === 'success') {
+            document.getElementById('polishedTextPreview').value = json.polished;
+            const modal = new bootstrap.Modal(document.getElementById('polishModal'));
+            modal.show();
+        }
+    } catch (e) {
+        console.error(e);
+        alert("Failed to polish text.");
+    }
+}
+
+function applyPolishedText() {
+    const polished = document.getElementById('polishedTextPreview').value;
+    if (polished) {
+        document.getElementById('description').value = polished;
+        bootstrap.Modal.getInstance(document.getElementById('polishModal')).hide();
+        triggerLiveAnalyze();
+    }
+}
+
+// Initial trigger if values are preset
+document.addEventListener('DOMContentLoaded', () => {
+    if (document.getElementById('description').value) {
+        triggerLiveAnalyze();
+    }
+});
+</script>
 {% endblock %}

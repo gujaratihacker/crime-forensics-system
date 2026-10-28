@@ -1,0 +1,285 @@
+{% extends "base.html" %}
+
+{% block title %}CyberShield AI · Scam & Threat Detector | Civic Desk{% endblock %}
+
+{% block content %}
+<div class="container py-4 py-lg-5">
+    <!-- Header Banner -->
+    <div class="scam-detector-header text-center mb-5">
+        <div class="badge bg-primary-subtle text-primary border border-primary-subtle px-3 py-2 rounded-pill mb-3 fw-semibold">
+            <i class="bi bi-cpu-fill me-1"></i> {{ translate('CyberShield AI Intelligence Engine', 'साइबरशील्ड एआई इंटेलिजेंस इंजन', 'સાયબરશીલ્ડ એઆઈ ઇન્ટેલિજન્સ એન્જિન') }}
+        </div>
+        <h1 class="display-6 fw-bold mb-3">{{ translate('Instant Scam & Threat Diagnostic Center', 'त्वरित स्कैम और खतरा जांच केंद्र', 'ત્વરિત સ્કેમ અને જોખમ તપાસ કેન્દ્ર') }}</h1>
+        <p class="text-secondary mx-auto lead fs-6" style="max-width: 680px;">
+            {{ translate('Received a fishy SMS, WhatsApp job offer, threatening message, or suspicious link? Paste it below to run deep heuristic forensic analysis before clicking or replying.', 'संदिग्ध एसएमएस, व्हाट्सएप नौकरी प्रस्ताव, धमकी भरा संदेश या लिंक मिला है? क्लिक या उत्तर देने से पहले नीचे चिपकाएं और विश्लेषण करें।', 'શંકાસ્પદ એસએમએસ, વોટ્સએપ જોબ ઓફર, ધમકીભર્યો સંદેશ કે લિંક મળી છે? ક્લિક કરતાં પહેલાં નીચે પેસ્ટ કરી ચકાસો.') }}
+        </p>
+    </div>
+
+    <div class="row g-4 justify-content-center">
+        <!-- Input Column -->
+        <div class="col-lg-7">
+            <div class="cyber-card p-4 h-100 shadow-sm border">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="fw-bold mb-0 text-dark d-flex align-items-center">
+                        <i class="bi bi-search text-primary me-2"></i> {{ translate('Inspect Suspicious Content', 'संदिग्ध सामग्री की जांच करें', 'શંકાસ્પદ સામગ્રી તપાસો') }}
+                    </h5>
+                    <span class="badge bg-light text-secondary border small">{{ translate('100% Confidential & Local', '100% गोपनीय', '100% ગુપ્ત') }}</span>
+                </div>
+
+                <!-- One Click Demo Presets -->
+                <div class="mb-3">
+                    <label class="form-label text-secondary small fw-bold text-uppercase mb-2">
+                        <i class="bi bi-lightning-charge-fill text-warning me-1"></i> {{ translate('Quick Test Presets (Click to Test):', 'त्वरित परीक्षण नमूने:', 'ઝડપી ચકાસણી નમૂના:') }}
+                    </label>
+                    <div class="d-flex gap-2 flex-wrap">
+                        <button type="button" class="btn btn-sm btn-outline-secondary preset-btn" onclick="loadPreset('kyc')">
+                            🏦 {{ translate('Bank / KYC SMS', 'बैंक / केवाईसी एसएमएस', 'બેંક / કેવાયસી એસએમએસ') }}
+                        </button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary preset-btn" onclick="loadPreset('task')">
+                            💼 {{ translate('Telegram Job Scam', 'टेलीग्राम जॉब फ्रॉड', 'ટેલિગ્રામ જોબ સ્કેમ') }}
+                        </button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary preset-btn" onclick="loadPreset('blackmail')">
+                            ⚠️ {{ translate('Sextortion Threat', 'ब्लैकमेल धमकी', 'બ્લેકમેલ ધમકી') }}
+                        </button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary preset-btn" onclick="loadPreset('lottery')">
+                            🎉 {{ translate('KBC Lottery Bait', 'लॉटरी पुरस्कार', 'લોટરી ઇનામ') }}
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Input Form -->
+                <div class="mb-3">
+                    <label for="scamInputText" class="form-label fw-semibold text-dark">
+                        {{ translate('Paste Message, Email Text, or Suspicious URL:', 'संदेश, ईमेल पाठ या संदिग्ध लिंक चिपकाएं:', 'સંદેશ, ઇમેલ લખાણ અથવા શંકાસ્પદ લિંક પેસ્ટ કરો:') }}
+                    </label>
+                    <textarea class="form-control cyber-input" id="scamInputText" rows="6" placeholder="{{ translate('Example: Dear customer, your SBI account is blocked due to missing PAN. Click http://sbi-kyc-update.xyz to verify immediately or call +919876543210...', 'उदाहरण: प्रिय ग्राहक, आपका खाता पैन न होने के कारण ब्लॉक कर दिया गया है। तुरंत सत्यापित करने के लिए क्लिक करें...', 'ઉદાહરણ: પ્રિય ગ્રાહક, તમારું એકાઉન્ટ બ્લોક થયેલ છે...') }}"></textarea>
+                </div>
+
+                <div class="d-flex gap-2 align-items-center">
+                    <button type="button" class="btn btn-primary px-4 py-2 fw-semibold d-flex align-items-center" id="scanBtn" onclick="runScamScan()">
+                        <span id="scanBtnSpinner" class="spinner-border spinner-border-sm me-2 d-none" role="status" aria-hidden="true"></span>
+                        <i class="bi bi-shield-shaded me-2" id="scanBtnIcon"></i> {{ translate('Run AI Forensic Scan', 'एआई फॉरेंसिक स्कैन चलाएं', 'એઆઈ ફોરેન્સિક સ્કેન ચલાવો') }}
+                    </button>
+                    <button type="button" class="btn btn-outline-secondary px-3 py-2" onclick="clearScan()">
+                        <i class="bi bi-arrow-counterclockwise"></i> {{ translate('Clear', 'साफ़ करें', 'સાફ કરો') }}
+                    </button>
+                </div>
+
+                <!-- Emergency Helpline Note -->
+                <div class="alert alert-light border border-secondary-subtle mt-4 mb-0 small text-secondary d-flex align-items-center">
+                    <i class="bi bi-telephone-fill text-danger fs-5 me-3"></i>
+                    <div>
+                        <strong>{{ translate('National Cyber Crime Helpline: 1930', 'राष्ट्रीय साइबर अपराध हेल्पलाइन: 1930', 'રાષ્ટ્રીય સાયબર ક્રાઈમ હેલ્પલાઇન: 1930') }}</strong>
+                        <div class="text-muted">{{ translate('Report monetary loss within 2 hours ("Golden Hour") to freeze scammer bank accounts.', 'जालसाज खातों को फ्रीज कराने के लिए 2 घंटे के भीतर कॉल करें।', 'નાણાકીય નુકસાનના ૨ કલાકમાં કૉલ કરો.') }}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Output Column (Dynamic) -->
+        <div class="col-lg-5">
+            <div class="cyber-card p-4 h-100 shadow-sm border" id="scanResultsCard">
+                <!-- Initial Placeholder State -->
+                <div id="resultsPlaceholder" class="text-center py-5 text-secondary">
+                    <div class="mb-3">
+                        <i class="bi bi-shield-check display-4 text-primary opacity-50"></i>
+                    </div>
+                    <h5 class="fw-bold text-dark">{{ translate('Awaiting Analysis', 'विश्लेषण की प्रतीक्षा', 'વિશ્લેષણની રાહ') }}</h5>
+                    <p class="small text-muted px-4">
+                        {{ translate('Paste text on the left and click "Run AI Forensic Scan" or select one of the quick test presets.', 'बाईं ओर सामग्री चिपकाएं और स्कैन पर क्लिक करें।', 'ડાબી બાજુ સામગ્રી પેસ્ટ કરી સ્કેન બટન દબાવો.') }}
+                    </p>
+                </div>
+
+                <!-- Active Results Content -->
+                <div id="resultsContent" class="d-none">
+                    <div class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom">
+                        <span class="small fw-bold text-uppercase text-secondary">{{ translate('AI Diagnostic Report', 'एआई नैदानिक रिपोर्ट', 'એઆઈ નિદાન રિપોર્ટ') }}</span>
+                        <span id="resultBadge" class="badge bg-danger fs-6">CRITICAL</span>
+                    </div>
+
+                    <!-- Risk Gauge Meter -->
+                    <div class="risk-meter-box text-center p-3 rounded mb-3 bg-light border">
+                        <div class="text-secondary small fw-semibold text-uppercase mb-1">{{ translate('Scam Probability Rating', 'स्कैम संभावना स्कोर', 'સ્કેમ સંભાવના સ્કોર') }}</div>
+                        <div class="display-5 fw-extrabold my-1" id="riskScoreValue">85%</div>
+                        <div class="progress" style="height: 10px;">
+                            <div class="progress-bar progress-bar-striped progress-bar-animated bg-danger" id="riskProgressBar" role="progressbar" style="width: 85%;"></div>
+                        </div>
+                        <div class="mt-2 small fw-semibold" id="scamTypeName">Banking KYC Suspension Phishing</div>
+                    </div>
+
+                    <!-- Detected Tactics -->
+                    <div class="mb-3">
+                        <label class="small text-secondary fw-bold text-uppercase d-block mb-1">
+                            <i class="bi bi-bullseye text-danger me-1"></i> {{ translate('Identified Threat Tactics:', 'पहचाने गए खतरे के तरीके:', 'ઓળખાયેલી પદ્ધતિઓ:') }}
+                        </label>
+                        <div id="tacticsContainer" class="d-flex gap-1 flex-wrap"></div>
+                    </div>
+
+                    <!-- Indicators List -->
+                    <div class="mb-3">
+                        <label class="small text-secondary fw-bold text-uppercase d-block mb-1">
+                            <i class="bi bi-exclamation-triangle-fill text-warning me-1"></i> {{ translate('Suspicious Indicators Detected:', 'पकड़े गए संदिग्ध संकेत:', 'શંકાસ્પદ સંકેતો:') }}
+                        </label>
+                        <ul class="list-unstyled small mb-0 ps-1 text-dark" id="indicatorsList"></ul>
+                    </div>
+
+                    <!-- Extracted Entities -->
+                    <div class="mb-3" id="entitiesBox">
+                        <label class="small text-secondary fw-bold text-uppercase d-block mb-1">
+                            <i class="bi bi-fingerprint text-info me-1"></i> {{ translate('Extracted Suspect Footprints:', 'निकाले गए संदिग्ध संपर्क:', 'શોધાયેલ સંપર્ક વિગતો:') }}
+                        </label>
+                        <div id="entitiesContainer" class="d-flex gap-1 flex-wrap"></div>
+                    </div>
+
+                    <!-- Action Steps -->
+                    <div class="alert alert-warning border-warning-subtle p-3 mb-3 small">
+                        <strong class="d-block mb-1 text-dark"><i class="bi bi-shield-fill-check text-warning me-1"></i> {{ translate('Recommended Immediate Action:', 'तुरंत आवश्यक कार्रवाई:', 'તાત્કાલિક પગલાં:') }}</strong>
+                        <ul class="mb-0 ps-3 text-secondary" id="recommendationsList"></ul>
+                    </div>
+
+                    <!-- Report Button -->
+                    <a href="{{ url_for('complaints.submit') }}" id="fileReportBtn" class="btn btn-outline-danger w-100 fw-semibold d-flex align-items-center justify-content-center">
+                        <i class="bi bi-file-earmark-medical me-2"></i> {{ translate('File Formal Incident Report with this Data', 'इस डेटा के साथ औपचारिक शिकायत दर्ज करें', 'આ ડેટા સાથે સત્તાવાર ફરિયાદ નોંધાવો') }}
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+const PRESETS = {
+    kyc: "Dear SBI User, Your YONO Account has been suspended due to pending KYC verification. Please click immediately on http://sbi-kyc-update.xyz to update your PAN Card and unfreeze your balance or call our manager at +919876543210 within 2 hours.",
+    task: "Hi! I am HR Sneha from YouTube Global Media. We have a part time work from home job for you. Just like 3 videos daily and earn 3000 to 5000 INR daily into your account. Join our official Telegram group @easy_daily_tasks and send UPI id to claim 500 bonus immediately.",
+    blackmail: "I have recorded your private video call and compromised your phone. If you do not transfer 25,000 INR to UPI id stalker99@ybl within 3 hours, I will leak this video to all your Facebook and Instagram contacts and family members.",
+    lottery: "CONGRATULATIONS! Your mobile number has been selected as the 1st lucky winner of Rs. 25,00,000 in KBC All India WhatsApp Lucky Draw 2026. Contact lottery officer Mr. Verma at +919812345678 or visit http://kbc-reward-claim.online immediately to claim."
+};
+
+function loadPreset(key) {
+    const text = PRESETS[key] || '';
+    document.getElementById('scamInputText').value = text;
+    runScamScan();
+}
+
+function clearScan() {
+    document.getElementById('scamInputText').value = '';
+    document.getElementById('resultsPlaceholder').classList.remove('d-none');
+    document.getElementById('resultsContent').classList.add('d-none');
+}
+
+async function runScamScan() {
+    const text = document.getElementById('scamInputText').value.trim();
+    if (!text) {
+        alert("Please paste a message, email, or URL to inspect.");
+        return;
+    }
+
+    const btn = document.getElementById('scanBtn');
+    const spinner = document.getElementById('scanBtnSpinner');
+    const icon = document.getElementById('scanBtnIcon');
+
+    btn.disabled = true;
+    spinner.classList.remove('d-none');
+    icon.classList.add('d-none');
+
+    try {
+        const response = await fetch("{{ url_for('ai.api_scan') }}", {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ text: text })
+        });
+        const json = await response.json();
+        if (json.status === 'success') {
+            renderResults(json.data);
+        } else {
+            alert("Analysis failed. Please try again.");
+        }
+    } catch (err) {
+        console.error(err);
+        alert("Unable to reach AI scanner service.");
+    } finally {
+        btn.disabled = false;
+        spinner.classList.add('d-none');
+        icon.classList.remove('d-none');
+    }
+}
+
+function renderResults(data) {
+    document.getElementById('resultsPlaceholder').classList.add('d-none');
+    const content = document.getElementById('resultsContent');
+    content.classList.remove('d-none');
+
+    // Score & Progress Bar
+    const scoreVal = document.getElementById('riskScoreValue');
+    const bar = document.getElementById('riskProgressBar');
+    const badge = document.getElementById('resultBadge');
+
+    scoreVal.innerText = `${data.risk_score}%`;
+    bar.style.width = `${data.risk_score}%`;
+    badge.innerText = data.verdict;
+    badge.className = `badge bg-${data.verdict_badge} fs-6`;
+
+    if (data.risk_score >= 70) {
+        bar.className = "progress-bar progress-bar-striped progress-bar-animated bg-danger";
+        scoreVal.className = "display-5 fw-extrabold my-1 text-danger";
+    } else if (data.risk_score >= 40) {
+        bar.className = "progress-bar progress-bar-striped progress-bar-animated bg-warning";
+        scoreVal.className = "display-5 fw-extrabold my-1 text-warning";
+    } else {
+        bar.className = "progress-bar bg-success";
+        scoreVal.className = "display-5 fw-extrabold my-1 text-success";
+    }
+
+    document.getElementById('scamTypeName').innerText = data.scam_type;
+
+    // Tactics
+    const tacticsBox = document.getElementById('tacticsContainer');
+    tacticsBox.innerHTML = '';
+    (data.tactics || []).forEach(t => {
+        const pill = document.createElement('span');
+        pill.className = 'badge bg-danger-subtle text-danger border border-danger-subtle px-2 py-1 small';
+        pill.innerText = t;
+        tacticsBox.appendChild(pill);
+    });
+
+    // Indicators
+    const indList = document.getElementById('indicatorsList');
+    indList.innerHTML = '';
+    (data.indicators || []).forEach(ind => {
+        const li = document.createElement('li');
+        li.className = 'mb-1 text-secondary';
+        li.innerHTML = `<i class="bi bi-dot text-danger fs-5 align-middle"></i> ${ind}`;
+        indList.appendChild(li);
+    });
+
+    // Entities
+    const entBox = document.getElementById('entitiesContainer');
+    entBox.innerHTML = '';
+    const entities = data.extracted_entities || [];
+    if (entities.length > 0) {
+        document.getElementById('entitiesBox').classList.remove('d-none');
+        entities.forEach(e => {
+            const span = document.createElement('span');
+            span.className = 'badge bg-light text-dark border px-2 py-1 font-monospace small';
+            span.innerText = e.display || e.value;
+            entBox.appendChild(span);
+        });
+    } else {
+        document.getElementById('entitiesBox').classList.add('d-none');
+    }
+
+    // Recommendations
+    const recList = document.getElementById('recommendationsList');
+    recList.innerHTML = '';
+    (data.recommendations || []).forEach(r => {
+        const li = document.createElement('li');
+        li.className = 'mb-1';
+        li.innerText = r;
+        recList.appendChild(li);
+    });
+}
+</script>
+{% endblock %}
+

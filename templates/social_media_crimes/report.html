@@ -92,7 +92,12 @@
 
                     <!-- Detailed Description -->
                     <div class="mb-3">
-                        <label for="description" class="form-label text-secondary small fw-bold">{{ translate('Detailed Description of Crime', 'अपराध का विस्तृत विवरण', 'ગુનાનું વિગતવાર વર્ણન') }} <span class="text-danger">*</span></label>
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                            <label for="description" class="form-label text-secondary small fw-bold mb-0">{{ translate('Detailed Description of Crime', 'अपराध का विस्तृत विवरण', 'ગુનાનું વિગતવાર વર્ણન') }} <span class="text-danger">*</span></label>
+                            <button type="button" class="btn btn-sm btn-outline-primary py-0 px-2" onclick="openAIPolishModal()">
+                                <i class="bi bi-stars text-primary me-1"></i> {{ translate('AI Polish & Structure', 'एआई से व्यवस्थित करें', 'એઆઈ થી સુધારો') }}
+                            </button>
+                        </div>
                         <textarea class="form-control cyber-input" id="description" name="description" rows="5" placeholder="{{ translate('Provide details about what happened. Include handles, usernames, message texts, or demands made by the suspect.', 'क्या हुआ, इसका विवरण प्रदान करें। संदिग्ध द्वारा उपयोग किए गए हैंडल, उपयोगकर्ता नाम, संदेश पाठ या की गई मांगों को शामिल करें।', 'શું બન્યું તેની વિગતો આપો. શંકાસ્પદ વ્યક્તિ દ્વારા ઉપયોગમાં લેવાયેલ હેન્ડલ્સ, યુઝરનેમ્સ, મેસેજ ટેક્સ્ટ્સ અથવા કરાયેલી માંગણીઓ શામેલ કરો.') }}" required></textarea>
                     </div>
 
@@ -114,4 +119,81 @@
         </div>
     </div>
 </div>
+
+<!-- Modal: AI Enhance & Polish Statement -->
+<div class="modal fade" id="smPolishModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content shadow">
+            <div class="modal-header">
+                <h5 class="modal-title fw-bold text-dark d-flex align-items-center">
+                    <i class="bi bi-stars text-primary me-2"></i> {{ translate('AI Report Structuring Assistant', 'एआई रिपोर्ट संरचना सहायक', 'એઆઈ રિપોર્ટ માળખું સહાયક') }}
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p class="small text-secondary mb-3">
+                    {{ translate('Our AI forensic engine transforms conversational statements into a professionally structured formal complaint report.', 'हमारा एआई आपके विवरण को औपचारिक कानूनी शिकायत प्रारूप में व्यवस्थित करता है।', 'અમારું એઆઈ તમારા લખાણને સત્તાવાર કાનૂની ફરિયાદના ફોર્મેટમાં ગોઠવે છે.') }}
+                </p>
+                <div class="mb-3">
+                    <textarea class="form-control font-monospace small bg-light" id="smPolishedTextPreview" rows="11"></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary fw-semibold" onclick="applySMPolishedText()">
+                    <i class="bi bi-check-lg me-1"></i> Apply to Report
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+async function openAIPolishModal() {
+    const desc = document.getElementById('description').value.trim();
+    if (!desc) {
+        alert("Please write a few sentences about what happened first.");
+        return;
+    }
+
+    const platform = document.getElementById('platform').value;
+    const crimeType = document.getElementById('crime_type').value;
+    const profileUrl = document.getElementById('profile_url').value;
+    const date = document.getElementById('incident_date').value;
+
+    try {
+        const res = await fetch("{{ url_for('ai.api_polish') }}", {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                description: desc,
+                category: `Social Media Crime (${platform} - ${crimeType})`,
+                location: profileUrl || platform || 'Social Media',
+                incident_date: date,
+                financial_loss: 0.0,
+                suspect_info: profileUrl
+            })
+        });
+        const json = await res.json();
+        if (json.status === 'success') {
+            document.getElementById('smPolishedTextPreview').value = json.polished;
+            const modal = new bootstrap.Modal(document.getElementById('smPolishModal'));
+            modal.show();
+        }
+    } catch (e) {
+        console.error(e);
+        alert("Failed to structure report.");
+    }
+}
+
+function applySMPolishedText() {
+    const text = document.getElementById('smPolishedTextPreview').value;
+    if (text) {
+        document.getElementById('description').value = text;
+        bootstrap.Modal.getInstance(document.getElementById('smPolishModal')).hide();
+    }
+}
+</script>
 {% endblock %}

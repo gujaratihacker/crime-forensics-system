@@ -14,11 +14,17 @@
                 {{ translate('View your reports and follow their progress.', 'अपनी रिपोर्ट देखें और उनकी प्रगति जानें।', 'તમારા રિપોર્ટ જુઓ અને તેમની પ્રગતિ જાણો.') }}
             </p>
         </div>
-        <a href="{{ url_for('complaints.submit') }}" class="btn btn-cyber-cyan">
-            <i class="bi bi-plus-lg me-1" aria-hidden="true"></i>{{ translate('File a report', 'रिपोर्ट दर्ज करें', 'રિપોર્ટ નોંધાવો') }}
-        </a>
+        <div class="d-flex gap-2 flex-wrap">
+            <a href="{{ url_for('ai.scam_detector') }}" class="btn btn-outline-primary">
+                <i class="bi bi-cpu me-1" aria-hidden="true"></i>{{ translate('AI Scam Detector', 'एआई स्कैम जांच', 'એઆઈ સ્કેમ તપાસ') }}
+            </a>
+            <a href="{{ url_for('complaints.submit') }}" class="btn btn-cyber-cyan">
+                <i class="bi bi-plus-lg me-1" aria-hidden="true"></i>{{ translate('File a report', 'रिपोर्ट दर्ज करें', 'રિપોર્ટ નોંધાવો') }}
+            </a>
+        </div>
     </div>
 
+    <!-- Stats Grid -->
     <div class="row g-3 mb-4">
         <div class="col-md-4">
             <div class="cyber-card p-3 text-center border-info">
@@ -38,6 +44,22 @@
                 <h2 class="text-success mt-1 font-monospace mb-0">{{ closed_complaints }}</h2>
             </div>
         </div>
+    </div>
+
+    <!-- AI Diagnostic Quick Banner -->
+    <div class="cyber-card p-3 mb-4 bg-white border border-primary-subtle shadow-sm d-flex justify-content-between align-items-center flex-wrap gap-3">
+        <div class="d-flex align-items-center gap-3">
+            <span class="brand-mark bg-primary-subtle text-primary" style="width: 44px; height: 44px; font-size: 1.3rem;">
+                <i class="bi bi-cpu-fill"></i>
+            </span>
+            <div>
+                <h5 class="mb-0 fw-bold text-dark">{{ translate('CyberShield AI Threat Diagnostic Tool', 'साइबरशील्ड एआई स्कैम जांच उपकरण', 'સાયબરશીલ્ડ એઆઈ સ્કેમ તપાસ ટૂલ') }}</h5>
+                <p class="text-secondary mb-0 small">{{ translate('Unsure if a message, job offer, or UPI request is legitimate? Scan it instantly before sharing OTP or money.', 'संदिग्ध संदेश या नौकरी की पेशकश की तुरंत जांच करें।', 'શંકાસ્પદ સંદેશ કે લિંકને તરત સ્કેન કરો.') }}</p>
+            </div>
+        </div>
+        <a href="{{ url_for('ai.scam_detector') }}" class="btn btn-outline-primary btn-sm fw-semibold px-3 py-2">
+            <i class="bi bi-search me-1"></i> {{ translate('Open Scam Detector', 'स्कैम डिटेक्टर खोलें', 'સ્કેમ ડિટેક્ટર ખોલો') }}
+        </a>
     </div>
 
     <div class="cyber-card">

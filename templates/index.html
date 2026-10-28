@@ -1,55 +1,222 @@
 {% extends "base.html" %}
 
-{% block title %}{{ translate('Crime reporting and case support', 'अपराध रिपोर्टिंग और केस सहायता', 'ગુનાની જાણ અને કેસ સહાય') }} | Civic Desk{% endblock %}
+{% block title %}{{ translate('Smart Cyber Crime Reporting & AI Forensics Portal', 'स्मार्ट साइबर अपराध रिपोर्टिंग और एआई फोरेंसिक पोर्टल', 'સ્માર્ટ સાયબર ક્રાઈમ રિપોર્ટિંગ અને એઆઈ ફોરેન્સિક પોર્ટલ') }} | Civic Desk{% endblock %}
 
 {% block content %}
-<section class="home-hero">
-    <div class="container">
-        <div class="home-eyebrow"><i class="bi bi-shield-check" aria-hidden="true"></i> {{ translate('Civic Desk · Demonstration portal', 'सिविक डेस्क · प्रदर्शन पोर्टल', 'સિવિક ડેસ્ક · ડેમો પોર્ટલ') }}</div>
-        <h1>{{ translate('Crime reporting and case support', 'अपराध रिपोर्टिंग और केस सहायता', 'ગુનાની જાણ અને કેસ સહાય') }}</h1>
-        <p class="mt-3 mb-4">{{ translate('A single place to submit a report, follow its progress, and find practical online safety guidance.', 'रिपोर्ट दर्ज करने, उसकी प्रगति देखने और ऑनलाइन सुरक्षा संबंधी मार्गदर्शन पाने के लिए एक ही स्थान।', 'રિપોર્ટ નોંધાવવા, તેની પ્રગતિ જોવા અને ઑનલાઇન સલામતી અંગે માર્ગદર્શન મેળવવા માટેનું એક જ સ્થળ.') }}</p>
-        <div class="d-flex gap-2 flex-wrap">
-            <a href="{{ url_for('auth.login') }}" class="btn btn-primary btn-lg px-4"><i class="bi bi-box-arrow-in-right me-1" aria-hidden="true"></i> {{ translate('Sign in to continue', 'जारी रखने के लिए साइन इन करें', 'આગળ વધવા સાઇન ઇન કરો') }}</a>
-            <a href="{{ url_for('live_incidents.public_incidents') }}" class="btn btn-outline-light btn-lg px-4"><i class="bi bi-broadcast me-1" aria-hidden="true"></i> {{ translate('View public incidents', 'सार्वजनिक घटनाएं देखें', 'જાહેર ઘટનાઓ જુઓ') }}</a>
+<!-- Modern Hero Section -->
+<section class="home-hero position-relative overflow-hidden">
+    <div class="container py-4 py-lg-5">
+        <div class="row align-items-center g-4">
+            <div class="col-lg-8">
+                <div class="badge bg-primary-subtle text-primary border border-primary-subtle px-3 py-2 rounded-pill mb-3 fw-semibold">
+                    <i class="bi bi-shield-lock-fill me-1"></i> {{ translate('AI-Powered Cyber Security & Digital Forensics System', 'एआई-संचालित साइबर सुरक्षा और डिजिटल फोरेंसिक प्रणाली', 'એઆઈ-સંચાલિત સાયબર સુરક્ષા અને ડિજિટલ ફોરેન્સિક્સ સિસ્ટમ') }}
+                </div>
+                <h1 class="display-5 fw-extrabold tracking-tight mb-3">
+                    {{ translate('Smart Online Crime Reporting, Case Management & Digital Forensics', 'स्मार्ट ऑनलाइन अपराध रिपोर्टिंग, केस प्रबंधन और डिजिटल फोरेंसिक', 'સ્માર્ટ ઑનલાઇન ક્રાઇમ રિપોર્ટિંગ, કેસ મેનેજમેન્ટ અને ડિજિટલ ફોરેન્સિક્સ') }}
+                </h1>
+                <p class="lead text-secondary mb-4 fs-6">
+                    {{ translate('A secure, educational platform simulating citizen cybercrime reporting, real-time AI scam diagnosis, webcam livestream evidence preservation, and cryptographic SHA-256 chain of custody.', 'नागरिक साइबर अपराध रिपोर्टिंग, वास्तविक समय एआई स्कैम जांच, वेबकैम साक्ष्य संरक्षण और क्रिप्टोग्राफिक एसएचए-256 हिरासत श्रृंखला का एक सुरक्षित शैक्षिक मंच।', 'નાગરિક સાયબર ગુનાની જાણ, રીઅલ-ટાઇમ એઆઈ સ્કેમ નિદાન, વેબકેમ પુરાવા સંરક્ષણ અને ક્રિપ્ટોગ્રાફિક SHA-256 સાંકળનું શૈક્ષણિક પ્લેટફોર્મ.') }}
+                </p>
+                <div class="d-flex gap-3 flex-wrap align-items-center">
+                    <a href="{{ url_for('ai.scam_detector') }}" class="btn btn-primary btn-lg px-4 fw-semibold shadow-sm d-flex align-items-center">
+                        <i class="bi bi-cpu-fill me-2"></i> {{ translate('Try AI Scam Detector', 'एआई स्कैम डिटेक्टर चलाएं', 'એઆઈ સ્કેમ ડિટેક્ટર વાપરો') }}
+                    </a>
+                    {% if session.get('user_id') %}
+                        <a href="{{ url_for('complaints.submit') }}" class="btn btn-outline-dark btn-lg px-4 fw-semibold">
+                            <i class="bi bi-file-earmark-medical me-2"></i> {{ translate('Report Incident', 'रिपोर्ट दर्ज करें', 'રિપોર્ટ નોંધાવો') }}
+                        </a>
+                    {% else %}
+                        <a href="{{ url_for('auth.login') }}" class="btn btn-outline-dark btn-lg px-4 fw-semibold">
+                            <i class="bi bi-box-arrow-in-right me-2"></i> {{ translate('Sign In to Portal', 'पोर्टल में साइन इन करें', 'સાઇન ઇન કરો') }}
+                        </a>
+                    {% endif %}
+                    <a href="{{ url_for('live_incidents.public_incidents') }}" class="btn btn-outline-secondary btn-lg px-3">
+                        <i class="bi bi-broadcast me-1"></i> {{ translate('Live Feeds', 'लाइव घटनाएं', 'લાઇવ ફીડ્સ') }}
+                    </a>
+                </div>
+            </div>
+
+            <!-- Hero Highlights Card -->
+            <div class="col-lg-4">
+                <div class="cyber-card p-4 border shadow-sm bg-white">
+                    <div class="d-flex align-items-center justify-content-between mb-3 pb-2 border-bottom">
+                        <span class="small fw-bold text-uppercase text-secondary">System Capabilities</span>
+                        <span class="badge bg-success-subtle text-success small font-monospace"><i class="bi bi-activity"></i> Active 2.0</span>
+                    </div>
+
+                    <div class="d-flex flex-column gap-3 small">
+                        <div class="d-flex gap-3 align-items-start">
+                            <span class="brand-mark bg-light text-primary" style="width: 36px; height: 36px; font-size: 1.1rem;">
+                                <i class="bi bi-cpu"></i>
+                            </span>
+                            <div>
+                                <strong class="text-dark d-block">AI Incident Co-Pilot</strong>
+                                <span class="text-secondary">Real-time threat urgency scoring, entity extraction, and statement structuring.</span>
+                            </div>
+                        </div>
+
+                        <div class="d-flex gap-3 align-items-start">
+                            <span class="brand-mark bg-light text-success" style="width: 36px; height: 36px; font-size: 1.1rem;">
+                                <i class="bi bi-shield-check"></i>
+                            </span>
+                            <div>
+                                <strong class="text-dark d-block">Cryptographic Vault</strong>
+                                <span class="text-secondary">SHA-256 hash checks with tamper detection and immutable audit log ledger.</span>
+                            </div>
+                        </div>
+
+                        <div class="d-flex gap-3 align-items-start">
+                            <span class="brand-mark bg-light text-danger" style="width: 36px; height: 36px; font-size: 1.1rem;">
+                                <i class="bi bi-camera-video"></i>
+                            </span>
+                            <div>
+                                <strong class="text-dark d-block">Live Stream Vaulting</strong>
+                                <span class="text-secondary">Auto-uploads WebM recording upon broadcast end for forensic preservation.</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="alert alert-light border mt-3 mb-0 py-2 px-3 small text-secondary d-flex align-items-center">
+                        <i class="bi bi-telephone-fill text-danger me-2"></i>
+                        <span>{{ translate('National Cyber Helpline:', 'साइबर हेल्पलाइन:', 'હેલ્પલાઇન:') }} <strong>1930</strong></span>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </section>
 
+<!-- Interactive Services Grid -->
 <div class="container py-4 py-lg-5">
-    <div class="d-flex justify-content-between align-items-end flex-wrap gap-2 mb-3">
+    <div class="d-flex justify-content-between align-items-end flex-wrap gap-2 mb-4">
         <div>
-            <p class="text-secondary small fw-bold text-uppercase mb-1">{{ translate('Services', 'सेवाएं', 'સેવાઓ') }}</p>
-            <h2 class="h4 mb-0">{{ translate('What would you like to do?', 'आप क्या करना चाहते हैं?', 'તમે શું કરવા માંગો છો?') }}</h2>
+            <p class="text-primary small fw-bold text-uppercase mb-1 tracking-wider">
+                <i class="bi bi-grid-fill me-1"></i> {{ translate('Portal Services & Tools', 'पोर्टल सेवाएं और उपकरण', 'પોર્ટલ સેવાઓ અને ટૂલ્સ') }}
+            </p>
+            <h2 class="h3 fw-bold mb-0 text-dark">{{ translate('What would you like to investigate or report?', 'आप क्या जांच या रिपोर्ट करना चाहते हैं?', 'તમે શું તપાસવા કે રિપોર્ટ કરવા માંગો છો?') }}</h2>
         </div>
     </div>
 
-    <div class="row g-3 mb-4">
-        <div class="col-md-6 col-xl-3">
-            <a class="service-link h-100" href="{{ url_for('auth.login') }}">
-                <span class="service-link-icon"><i class="bi bi-file-earmark-text" aria-hidden="true"></i></span>
-                <span><h2>{{ translate('Submit a report', 'रिपोर्ट दर्ज करें', 'રિપોર્ટ નોંધાવો') }}</h2><p>{{ translate('Sign in to report an incident or review your submitted reports.', 'घटना की रिपोर्ट करने या अपनी रिपोर्ट देखने के लिए साइन इन करें।', 'ઘટનાની જાણ કરવા અથવા તમારા રિપોર્ટ જોવા સાઇન ઇન કરો.') }}</p></span>
+    <div class="row g-4 mb-5">
+        <!-- AI Scam Detector -->
+        <div class="col-md-6 col-xl-4">
+            <a class="service-link h-100 p-4 border rounded-4 text-decoration-none d-flex flex-column justify-content-between bg-white shadow-sm hover-lift" href="{{ url_for('ai.scam_detector') }}">
+                <div>
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <span class="service-link-icon bg-primary-subtle text-primary" style="width: 48px; height: 48px; font-size: 1.3rem;">
+                            <i class="bi bi-cpu-fill" aria-hidden="true"></i>
+                        </span>
+                        <span class="badge bg-primary text-white rounded-pill px-2 py-1 small">AI Powered</span>
+                    </div>
+                    <h3 class="h5 fw-bold text-dark mb-2">{{ translate('AI Scam & Threat Detector', 'एआई स्कैम और थ्रेट डिटेक्टर', 'એઆઈ સ્કેમ અને જોખમ ડિટેક્ટર') }}</h3>
+                    <p class="text-secondary small mb-0">{{ translate('Paste suspicious SMS, Telegram job offers, lottery messages, or phishing links to calculate scam probability.', 'संदिग्ध एसएमएस, टेलीग्राम जॉब, लॉटरी संदेश या लिंक को चिपकाकर स्कैम की संभावना की जांच करें।', 'શંકાસ્પદ એસએમએસ, જોબ ઓફર કે લિંકની સ્કેમ સંભાવના ચકાસો.') }}</p>
+                </div>
+                <div class="mt-3 text-primary fw-semibold small d-flex align-items-center">
+                    {{ translate('Launch Detector', 'स्कैनर खोलें', 'ડિટેક્ટર ચલાવો') }} <i class="bi bi-arrow-right ms-1"></i>
+                </div>
             </a>
         </div>
-        <div class="col-md-6 col-xl-3">
-            <a class="service-link h-100" href="{{ url_for('missing_persons.list_missing') }}">
-                <span class="service-link-icon"><i class="bi bi-person-search" aria-hidden="true"></i></span>
-                <span><h2>{{ translate('Missing persons', 'लापता व्यक्ति', 'ગુમ થયેલ વ્યક્તિઓ') }}</h2><p>{{ translate('Browse current notices and share a sighting.', 'मौजूदा सूचनाएं देखें और किसी को देखने की जानकारी साझा करें।', 'વર્તમાન સૂચનાઓ જુઓ અને કોઈને જોયાની માહિતી આપો.') }}</p></span>
+
+        <!-- Submit Report -->
+        <div class="col-md-6 col-xl-4">
+            <a class="service-link h-100 p-4 border rounded-4 text-decoration-none d-flex flex-column justify-content-between bg-white shadow-sm hover-lift" href="{{ url_for('complaints.submit') if session.get('role') == 'citizen' else url_for('auth.login') }}">
+                <div>
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <span class="service-link-icon bg-success-subtle text-success" style="width: 48px; height: 48px; font-size: 1.3rem;">
+                            <i class="bi bi-file-earmark-medical" aria-hidden="true"></i>
+                        </span>
+                        <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-2 py-1 small">Identified / Anonymous</span>
+                    </div>
+                    <h3 class="h5 fw-bold text-dark mb-2">{{ translate('Report Cyber Incident', 'साइबर घटना दर्ज करें', 'સાયબર ઘટના નોંધાવો') }}</h3>
+                    <p class="text-secondary small mb-0">{{ translate('File a formal cyber complaint with real-time AI Co-Pilot analysis, entity parsing, and timeline tracking.', 'रीयल-टाइम एआई विश्लेषण और संस्था पहचान के साथ औपचारिक साइबर अपराध शिकायत दर्ज करें।', 'રીઅલ-ટાઇમ એઆઈ વિશ્લેષણ સાથે સત્તાવાર ફરિયાદ નોંધાવો.') }}</p>
+                </div>
+                <div class="mt-3 text-success fw-semibold small d-flex align-items-center">
+                    {{ translate('Open Reporting Form', 'फॉर्म खोलें', 'ફોર્મ ખોલો') }} <i class="bi bi-arrow-right ms-1"></i>
+                </div>
             </a>
         </div>
-        <div class="col-md-6 col-xl-3">
-            <a class="service-link h-100" href="{{ url_for('awareness.index') }}">
-                <span class="service-link-icon"><i class="bi bi-shield-check" aria-hidden="true"></i></span>
-                <span><h2>{{ translate('Safety guidance', 'सुरक्षा मार्गदर्शन', 'સલામતી માર્ગદર્શન') }}</h2><p>{{ translate('Read about common online scams and ways to protect your accounts.', 'आम ऑनलाइन धोखाधड़ी और खातों की सुरक्षा के तरीके जानें।', 'સામાન્ય ઑનલાઇન છેતરપિંડી અને તમારા એકાઉન્ટની સુરક્ષાની રીતો જાણો.') }}</p></span>
+
+        <!-- Social Media Violations -->
+        <div class="col-md-6 col-xl-4">
+            <a class="service-link h-100 p-4 border rounded-4 text-decoration-none d-flex flex-column justify-content-between bg-white shadow-sm hover-lift" href="{{ url_for('social_media_crimes.report_crime') }}">
+                <div>
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <span class="service-link-icon bg-info-subtle text-info" style="width: 48px; height: 48px; font-size: 1.3rem;">
+                            <i class="bi bi-chat-square-text" aria-hidden="true"></i>
+                        </span>
+                        <span class="badge bg-info-subtle text-info border border-info-subtle rounded-pill px-2 py-1 small">Specialized Form</span>
+                    </div>
+                    <h3 class="h5 fw-bold text-dark mb-2">{{ translate('Social Media Crimes', 'सोशल मीडिया अपराध', 'સોશિયલ મીડિયા ગુનાઓ') }}</h3>
+                    <p class="text-secondary small mb-0">{{ translate('Report cyberbullying, impersonation accounts, morphing blackmail, and online harassment across Meta, Instagram & WhatsApp.', 'सोशल मीडिया पर साइबरबुलिंग, प्रतिरूपण, ब्लैकमेल और उत्पीड़न की रिपोर्ट दर्ज करें।', 'સોશિયલ મીડિયા પર પજવણી અને ઓળખ ચોરીની જાણ કરો.') }}</p>
+                </div>
+                <div class="mt-3 text-info fw-semibold small d-flex align-items-center">
+                    {{ translate('Report Social Incident', 'रिपोर्ट दर्ज करें', 'રિપોર્ટ કરો') }} <i class="bi bi-arrow-right ms-1"></i>
+                </div>
             </a>
         </div>
-        <div class="col-md-6 col-xl-3">
-            <a class="service-link h-100" href="{{ url_for('social_media_crimes.report_crime') }}">
-                <span class="service-link-icon"><i class="bi bi-chat-square-text" aria-hidden="true"></i></span>
-                <span><h2>{{ translate('Social media incident', 'सोशल मीडिया घटना', 'સોશિયલ મીડિયા ઘટના') }}</h2><p>{{ translate('Open the dedicated form for harassment, impersonation, or online fraud.', 'उत्पीड़न, प्रतिरूपण या ऑनलाइन धोखाधड़ी के लिए विशेष फ़ॉर्म खोलें।', 'હેરાનગતિ, વેશપલટો અથવા ઑનલાઇન છેતરપિંડી માટેનું ફોર્મ ખોલો.') }}</p></span>
+
+        <!-- Live Streams -->
+        <div class="col-md-6 col-xl-4">
+            <a class="service-link h-100 p-4 border rounded-4 text-decoration-none d-flex flex-column justify-content-between bg-white shadow-sm hover-lift" href="{{ url_for('live_incidents.public_incidents') }}">
+                <div>
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <span class="service-link-icon bg-danger-subtle text-danger" style="width: 48px; height: 48px; font-size: 1.3rem;">
+                            <i class="bi bi-camera-video-fill" aria-hidden="true"></i>
+                        </span>
+                        <span class="badge bg-danger text-white rounded-pill px-2 py-1 small"><i class="bi bi-circle-fill" style="font-size: 0.5rem;"></i> Live Incidents</span>
+                    </div>
+                    <h3 class="h5 fw-bold text-dark mb-2">{{ translate('Live Incident Broadcasts', 'लाइव घटना प्रसारण', 'લાઇવ ઘટના પ્રસારણ') }}</h3>
+                    <p class="text-secondary small mb-0">{{ translate('Citizen camera streaming, snapshot polling, and auto-uploading of WebM recordings to digital evidence vaults.', 'कैमरा लाइव स्ट्रीमिंग और डिजिटल साक्ष्य में वीडियो का ऑटो-अपलोड।', 'કેમેરા લાઇવ સ્ટ્રીમિંગ અને પુરાવા તરીકે વીડિયો ઓટો-અપલોડ.') }}</p>
+                </div>
+                <div class="mt-3 text-danger fw-semibold small d-flex align-items-center">
+                    {{ translate('View Live Feed', 'लाइव प्रसारण देखें', 'લાઇવ પ્રસારણ જુઓ') }} <i class="bi bi-arrow-right ms-1"></i>
+                </div>
+            </a>
+        </div>
+
+        <!-- Missing Persons -->
+        <div class="col-md-6 col-xl-4">
+            <a class="service-link h-100 p-4 border rounded-4 text-decoration-none d-flex flex-column justify-content-between bg-white shadow-sm hover-lift" href="{{ url_for('missing_persons.list_missing') }}">
+                <div>
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <span class="service-link-icon bg-warning-subtle text-warning" style="width: 48px; height: 48px; font-size: 1.3rem;">
+                            <i class="bi bi-person-search" aria-hidden="true"></i>
+                        </span>
+                        <span class="badge bg-warning-subtle text-warning border border-warning-subtle rounded-pill px-2 py-1 small">Community Alert</span>
+                    </div>
+                    <h3 class="h5 fw-bold text-dark mb-2">{{ translate('Missing Persons Registry', 'लापता व्यक्ति रजिस्टर', 'ગુમ થયેલ વ્યક્તિઓની યાદી') }}</h3>
+                    <p class="text-secondary small mb-0">{{ translate('Publish verified missing person alerts, browse descriptions, and submit anonymous community sightings.', 'लापता व्यक्तियों के नोटिस देखें और गुमशुदा लोगों की सूचना साझा करें।', 'ગુમ થયેલી વ્યક્તિઓની માહિતી જુઓ અને જાણ કરો.') }}</p>
+                </div>
+                <div class="mt-3 text-warning fw-semibold small d-flex align-items-center">
+                    {{ translate('Search Notices', 'सूचनाएं खोजें', 'સૂચનાઓ શોધો') }} <i class="bi bi-arrow-right ms-1"></i>
+                </div>
+            </a>
+        </div>
+
+        <!-- Safety Guidance -->
+        <div class="col-md-6 col-xl-4">
+            <a class="service-link h-100 p-4 border rounded-4 text-decoration-none d-flex flex-column justify-content-between bg-white shadow-sm hover-lift" href="{{ url_for('awareness.index') }}">
+                <div>
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <span class="service-link-icon bg-secondary-subtle text-secondary" style="width: 48px; height: 48px; font-size: 1.3rem;">
+                            <i class="bi bi-shield-check" aria-hidden="true"></i>
+                        </span>
+                        <span class="badge bg-secondary-subtle text-secondary border rounded-pill px-2 py-1 small">Awareness</span>
+                    </div>
+                    <h3 class="h5 fw-bold text-dark mb-2">{{ translate('Cyber Safety Guidance', 'साइबर सुरक्षा मार्गदर्शन', 'સાયબર સલામતી માર્ગદર્શન') }}</h3>
+                    <p class="text-secondary small mb-0">{{ translate('Learn about latest cybercrime trends, ATM skimming, SIM swap scams, and test your cyber safety awareness.', 'आम ऑनलाइन धोखाधड़ी से बचने के तरीके और सुरक्षा नियम जानें।', 'ઓનલાઇન છેતરપિંડીથી બચવાના નિયમો અને માર્ગદર્શન જાણો.') }}</p>
+                </div>
+                <div class="mt-3 text-secondary fw-semibold small d-flex align-items-center">
+                    {{ translate('Explore Safety Hub', 'सुरक्षा हब देखें', 'સલામતી હબ જુઓ') }} <i class="bi bi-arrow-right ms-1"></i>
+                </div>
             </a>
         </div>
     </div>
 
-    <div class="demo-notice"><i class="bi bi-info-circle me-2" aria-hidden="true"></i>{{ translate('This is an educational demonstration, not an official reporting service. For emergencies or real incidents, contact the appropriate local authorities directly.', 'यह एक शैक्षणिक प्रदर्शन है, आधिकारिक रिपोर्टिंग सेवा नहीं। आपातकाल या वास्तविक घटना के लिए स्थानीय अधिकारियों से सीधे संपर्क करें।', 'આ શૈક્ષણિક ડેમો છે, સત્તાવાર રિપોર્ટિંગ સેવા નથી. કટોકટી અથવા વાસ્તવિક ઘટના માટે સ્થાનિક અધિકારીઓનો સીધો સંપર્ક કરો.') }}</div>
+    <!-- Demonstration Notice -->
+    <div class="demo-notice rounded-3 p-3 bg-light border border-secondary-subtle small text-secondary">
+        <i class="bi bi-info-circle-fill text-primary me-2" aria-hidden="true"></i>
+        {{ translate('This is an educational demonstration prototype developed for MCA Cyber Security & Forensics coursework. For emergencies or real incidents, contact local police or dial the National Cyber Crime Helpline 1930.', 'यह एक शैक्षणिक प्रदर्शन है, आपातकाल के लिए 1930 पर कॉल करें।', 'આ એક શૈક્ષણિક ડેમો પ્રોટોટાઇપ છે. વાસ્તવિક ઘટના માટે ૧૯૩૦ પર સંપર્ક કરો.') }}
+    </div>
 </div>
 {% endblock %}

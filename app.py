@@ -12,6 +12,7 @@ from routes.comments import comments_bp
 from routes.missing_persons import missing_persons_bp
 from routes.awareness import awareness_bp
 from routes.social_media_crimes import social_media_crimes_bp
+from routes.ai import ai_bp
 from utils.security import generate_csrf_token
 
 app = Flask(__name__)
@@ -38,6 +39,7 @@ app.register_blueprint(comments_bp)
 app.register_blueprint(missing_persons_bp)
 app.register_blueprint(awareness_bp)
 app.register_blueprint(social_media_crimes_bp)
+app.register_blueprint(ai_bp)
 
 # Context processor to inject CSRF token and translation helpers globally
 @app.context_processor

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}Civic Desk | Casework demonstration{% endblock %}</title>
+    <title>{% block title %}Civic Desk | AI Forensic & Crime Portal{% endblock %}</title>
     <!-- Bootstrap 5 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- Bootstrap Icons -->
@@ -15,11 +15,11 @@
 <body>
     <a class="skip-link" href="#main-content">Skip to content</a>
     <!-- Main Navigation Bar -->
-    <nav class="navbar navbar-expand-xl navbar-light bg-white shadow-sm border-bottom app-nav">
+    <nav class="navbar navbar-expand-xl navbar-light bg-white shadow-sm border-bottom app-nav sticky-top">
         <div class="container-fluid px-4">
             <a class="navbar-brand d-flex align-items-center" href="{{ url_for('index') }}">
                 <span class="brand-mark"><i class="bi bi-shield-check" aria-hidden="true"></i></span>
-                <span>Civic Desk</span>
+                <span class="fw-bold tracking-tight">Civic Desk</span>
             </a>
             
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
@@ -27,12 +27,14 @@
             </button>
             
             <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav me-auto">
+                <ul class="navbar-nav me-auto align-items-center">
                     <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" id="servicesMenu" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        <a class="nav-link dropdown-toggle fw-medium" href="#" id="servicesMenu" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                             <i class="bi bi-grid me-1" aria-hidden="true"></i> {{ translate('Services', 'सेवाएं', 'સેવાઓ') }}
                         </a>
-                        <ul class="dropdown-menu" aria-labelledby="servicesMenu">
+                        <ul class="dropdown-menu border shadow-sm" aria-labelledby="servicesMenu">
+                            <li><a class="dropdown-item fw-semibold text-primary" href="{{ url_for('ai.scam_detector') }}"><i class="bi bi-cpu-fill me-2 text-primary" aria-hidden="true"></i>{{ translate('AI Scam Detector', 'एआई स्कैम जांच', 'એઆઈ સ્કેમ ડિટેક્ટર') }}</a></li>
+                            <li><hr class="dropdown-divider"></li>
                             {% if session.get('role') == 'citizen' %}
                                 <li><a class="dropdown-item" href="{{ url_for('complaints.submit') }}"><i class="bi bi-file-earmark-medical me-2" aria-hidden="true"></i>{{ translate('Report cyber crime', 'साइबर अपराध रिपोर्ट करें', 'સાયબર ગુનાની જાણ કરો') }}</a></li>
                                 <li><a class="dropdown-item" href="{{ url_for('social_media_crimes.report_crime') }}"><i class="bi bi-chat-square-text me-2" aria-hidden="true"></i>{{ translate('Report social media crime', 'सोशल मीडिया अपराध रिपोर्ट करें', 'સોશિયલ મીડિયા ગુનાની જાણ કરો') }}</a></li>
@@ -47,6 +49,13 @@
                                 <li><a class="dropdown-item" href="{{ url_for('social_media_crimes.report_crime') }}"><i class="bi bi-chat-square-text me-2" aria-hidden="true"></i>{{ translate('Social media reports', 'सोशल मीडिया अपराध', 'સોશિયલ ગુનાઓ') }}</a></li>
                             {% endif %}
                         </ul>
+                    </li>
+
+                    <li class="nav-item">
+                        <a class="nav-link fw-semibold text-primary d-flex align-items-center" href="{{ url_for('ai.scam_detector') }}">
+                            <span class="badge bg-primary-subtle text-primary border border-primary-subtle me-1 py-1 px-2 rounded-pill small">AI</span>
+                            {{ translate('Scam Detector', 'स्कैम डिटेक्टर', 'સ્કેમ ડિટેક્ટર') }}
+                        </a>
                     </li>
                 </ul>
                 
@@ -96,7 +105,6 @@
         </div>
     </nav>
 
-
     <!-- Main Container -->
     <div class="container-fluid px-0">
         <!-- Flash Messages -->
@@ -119,12 +127,138 @@
         </main>
     </div>
 
+    <!-- Floating CyberShield AI Assistant Widget -->
+    <div class="floating-ai-widget">
+        <!-- Trigger Button -->
+        <button type="button" class="btn btn-primary shadow-lg rounded-pill px-3 py-2 fw-semibold d-flex align-items-center gap-2 ai-widget-trigger" id="aiWidgetToggle" onclick="toggleAIChat()">
+            <span class="spinner-grow spinner-grow-sm text-light" style="width: 10px; height: 10px;" role="status"></span>
+            <i class="bi bi-shield-lock-fill fs-5"></i>
+            <span>{{ translate('Ask CyberShield AI', 'साइबरशील्ड एआई से पूछें', 'સાયબરશીલ્ડ એઆઈ ને પૂછો') }}</span>
+        </button>
+
+        <!-- Chat Window Card -->
+        <div class="ai-chat-window shadow-lg border rounded-4 d-none" id="aiChatWindow">
+            <div class="ai-chat-header d-flex justify-content-between align-items-center p-3 border-bottom bg-white rounded-top-4">
+                <div class="d-flex align-items-center gap-2">
+                    <span class="brand-mark" style="width: 32px; height: 32px; font-size: 1rem;">
+                        <i class="bi bi-shield-fill-check text-primary"></i>
+                    </span>
+                    <div>
+                        <h6 class="mb-0 fw-bold text-dark">CyberShield AI</h6>
+                        <small class="text-success d-flex align-items-center gap-1 font-monospace" style="font-size: 0.75rem;">
+                            <span class="d-inline-block rounded-circle bg-success" style="width: 6px; height: 6px;"></span>
+                            {{ translate('Instant Cyber Guidance', 'त्वरित साइबर सुरक्षा', 'ત્વરિત સાયબર સલાહ') }}
+                        </small>
+                    </div>
+                </div>
+                <button type="button" class="btn-close" onclick="toggleAIChat()" aria-label="Close"></button>
+            </div>
+
+            <!-- Quick Suggestions -->
+            <div class="ai-quick-chips p-2 bg-light border-bottom d-flex gap-1 overflow-x-auto">
+                <button type="button" class="badge rounded-pill bg-white text-dark border px-2 py-1 text-nowrap" onclick="askQuickPrompt('Money lost in unauthorized UPI / online payment')">💳 Money Lost</button>
+                <button type="button" class="badge rounded-pill bg-white text-dark border px-2 py-1 text-nowrap" onclick="askQuickPrompt('Someone is blackmailing me on WhatsApp / Instagram')">⚠️ Blackmail</button>
+                <button type="button" class="badge rounded-pill bg-white text-dark border px-2 py-1 text-nowrap" onclick="askQuickPrompt('How do I check if a message or link is a scam?')">🔍 Scam Check</button>
+            </div>
+
+            <!-- Messages Stream Area -->
+            <div class="ai-chat-messages p-3 overflow-y-auto" id="aiChatMessages" style="max-height: 320px; min-height: 220px;">
+                <div class="ai-bubble ai-bubble-assistant mb-2 p-2 rounded-3 bg-light border small text-dark">
+                    👋 {{ translate('Hello! How can I protect you today? Ask any questions regarding online scams, unauthorized transactions, or cyber threats.', 'नमस्ते! ऑनलाइन धोखाधड़ी या साइबर सुरक्षा पर कोई भी प्रश्न पूछें।', 'નમસ્તે! ઑનલાઇન છેતરપિંડી કે સાયબર સુરક્ષા વિશે કોઈપણ પ્રશ્ન પૂછો.') }}
+                </div>
+            </div>
+
+            <!-- Input Form -->
+            <div class="ai-chat-input-area p-2 border-top bg-white rounded-bottom-4">
+                <form id="aiChatForm" onsubmit="sendAIChatMessage(event)" class="d-flex gap-2">
+                    <input type="text" class="form-control form-control-sm border" id="aiChatInput" placeholder="{{ translate('Type your question or paste message...', 'प्रश्न लिखें या संदेश चिपकाएं...', 'પ્રશ્ન લખો...') }}" autocomplete="off" required>
+                    <button type="submit" class="btn btn-primary btn-sm px-3" id="aiChatSendBtn">
+                        <i class="bi bi-send-fill"></i>
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
     <footer class="app-footer">
-        <strong>Civic Desk</strong> is an educational demonstration. It is not an official reporting service and is not monitored by emergency responders.
+        <div class="container text-center py-2">
+            <strong>Civic Desk</strong> · Smart Cyber Crime Reporting, Investigation & Digital Evidence Forensics Demonstration System.
+        </div>
     </footer>
 
     <!-- Bootstrap 5 Bundle JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- AI Assistant Floating Widget Logic -->
+    <script>
+    function toggleAIChat() {
+        const win = document.getElementById('aiChatWindow');
+        win.classList.toggle('d-none');
+        if (!win.classList.contains('d-none')) {
+            document.getElementById('aiChatInput').focus();
+        }
+    }
+
+    function askQuickPrompt(text) {
+        document.getElementById('aiChatInput').value = text;
+        sendAIChatMessage(new Event('submit'));
+    }
+
+    async function sendAIChatMessage(e) {
+        if (e) e.preventDefault();
+        const input = document.getElementById('aiChatInput');
+        const text = input.value.trim();
+        if (!text) return;
+
+        const container = document.getElementById('aiChatMessages');
+        
+        // Append user bubble
+        const userDiv = document.createElement('div');
+        userDiv.className = 'ai-bubble ai-bubble-user mb-2 p-2 rounded-3 bg-primary text-white ms-auto small text-break';
+        userDiv.style.maxWidth = '85%';
+        userDiv.innerText = text;
+        container.appendChild(userDiv);
+        input.value = '';
+        container.scrollTop = container.scrollHeight;
+
+        // Append typing indicator
+        const typingDiv = document.createElement('div');
+        typingDiv.className = 'ai-bubble ai-bubble-assistant mb-2 p-2 rounded-3 bg-light border small text-muted';
+        typingDiv.id = 'aiTypingIndicator';
+        typingDiv.innerHTML = '<span class="spinner-border spinner-border-sm me-1" role="status"></span> Analyzing safety guidance...';
+        container.appendChild(typingDiv);
+        container.scrollTop = container.scrollHeight;
+
+        try {
+            const res = await fetch("{{ url_for('ai.api_chat') }}", {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ message: text })
+            });
+            const data = await res.json();
+            typingDiv.remove();
+
+            if (data.status === 'success') {
+                const aiDiv = document.createElement('div');
+                aiDiv.className = 'ai-bubble ai-bubble-assistant mb-2 p-2 rounded-3 bg-light border small text-dark';
+                // Simple markdown conversion for bold and line breaks
+                let formatted = data.response
+                    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                    .replace(/\*(.*?)\*/g, '<em>$1</em>')
+                    .replace(/\n/g, '<br>');
+                aiDiv.innerHTML = formatted;
+                container.appendChild(aiDiv);
+            }
+        } catch (err) {
+            typingDiv.remove();
+            const errDiv = document.createElement('div');
+            errDiv.className = 'ai-bubble ai-bubble-assistant mb-2 p-2 rounded-3 bg-danger-subtle text-danger small';
+            errDiv.innerText = "Temporary error connecting to AI counselor. Please call 1930 for urgent cyber fraud assistance.";
+            container.appendChild(errDiv);
+        }
+        container.scrollTop = container.scrollHeight;
+    }
+    </script>
     {% block scripts %}{% endblock %}
 </body>
 </html>

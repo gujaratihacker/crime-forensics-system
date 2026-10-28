@@ -1,168 +1,151 @@
 # Smart Online Crime Reporting, Case Management & Digital Evidence Forensics System
 
-A secure, educational digital platform prototype designed for the **MCA Cyber Security and Forensics** minor project. It simulates how citizens can report cybercrimes, upload digital evidence, start livestream broadcasts, and how investigators/admins manage the case life-cycles, maintain chain of custody, and run forensic validations.
+[![Python](https://img.shields.io/badge/Python-3.14+-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://python.org)
+[![Flask](https://img.shields.io/badge/Flask-3.0.3-000000?style=for-the-badge&logo=flask&logoColor=white)](https://flask.palletsprojects.com/)
+[![MySQL](https://img.shields.io/badge/MySQL-8.0-4479A1?style=for-the-badge&logo=mysql&logoColor=white)](https://www.mysql.com/)
+[![Bootstrap](https://img.shields.io/badge/Bootstrap-5.3-7952B3?style=for-the-badge&logo=bootstrap&logoColor=white)](https://getbootstrap.com/)
+[![Cyber Forensics](https://img.shields.io/badge/Forensics-SHA--256_Vault-0284c7?style=for-the-badge&logo=security&logoColor=white)](#forensic-integrity--hashing-design)
+[![AI Engine](https://img.shields.io/badge/CyberShield-AI_Intelligence-10b981?style=for-the-badge&logo=openai&logoColor=white)](#key-ai--interactive-features)
+
+A secure, educational digital platform prototype designed for the **MCA Cyber Security and Forensics** minor project. It simulates how citizens report cybercrimes, upload digital evidence, start livestream broadcasts, and how investigators/admins manage casework life-cycles, maintain an unbroken cryptographic chain of custody, and run forensic validations.
 
 ---
 
-## 1. Project Overview & Intent
-This is an **academic demonstration prototype**. 
 > [!WARNING]
-> It must **NOT** be connected to real police, government databases, or real-world emergency responders. It utilizes only fictional testing datasets.
+> **Academic Demonstration Prototype**: This project is developed exclusively for educational and academic evaluation. It must **NOT** be connected to real police systems, government networks, or emergency responders. It operates only on simulated datasets.
 
 ---
 
-## 2. Key Features
+## 🌟 Key AI & Interactive Features
 
-- **Multi-Role Access Control (RBAC)**: Custom Flask-session-based authorization separating Citizens, Investigators, and Administrators.
-- **Admin User Management**: Administrators can list accounts, create users with roles, promote or demote accounts, and remove accounts when doing so will not erase investigation history or assigned casework.
-- **Identified & Anonymous Reporting**: Allows citizens to toggle anonymity. When active, citizen profiling information (name, contacts, email, exact location) is isolated and masked, displaying as **Anonymous Reporter** on public feeds.
-- **AI-Assisted Complaint Analysis**: A modular, regex and keyword-based local NLP script that auto-categorizes reports, estimates priority levels, detects missing information, suggests evidence types, and parses suspect indicators (emails, UPI IDs, phone numbers, URLs).
-- **Digital Evidence Vault**: Secure evidence uploads hashed with SHA-256 check values.
-- **Forensic Integrity Verification**: A validation panel letting investigators recalculate file SHA-256 hashes against database logs to detect file tampering.
-- **Chronological Chain of Custody**: Ledgers documenting every transaction on evidence files (uploading, accessing, verifying, downloading) shown on the case timeline.
-- **Simulated Live Streaming**:
-  - Citizens start streams via browser cameras.
-  - Snapshot frames are posted via base64 JPEGs every 1s.
-  - Viewers poll the snapshot feed to watch in near real-time.
-  - Browser records the feed locally via `MediaRecorder` API, auto-uploading the WebM file to the Forensic Vault upon stream termination.
-- **Community Chat Intel**: Live stream commentators provide witnessed details. Suspect phone numbers or abusive keywords are auto-moderated and flagged.
-- **Investigation Lead System**: Investigators can review community chatter and promote witness comments into formal investigation leads.
-- **Suspect Intelligence network map**: Uses `vis-network` (via CDN) to render interactive graphs connecting cases, suspect profiles, specific identifiers, and matching duplicate cases.
-- **Case Tracking Timeline**: Explainable step-by-step progress tracking for citizen complaints.
-- **Full Security Audit Logs**: Centralized, unmodifiable ledger capturing all system changes, logged by user credentials and source IP.
+### 1. 🛡️ CyberShield AI Scam & Phishing Diagnostic Center
+- **Instant Heuristic Scan**: Citizens can paste suspicious SMS messages, WhatsApp forwards, Telegram job offers, or URLs.
+- **Scam Probability Meter**: Calculates risk scores (0–100%) with dynamic color-coded urgency gauges.
+- **Threat Vector Detection**: Flags brand spoofing (SBI, Paytm, Netflix), fake KYC deactivations, sextortion blackmail, and deceptive TLDs (`.xyz`, `.top`, `.click`).
+- **Tactics Breakdown**: Explains psychological manipulation (Manufactured Urgency, Authority Impersonation, False Employment).
+- **One-Click Escalation**: Automatically exports detected scam details and suspect contacts directly into the incident complaint form.
+
+### 2. ⚡ Real-Time AI Incident Co-Pilot (Complaint Reporting)
+- **Live Threat Urgency Gauge**: Analyzes complaints dynamically as citizens draft them, rating severity from Standard to Critical.
+- **Automated Suspect Footprint Extraction**: Automatically parses and tags phone numbers, UPI IDs, email addresses, crypto wallets, and social handles (`@username`).
+- **Investigation Readiness Checklist**: Interactively verifies whether essential details (timeframe, UTR, suspect handle, evidence screenshots) are provided.
+- **AI Statement Polish & Restructuring**: Formats unstructured or conversational complaints into formal investigative statements with legal sections and clear chronology.
+
+### 3. 💬 Interactive Multilingual Floating Cyber Counselor
+- **Floating Assistant**: Accessible across all portal pages.
+- **Multilingual Support**: Provides safety guidance in English, हिन्दी (Hindi), and ગુજરાતી (Gujarati).
+- **Golden-Hour Protocols**: Guides citizens through emergency account freezes and helpline connections (**1930**).
+
+### 4. 🧠 Investigator AI Case Copilot
+- **Modus Operandi (M.O.) Classifier**: Identifies cybercrime attack patterns (e.g., Task-Based Ponzi Scheme, Smishing with APK Dropper, Video Call Sextortion).
+- **Statutory Legal Mapping**: Recommends applicable sections under the **Information Technology Act, 2000** (Sec 66, 66C, 66D, 66E, 67) and **Bharatiya Nyaya Sanhita (BNS)** / IPC.
+- **Forensic Evidence Checklist**: Alerts investigators to critical requisitions (Bank Nodal Freeze, IPDR/CDR logs, Section 91 CrPC notice).
+
+### 5. 🔐 Forensic Digital Evidence Vault & Chain of Custody
+- **SHA-256 Cryptographic Checksums**: Uploaded digital evidence is hashed in 64KB blocks.
+- **Tamper Detection**: Investigators can verify file hashes in real time to detect any bit-level modification or spoliation.
+- **Chronological Custody Ledger**: Every view, download, verification, or update generates an immutable audit entry.
+
+### 6. 📹 Simulated Live Incident Streaming
+- **Browser Camera Feeds**: Stream snapshot frames via base64 JPEGs.
+- **Automatic Vaulting**: Records video locally with the `MediaRecorder` API and automatically deposits the `.webm` file into the forensic evidence vault upon conclusion.
+- **Intelligence Chat Moderation**: Automoderates witness chatter and enables investigators to promote leads directly to the casework file.
+
+### 7. 🕸️ Suspect Intelligence Network Visualizer
+- Uses `vis-network` to generate interactive topological graphs connecting cases, suspect identifiers, and related cross-complaint connections.
 
 ---
 
-## 3. Technology Stack
-- **Frontend**: HTML5, CSS3, JavaScript, Bootstrap 5, Bootstrap Icons, Chart.js, Vis-Network (CDN).
-- **Backend**: Python 3.14+, Flask.
-- **Database**: MySQL / MariaDB (from local XAMPP setup).
-- **Forensics & Hashing**: Python `hashlib` (SHA-256), `MediaRecorder` API.
+## 🛠️ Technology Stack
+
+| Layer | Technologies |
+| :--- | :--- |
+| **Frontend** | HTML5, CSS3, JavaScript (ES6+), Bootstrap 5.3, Bootstrap Icons, Vis-Network |
+| **Backend** | Python 3.14+, Flask (Blueprints architecture), Werkzeug |
+| **AI Engine** | Local NLP Heuristic Engine, Pattern Tokenizer, Modus Operandi Classifier |
+| **Database** | MySQL / MariaDB (PyMySQL connector) |
+| **Forensics** | Python `hashlib` (SHA-256), `MediaRecorder` API, EXIF parser |
 
 ---
 
-## 4. Installation & Database Setup
+## 🚀 Installation & Local Setup
 
 ### Prerequisites
-1. **Python 3** installed.
-2. **XAMPP** (or MySQL server running locally on port `3306`).
-3. Ensure MySQL is running on XAMPP (default config: Host `localhost`, User `root`, no password).
+1. **Python 3.14+** installed.
+2. **MySQL / MariaDB** running locally on port `3306` (e.g. through XAMPP).
 
-### Setup Directory
-1. Open PowerShell and navigate to the project directory:
-   ```powershell
-   cd "d:\MCA\minor project"
+### Setup Instructions
+
+1. **Clone the repository**:
+   ```bash
+   git clone https://github.com/your-username/minor-project.git
+   cd "minor-project"
    ```
 
-2. Install Python requirements:
+2. **Create and activate virtual environment**:
+   ```powershell
+   python -m venv .venv
+   .\.venv\Scripts\Activate.ps1
+   ```
+
+3. **Install dependencies**:
    ```bash
    pip install -r requirements.txt
    ```
 
-3. Set a private Flask session key in PowerShell before starting the app:
-   ```powershell
-   $env:SECRET_KEY = (python -c "import secrets; print(secrets.token_hex(32))")
-   ```
-   If you omit this, the app generates a temporary key at startup and logged-in
-   sessions will be invalidated when the app restarts. Do not commit your key.
-
-4. Setup & Seed Database:
-   Run the seed script. It automatically connects to your local MySQL server, creates the database `crime_forensics_db`, initializes the tables, creates static/uploads directories, and populates the tables with demo cases:
+4. **Initialize & Seed the Database**:
    ```bash
    python seed_data.py
    ```
+   *Creates the `crime_forensics_db` database, loads `schema.sql`, sets up upload directories, and seeds sample demo data.*
 
----
-
-## 5. Running the Application
-
-1. Start the Flask server:
+5. **Start the Flask Server**:
    ```bash
    python app.py
    ```
-2. Open your web browser and navigate to:
+
+6. **Open in Web Browser**:
    ```text
    http://127.0.0.1:5000
    ```
 
 ---
 
-## 6. Deploying with Netlify
+## 🧪 Running the Test Suite
 
-Netlify provides the public HTTPS URL and proxies requests to this project's
-Flask backend. The Flask app and MySQL/MariaDB database must also be deployed
-to a Python host; Netlify does not run this project as a persistent Flask
-server.
+Execute the comprehensive unit and integration test suite:
 
-### Railway backend setup
+```powershell
+.\.venv\Scripts\python.exe -m unittest tests/test_suite.py
+```
 
-1. In Railway, create a project and deploy this GitHub repository as a service.
-   The included `Procfile` starts Gunicorn using Railway's `PORT`.
-2. Add a MySQL service to the same Railway project. In the Flask service's
-   Variables settings, map the MySQL service's generated values to the
-   application's variables (replace `MySQL` with the exact name of your
-   database service if different):
-   - `DB_HOST=${{ MySQL.MYSQLHOST }}`
-   - `DB_USER=${{ MySQL.MYSQLUSER }}`
-   - `DB_PASSWORD=${{ MySQL.MYSQLPASSWORD }}`
-   - `DB_NAME=${{ MySQL.MYSQLDATABASE }}`
-   - `SECRET_KEY`: a newly generated, long random secret
-   - `SESSION_COOKIE_SECURE=true`
-3. Attach a persistent Railway volume to the Flask service at `/app/uploads`.
-   Evidence, verification files, missing-person images, live snapshots, and
-   recordings are stored there.
-4. Before initializing the database, set `SEED_ADMIN_PASSWORD`,
-   `SEED_INVESTIGATOR_PASSWORD`, and `SEED_CITIZEN_PASSWORD` in the Flask
-   service's Variables. Use unique private passwords of at least 12 characters
-   containing letters and numbers. Run `python seed_data.py` once from the
-   backend service's shell against a **new, empty database**. This script drops
-   and recreates project tables when it runs; never run it against data you
-   need. The local demo passwords remain defaults only for local development.
-5. Generate a public HTTPS domain for the Flask service in Railway and wait
-   until the backend is healthy.
+All unit tests cover:
+- Password security and hashing
+- CSRF validation and role authorization
+- AI Scam Detector & Threat Heuristics
+- AI Live Draft Analyzer & Statement Polish
+- Forensic SHA-256 tampering detection
+- Audit logging ledger
 
-### Netlify proxy setup
+---
 
-1. Import the same GitHub repository into Netlify.
-2. Add the `FLASK_BACKEND_URL` build environment variable with the Railway
-   backend's HTTPS origin, for example `https://your-app.up.railway.app`
-   (no path). The root `netlify.toml` invokes `scripts/build_netlify.py`, which
-   generates the catch-all proxy rewrite.
-3. Deploy the Netlify site. If the backend URL changes, update the environment
-   variable and redeploy.
+## 👥 Demo Test Accounts
 
-Netlify's proxy rewrites time out after 26 seconds. Large evidence/video
-uploads or long-running requests may need direct backend or object-storage
-URLs to work reliably. This is still an academic demonstration system: use
-fictional test data only; do not connect it to real emergency responders or
-government databases.
-
-## 7. Test Accounts (Demo Dataset)
-
-Use these credentials to test the various dashboards:
-
-| Role | Username / Email | Password | Purpose |
+| Role | Username / Email | Password | Scope & Dashboard |
 | :--- | :--- | :--- | :--- |
-| **Admin** | `admin1` or `admin@forensics.local` | `Admin@123` | System oversight, user assignments, comment moderation. |
-| **Investigator** | `investigator1` or `investigator1@forensics.local` | `Investigator@123` | Case inspection, notes ledger, evidence checking, suspect map. |
-| **Citizen 1** | `citizen1` or `citizen1@forensics.local` | `Citizen@123` | Identified complaint reporting, case progress tracking. |
-| **Citizen 2** | `citizen2` or `citizen2@forensics.local` | `Citizen@123` | Anonymous complaint and livestream simulation. |
+| **Admin** | `admin1` / `admin@forensics.local` | `Admin@123` | System oversight, user promotion, audit logs, moderation queue. |
+| **Investigator** | `investigator1` / `investigator1@forensics.local` | `Investigator@123` | Case inspection, AI copilot, evidence hash checks, suspect network. |
+| **Citizen 1** | `citizen1` / `citizen1@forensics.local` | `Citizen@123` | Identified reporting, live AI copilot, case timeline tracking. |
+| **Citizen 2** | `citizen2` / `citizen2@forensics.local` | `Citizen@123` | Anonymous reporting and livestream simulation. |
 
 ---
 
-## 8. Forensic Integrity & Hashing Design
+## 🌐 Cloud Deployment (Railway + Netlify)
 
-- **SHA-256 Calculation**: Files uploaded to `uploads/evidence/` are processed in 64KB chunks to prevent RAM exhaustion. A 64-character SHA-256 string is generated and logged in MySQL.
-- **Custody Chain**:
-  - `UPLOADED`: Generated on initial file preservation.
-  - `ACCESSED`: Logged whenever an investigator opens or downloads the file.
-  - `VERIFIED`: Logged on successful hash checks.
-  - `VERIFY_FAILED`: Logged if file checksums do not match, signaling data tampering.
-- **Audit Logs**: Unmodifiable logs that record operations alongside user IDs, timestamps, and client IP addresses.
+- **Railway Backend**: Deploy the repository with the included `Procfile` (`web: gunicorn app:app`). Map `DB_HOST`, `DB_USER`, `DB_PASSWORD`, `DB_NAME`, and `SECRET_KEY` in Railway Variables.
+- **Netlify Proxy**: Deploy front proxy via `netlify.toml` with `FLASK_BACKEND_URL` configured.
 
 ---
 
-## 9. Limitations & Future Scope
-- **WebRTC Signalling**: This system uses periodic JPEG polling as a robust local alternative to complex WebRTC STUN/TURN servers. Real production implementations would require signalling engines.
-- **Local Hashing**: Hashing happens on the backend. True forensics could add client-side hashing to verify that files are not tampered with during transmission.
-- **Mock AI Service**: The AI recommendations are rule-based. Future versions could integrate actual LLMs or BERT models via API calls.
+## 📄 License & Attribution
+Developed for educational research and coursework in **MCA Cyber Security and Digital Forensics**.
